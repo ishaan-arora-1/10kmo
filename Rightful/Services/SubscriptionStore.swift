@@ -57,7 +57,7 @@ final class SubscriptionStore {
             case .success(let verification):
                 let transaction = try requireVerified(verification)
                 updatePlan(for: transaction.productID)
-                latestSignedTransaction = transaction.jwsRepresentation
+                latestSignedTransaction = verification.jwsRepresentation
                 await transaction.finish()
                 return true
             case .pending:
@@ -100,12 +100,12 @@ final class SubscriptionStore {
 
             if transaction.productID == AppConstants.yearlyProductID {
                 activePlan = .yearly
-                latestSignedTransaction = transaction.jwsRepresentation
+                latestSignedTransaction = result.jwsRepresentation
                 break
             }
             if transaction.productID == AppConstants.weeklyProductID {
                 activePlan = .weekly
-                latestSignedTransaction = transaction.jwsRepresentation
+                latestSignedTransaction = result.jwsRepresentation
             }
         }
 
