@@ -6,6 +6,9 @@ struct PaywallView: View {
     @Environment(AppModel.self) private var app
     @State private var selectedPlan: SubscriptionPlan = .yearly
     @State private var legalPage: LegalPage?
+    @State private var pendingProduct: Product?
+    @State private var pendingRestore = false
+    @State private var showSignIn = false
     let onClose: () -> Void
     let onSubscribed: () -> Void
 
@@ -73,14 +76,12 @@ struct PaywallView: View {
 
                 Button {
                     guard let selectedProduct else { return }
-                    Task {
-                        if await app.subscriptions.purchase(
-                            selectedProduct,
-                            appAccountToken: app.auth.userID
-                        ) {
-                            await app.syncProfileIfPossible()
-                            onSubscribed()
-                        }
+                    if requiresAuthentication {
+                        pendingProduct = selectedProduct
+                        pendingRestore = false
+                        showSignIn = true
+                    } else {
+                        purchase(selectedProduct)
                     }
                 } label: {
                     if app.subscriptions.isLoading {
@@ -95,12 +96,12 @@ struct PaywallView: View {
                 .opacity(selectedProduct == nil ? 0.55 : 1)
 
                 Button("Restore purchases") {
-                    Task {
-                        await app.subscriptions.restore()
-                        if app.isPremium {
-                            await app.syncProfileIfPossible()
-                            onSubscribed()
-                        }
+                    if requiresAuthentication {
+                        pendingProduct = nil
+                        pendingRestore = true
+                        showSignIn = true
+                    } else {
+                        restorePurchases()
                     }
                 }
                 .font(RightfulFont.body(14, weight: .medium))
@@ -128,7 +129,55 @@ struct PaywallView: View {
         .sheet(item: $legalPage) { page in
             LegalView(page: page)
         }
+        .sheet(isPresented: $showSignIn) {
+            SignInView(
+                onSkip: {
+                    pendingProduct = nil
+                    pendingRestore = false
+                    showSignIn = false
+                },
+                onComplete: {
+                    let product = pendingProduct
+                    let shouldRestore = pendingRestore
+                    pendingProduct = nil
+                    pendingRestore = false
+                    showSignIn = false
+
+                    if let product {
+                        purchase(product)
+                    } else if shouldRestore {
+                        restorePurchases()
+                    }
+                }
+            )
+        }
         .rightfulScreen()
+    }
+
+    private var requiresAuthentication: Bool {
+        !app.auth.isSampleMode && !app.auth.isAuthenticated
+    }
+
+    private func purchase(_ product: Product) {
+        Task {
+            if await app.subscriptions.purchase(
+                product,
+                appAccountToken: app.auth.userID
+            ) {
+                await app.syncProfileIfPossible()
+                onSubscribed()
+            }
+        }
+    }
+
+    private func restorePurchases() {
+        Task {
+            await app.subscriptions.restore()
+            if app.isPremium {
+                await app.syncProfileIfPossible()
+                onSubscribed()
+            }
+        }
     }
 
     private var yearlyPrice: String {

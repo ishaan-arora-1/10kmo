@@ -54,6 +54,7 @@ export type Database = {
           deadline: string;
           payout_window_start: string | null;
           created_at: string;
+          published_at: string | null;
           status: "draft" | "verified" | "closed";
           is_sample: boolean;
         }
@@ -77,31 +78,39 @@ export type Database = {
           p_original_transaction_id: string;
           p_expires_at: string | null;
           p_revoked_at: string | null;
+          p_signed_at: string;
           p_signed_transaction_hash: string;
         };
         Returns: string;
       };
-      existing_notification_ids: {
-        Args: { p_ids: string[] };
-        Returns: { id: string }[];
+      claim_notification_delivery: {
+        Args: {
+          p_id: string;
+          p_user_id: string;
+          p_device_id: string;
+          p_notification_type: string;
+          p_payload: Json;
+        };
+        Returns: boolean;
       };
       apply_subscription_status: {
         Args: {
+          p_notification_uuid: string;
           p_original_transaction_id: string;
           p_transaction_id: string;
           p_product_id: string;
+          p_app_account_token: string | null;
           p_expires_at: string | null;
           p_revoked_at: string | null;
+          p_signed_at: string;
           p_signed_transaction_hash: string;
         };
         Returns: string | null;
       };
-      record_notification_sent: {
+      complete_notification_delivery: {
         Args: {
           p_id: string;
-          p_user_id: string;
-          p_notification_type: string;
-          p_payload: Json;
+          p_result: "sent" | "failed" | "retry";
         };
         Returns: undefined;
       };
@@ -130,6 +139,7 @@ export type Database = {
           original_transaction_id: string;
           expires_at: string | null;
           revoked_at: string | null;
+          signed_at: string;
           signed_transaction_hash: string;
           created_at: string;
           updated_at: string;
@@ -141,6 +151,7 @@ export type Database = {
           original_transaction_id: string;
           expires_at: string | null;
           revoked_at: string | null;
+          signed_at: string;
           signed_transaction_hash: string;
         }
       >;
@@ -155,17 +166,35 @@ export type Database = {
           user_id: string;
         }
       >;
+      pending_subscription_events: Table<
+        {
+          notification_uuid: string;
+          transaction_id: string;
+          original_transaction_id: string;
+          product_id: string;
+          app_account_token: string | null;
+          expires_at: string | null;
+          revoked_at: string | null;
+          signed_at: string;
+          signed_transaction_hash: string;
+          created_at: string;
+        }
+      >;
       notification_log: Table<
         {
           id: string;
           user_id: string;
+          device_id: string | null;
           notification_type: string;
           payload: Json;
-          sent_at: string;
+          status: "claimed" | "sent" | "failed";
+          attempted_at: string;
+          sent_at: string | null;
         },
         {
           id: string;
           user_id: string;
+          device_id?: string | null;
           notification_type: string;
           payload: Json;
         }

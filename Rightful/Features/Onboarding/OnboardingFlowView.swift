@@ -26,7 +26,10 @@ struct OnboardingFlowView: View {
                     onSelect: { settlement in
                         selectedSettlement = settlement
                         withAnimation(.snappy) {
-                            stage = app.isPremium ? .signIn : .paywall
+                            stage = app.isPremium
+                                ? (app.auth.isAuthenticated || app.auth.isSampleMode
+                                    ? .detail : .signIn)
+                                : .paywall
                         }
                     },
                     onExplore: app.completeOnboarding
@@ -34,7 +37,7 @@ struct OnboardingFlowView: View {
             case .paywall:
                 PaywallView(
                     onClose: { withAnimation(.snappy) { stage = .results } },
-                    onSubscribed: { withAnimation(.snappy) { stage = .signIn } }
+                    onSubscribed: { withAnimation(.snappy) { stage = .detail } }
                 )
             case .signIn:
                 SignInView(

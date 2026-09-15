@@ -49,18 +49,20 @@ export default {
     const userID = context.userClaims?.id;
     const transactionID = transaction.transactionId;
     const originalTransactionID = transaction.originalTransactionId;
+    const signedDate = transaction.signedDate;
 
     if (
-      !productID || !plan || !userID || !transactionID || !originalTransactionID
+      !productID || !plan || !userID || !transactionID ||
+      !originalTransactionID || !signedDate
     ) {
       return Response.json(
         { error: "Transaction is missing required subscription fields" },
         { status: 400 },
       );
     }
-    if (transaction.appAccountToken && transaction.appAccountToken !== userID) {
+    if (transaction.appAccountToken !== userID) {
       return Response.json(
-        { error: "Transaction belongs to a different account" },
+        { error: "Transaction is not bound to this account" },
         { status: 409 },
       );
     }
@@ -90,6 +92,7 @@ export default {
         p_original_transaction_id: originalTransactionID,
         p_expires_at: expiresAt,
         p_revoked_at: revokedAt,
+        p_signed_at: new Date(signedDate).toISOString(),
         p_signed_transaction_hash: signedTransactionHash,
       });
 
@@ -107,21 +110,29 @@ export default {
       );
     }
 
-    const { error: profileError } = await context.supabaseAdmin
+    const { data: profile, error: profileError } = await context.supabaseAdmin
       .from("profiles")
-      .update({ plan })
-      .eq("user_id", userID);
+      .select("plan")
+      .eq("user_id", userID)
+      .single();
 
-    if (profileError) {
-      console.error("profile plan update failed", profileError);
-      return Response.json({ error: "Plan could not be updated" }, {
+    if (profileError || !profile) {
+      console.error("profile plan lookup failed", profileError);
+      return Response.json({ error: "Plan could not be loaded" }, {
         status: 500,
       });
     }
 
+    if (profile.plan === "free") {
+      return Response.json(
+        { error: "A newer transaction ended this subscription" },
+        { status: 409 },
+      );
+    }
+
     return Response.json({
       verified: true,
-      plan,
+      plan: profile.plan,
       expiresAt,
     });
   }),

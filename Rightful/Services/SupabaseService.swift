@@ -159,6 +159,7 @@ final class AuthService {
         do {
             let response: DeleteResponse = try await client.functions.invoke("delete-account")
             if response.deleted {
+                try? await client.auth.signOut()
                 userID = nil
             }
             return response.deleted

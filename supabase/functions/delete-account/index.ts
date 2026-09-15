@@ -12,19 +12,6 @@ export default {
       return Response.json({ error: "User not found" }, { status: 401 });
     }
 
-    // Revoke the user's sessions before deleting the auth record. Deletion alone
-    // does not immediately invalidate already-issued access tokens.
-    const { error: signOutError } = await context.supabase.auth.signOut({
-      scope: "global",
-    });
-    if (signOutError) {
-      console.error("session revocation failed", signOutError);
-      return Response.json(
-        { error: "Sessions could not be revoked" },
-        { status: 500 },
-      );
-    }
-
     const { error: deleteError } = await context.supabaseAdmin.auth.admin
       .deleteUser(userID);
     if (deleteError) {

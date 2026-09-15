@@ -20,7 +20,7 @@ max_rows = 1000
 # `postgres` are reachable through the Data API roles (`anon`, `authenticated`, `service_role`)
 # without explicit GRANTs, matching the cloud default. Set to `false` to require explicit GRANTs
 # instead. Left unset, a fresh project falls back to `true`.
-# auto_expose_new_tables = true
+auto_expose_new_tables = false
 
 [api.tls]
 # Enable HTTPS endpoints locally using a self-signed certificate.
@@ -416,6 +416,10 @@ enabled = true
 
 [functions.verify-purchase]
 verify_jwt = true
+static_files = [
+  "./functions/_shared/AppleRootCA-G2.cer",
+  "./functions/_shared/AppleRootCA-G3.cer",
+]
 
 [functions.delete-account]
 verify_jwt = true
@@ -423,6 +427,10 @@ verify_jwt = true
 [functions.app-store-notifications]
 # Apple authenticates this webhook with a JWS signed payload.
 verify_jwt = false
+static_files = [
+  "./functions/_shared/AppleRootCA-G2.cer",
+  "./functions/_shared/AppleRootCA-G3.cer",
+]
 
 [functions.notify]
 # Internal scheduler calls this function with the named "automations" secret key.

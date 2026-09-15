@@ -1,17 +1,22 @@
 import { importPKCS8, SignJWT } from "npm:jose@6.2.12";
 import { withSupabase } from "npm:@supabase/server@1.5.2";
-import type { Database } from "../_shared/database.types.ts";
+import type { Database, Json } from "../_shared/database.types.ts";
+
+const PAGE_SIZE = 500;
+const DELIVERY_CONCURRENCY = 10;
+const FILED_STATUS_VALUES = ["Filed", "Approved", "Paid"] as const;
+const FILED_STATUSES = new Set<string>(FILED_STATUS_VALUES);
+const PAYOUT_STATUSES = new Set<string>(["Filed", "Approved"]);
 
 type Device = {
+  id: string;
   user_id: string;
   apns_token: string;
   environment: "sandbox" | "production";
 };
 
-type BrandPick = {
-  user_id: string;
-  brand_id: string;
-};
+type Profile = { user_id: string };
+type BrandPick = { user_id: string; brand_id: string };
 
 type Settlement = {
   id: string;
@@ -22,10 +27,11 @@ type Settlement = {
   payout_max: number;
   deadline: string;
   payout_window_start: string | null;
-  created_at: string;
+  published_at: string | null;
 };
 
 type Claim = {
+  id: string;
   user_id: string;
   settlement_id: string;
   status: string;
@@ -39,6 +45,16 @@ type PendingPush = {
   body: string;
 };
 
+type Page<T> = { data: T[] | null; error: unknown };
+
+type APNsResult = {
+  ok: boolean;
+  status: number;
+  reason: string;
+  invalidToken: boolean;
+  retryable: boolean;
+};
+
 export default {
   fetch: withSupabase<Database>(
     { auth: "secret:automations" },
@@ -48,70 +64,108 @@ export default {
       }
 
       const today = utcDateString(new Date());
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const publishedSince = new Date(Date.now() - 48 * 60 * 60 * 1000)
         .toISOString();
 
-      const [
-        devicesResult,
-        profilesResult,
-        picksResult,
-        settlementsResult,
-        claimsResult,
-      ] = await Promise.all([
-        context.supabaseAdmin.from("notification_devices").select(
-          "user_id,apns_token,environment",
-        ),
-        context.supabaseAdmin.from("profiles").select("user_id").eq(
-          "notifications_enabled",
-          true,
-        ),
-        context.supabaseAdmin.from("profile_brands").select("user_id,brand_id"),
-        context.supabaseAdmin.from("settlements").select(
-          "id,company,title,brand_id,payout_min,payout_max,deadline,payout_window_start,created_at",
-        ).eq("status", "verified").eq("is_sample", false).gte(
-          "deadline",
-          today,
-        ),
-        context.supabaseAdmin.from("claims").select(
-          "user_id,settlement_id,status",
-        ),
-      ]);
+      let devices: Device[];
+      let profiles: Profile[];
+      let picks: BrandPick[];
+      let settlements: Settlement[];
+      let claims: Claim[];
 
-      const firstError = [
-        devicesResult.error,
-        profilesResult.error,
-        picksResult.error,
-        settlementsResult.error,
-        claimsResult.error,
-      ].find(Boolean);
-      if (firstError) {
-        console.error("notification query failed", firstError);
+      try {
+        [devices, profiles, picks, settlements, claims] = await Promise.all([
+          fetchPages<Device>(async (from, to) => {
+            const result = await context.supabaseAdmin
+              .from("notification_devices")
+              .select("id,user_id,apns_token,environment")
+              .order("id")
+              .range(from, to);
+            return {
+              data: result.data as Device[] | null,
+              error: result.error,
+            };
+          }),
+          fetchPages<Profile>(async (from, to) => {
+            const result = await context.supabaseAdmin
+              .from("profiles")
+              .select("user_id")
+              .eq("notifications_enabled", true)
+              .order("user_id")
+              .range(from, to);
+            return {
+              data: result.data as Profile[] | null,
+              error: result.error,
+            };
+          }),
+          fetchPages<BrandPick>(async (from, to) => {
+            const result = await context.supabaseAdmin
+              .from("profile_brands")
+              .select("user_id,brand_id")
+              .order("user_id")
+              .order("brand_id")
+              .range(from, to);
+            return {
+              data: result.data as BrandPick[] | null,
+              error: result.error,
+            };
+          }),
+          fetchPages<Settlement>(async (from, to) => {
+            const result = await context.supabaseAdmin
+              .from("settlements")
+              .select(
+                "id,company,title,brand_id,payout_min,payout_max,deadline,payout_window_start,published_at",
+              )
+              .eq("status", "verified")
+              .eq("is_sample", false)
+              .or(`deadline.gte.${today},payout_window_start.eq.${today}`)
+              .order("id")
+              .range(from, to);
+            return {
+              data: result.data as Settlement[] | null,
+              error: result.error,
+            };
+          }),
+          fetchPages<Claim>(async (from, to) => {
+            const result = await context.supabaseAdmin
+              .from("claims")
+              .select("id,user_id,settlement_id,status")
+              .in("status", FILED_STATUS_VALUES)
+              .order("id")
+              .range(from, to);
+            return { data: result.data as Claim[] | null, error: result.error };
+          }),
+        ]);
+      } catch (error) {
+        console.error("notification query failed", error);
         return Response.json(
           { error: "Notification data could not be loaded" },
           { status: 500 },
         );
       }
 
-      const enabledUsers = new Set(
-        (profilesResult.data ?? []).map((profile) => profile.user_id),
-      );
-      const devices = (devicesResult.data ?? []) as Device[];
-      const picks = (picksResult.data ?? []) as BrandPick[];
-      const settlements = (settlementsResult.data ?? []) as Settlement[];
-      const claims = (claimsResult.data ?? []) as Claim[];
-
+      const devicesByUser = groupRows(devices, (device) => device.user_id);
       const brandsByUser = groupValues(picks, "user_id", "brand_id");
       const filedByUser = groupValues(claims, "user_id", "settlement_id");
+      const payoutByUser = groupValues(
+        claims.filter((claim) => PAYOUT_STATUSES.has(claim.status)),
+        "user_id",
+        "settlement_id",
+      );
       const pushes: PendingPush[] = [];
 
-      for (const userID of enabledUsers) {
+      for (const { user_id: userID } of profiles) {
         const brandIDs = brandsByUser.get(userID) ?? new Set<string>();
         const filedIDs = filedByUser.get(userID) ?? new Set<string>();
-        const matches = settlements.filter((settlement) =>
+        const payoutIDs = payoutByUser.get(userID) ?? new Set<string>();
+        const brandMatches = settlements.filter((settlement) =>
           brandIDs.has(settlement.brand_id)
         );
+        const openMatches = brandMatches.filter((settlement) =>
+          settlement.deadline >= today
+        );
 
-        for (const settlement of matches) {
+        for (const settlement of openMatches) {
           const days = daysBetweenUTC(today, settlement.deadline);
           if ((days === 7 || days === 1) && !filedIDs.has(settlement.id)) {
             pushes.push({
@@ -126,7 +180,10 @@ export default {
             });
           }
 
-          if (settlement.created_at >= yesterday) {
+          if (
+            settlement.published_at &&
+            settlement.published_at >= publishedSince
+          ) {
             pushes.push({
               id: `new-match:${userID}:${settlement.id}`,
               userID,
@@ -136,11 +193,14 @@ export default {
                 `${settlement.title}, est. $${settlement.payout_min}–$${settlement.payout_max}`,
             });
           }
+        }
 
-          if (
-            settlement.payout_window_start === today &&
-            filedIDs.has(settlement.id)
-          ) {
+        for (
+          const settlement of brandMatches.filter((candidate) =>
+            candidate.payout_window_start === today
+          )
+        ) {
+          if (payoutIDs.has(settlement.id)) {
             pushes.push({
               id: `payout:${userID}:${settlement.id}`,
               userID,
@@ -151,8 +211,8 @@ export default {
           }
         }
 
-        if (new Date().getUTCDay() === 0 && matches.length > 0) {
-          const waiting = matches
+        if (new Date().getUTCDay() === 0 && openMatches.length > 0) {
+          const waiting = openMatches
             .filter((settlement) => !filedIDs.has(settlement.id))
             .reduce(
               (sum, settlement) => sum + Number(settlement.payout_max),
@@ -163,85 +223,179 @@ export default {
             userID,
             type: "weekly_digest",
             title: `$${Math.round(waiting)} may still be waiting`,
-            body: `Review ${matches.length} matching ${
-              matches.length === 1 ? "claim" : "claims"
+            body: `Review ${openMatches.length} matching ${
+              openMatches.length === 1 ? "claim" : "claims"
             } this week.`,
           });
         }
       }
 
-      if (pushes.length === 0) {
-        return Response.json({ sent: 0, skipped: 0 });
-      }
-
-      const { data: alreadySent } = await context.supabaseAdmin
-        .rpc("existing_notification_ids", {
-          p_ids: pushes.map((push) => push.id),
-        });
-      const sentIDs = new Set((alreadySent ?? []).map((row) => row.id));
+      const deliveries = pushes.flatMap((push) =>
+        (devicesByUser.get(push.userID) ?? []).map((device) => ({
+          push,
+          device,
+        }))
+      );
 
       let sent = 0;
       let failed = 0;
-      for (const push of pushes) {
-        if (sentIDs.has(push.id)) continue;
+      let skipped = 0;
 
-        const userDevices = devices.filter((device) =>
-          device.user_id === push.userID
-        );
-        let delivered = false;
-        for (const device of userDevices) {
-          const response = await sendAPNs(device, push);
-          delivered ||= response.ok;
-          if (!response.ok) {
-            failed += 1;
-            console.error(
-              "APNs delivery failed",
-              response.status,
-              await response.text(),
+      for (
+        let offset = 0;
+        offset < deliveries.length;
+        offset += DELIVERY_CONCURRENCY
+      ) {
+        const batch = deliveries.slice(offset, offset + DELIVERY_CONCURRENCY);
+        const outcomes = await Promise.all(
+          batch.map(async ({ push, device }) => {
+            const deliveryID = `${push.id}:${device.id}`;
+            const payload: Json = { title: push.title, body: push.body };
+            const { data: claimed, error: claimError } = await context
+              .supabaseAdmin.rpc("claim_notification_delivery", {
+                p_id: deliveryID,
+                p_user_id: push.userID,
+                p_device_id: device.id,
+                p_notification_type: push.type,
+                p_payload: payload,
+              });
+
+            if (claimError) throw claimError;
+            if (!claimed) return "skipped" as const;
+
+            const result = await sendAPNs(device, push);
+            const completion = result.ok
+              ? "sent"
+              : result.retryable
+              ? "retry"
+              : "failed";
+
+            if (result.invalidToken) {
+              const { error } = await context.supabaseAdmin
+                .from("notification_devices")
+                .delete()
+                .eq("id", device.id);
+              if (error) console.error("invalid token removal failed", error);
+            }
+
+            const { error: completionError } = await context.supabaseAdmin.rpc(
+              "complete_notification_delivery",
+              { p_id: deliveryID, p_result: completion },
             );
-          }
-        }
+            if (completionError) throw completionError;
 
-        if (delivered) {
-          sent += 1;
-          await context.supabaseAdmin
-            .rpc("record_notification_sent", {
-              p_id: push.id,
-              p_user_id: push.userID,
-              p_notification_type: push.type,
-              p_payload: { title: push.title, body: push.body },
-            });
+            if (!result.ok) {
+              console.error(
+                "APNs delivery failed",
+                result.status,
+                result.reason,
+              );
+            }
+            return result.ok ? "sent" as const : "failed" as const;
+          }),
+        );
+
+        for (const outcome of outcomes) {
+          if (outcome === "sent") sent += 1;
+          else if (outcome === "failed") failed += 1;
+          else skipped += 1;
         }
       }
 
-      return Response.json({ sent, failed, skipped: sentIDs.size });
+      return Response.json({ sent, failed, skipped });
     },
   ),
 };
 
-async function sendAPNs(device: Device, push: PendingPush): Promise<Response> {
+async function fetchPages<T>(
+  load: (from: number, to: number) => Promise<Page<T>>,
+): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0;; from += PAGE_SIZE) {
+    const { data, error } = await load(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    const page = data ?? [];
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+  }
+}
+
+async function sendAPNs(
+  device: Device,
+  push: PendingPush,
+): Promise<APNsResult> {
   const token = await providerToken();
   const host = device.environment === "production"
     ? "https://api.push.apple.com"
     : "https://api.sandbox.push.apple.com";
 
-  return fetch(`${host}/3/device/${device.apns_token}`, {
-    method: "POST",
-    headers: {
-      authorization: `bearer ${token}`,
-      "apns-topic": Deno.env.get("APPLE_BUNDLE_ID") ?? "com.rightful.app",
-      "apns-push-type": "alert",
-      "apns-priority": "10",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      aps: {
-        alert: { title: push.title, body: push.body },
-        sound: "default",
-      },
-      rightful: { type: push.type },
-    }),
-  });
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(`${host}/3/device/${device.apns_token}`, {
+        method: "POST",
+        headers: {
+          authorization: `bearer ${token}`,
+          "apns-topic": Deno.env.get("APPLE_BUNDLE_ID") ?? "com.rightful.app",
+          "apns-push-type": "alert",
+          "apns-priority": "10",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          aps: {
+            alert: { title: push.title, body: push.body },
+            sound: "default",
+          },
+          rightful: { type: push.type },
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      const body = await response.text();
+      const reason = parseAPNsReason(body);
+      const invalidToken = response.status === 410 ||
+        (response.status === 400 &&
+          ["BadDeviceToken", "DeviceTokenNotForTopic"].includes(reason));
+      const retryable = [429, 500, 503].includes(response.status);
+
+      if (response.ok || !retryable || attempt === 2) {
+        return {
+          ok: response.ok,
+          status: response.status,
+          reason,
+          invalidToken,
+          retryable,
+        };
+      }
+    } catch (error) {
+      if (attempt === 2) {
+        return {
+          ok: false,
+          status: 0,
+          reason: error instanceof Error ? error.message : "Network error",
+          invalidToken: false,
+          retryable: true,
+        };
+      }
+    }
+    await delay(250 * 2 ** attempt);
+  }
+
+  return {
+    ok: false,
+    status: 0,
+    reason: "APNs retry limit reached",
+    invalidToken: false,
+    retryable: true,
+  };
+}
+
+function parseAPNsReason(body: string): string {
+  try {
+    const value = JSON.parse(body) as { reason?: string };
+    return value.reason ?? body;
+  } catch {
+    return body;
+  }
 }
 
 let cachedProviderToken: { value: string; expiresAt: number } | null = null;
@@ -287,6 +441,20 @@ function daysBetweenUTC(start: string, end: string): number {
   return Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000);
 }
 
+function groupRows<T>(
+  rows: T[],
+  key: (row: T) => string,
+): Map<string, T[]> {
+  const result = new Map<string, T[]>();
+  for (const row of rows) {
+    const groupKey = key(row);
+    const group = result.get(groupKey) ?? [];
+    group.push(row);
+    result.set(groupKey, group);
+  }
+  return result;
+}
+
 function groupValues<T extends Record<string, string>>(
   rows: T[],
   key: keyof T,
@@ -299,4 +467,8 @@ function groupValues<T extends Record<string, string>>(
     result.set(row[key], group);
   }
   return result;
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }

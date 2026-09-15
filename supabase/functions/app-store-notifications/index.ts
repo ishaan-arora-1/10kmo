@@ -61,26 +61,56 @@ export default {
     const plan = productID ? validProducts.get(productID) : undefined;
     const transactionID = transaction.transactionId;
     const originalTransactionID = transaction.originalTransactionId;
-    if (!productID || !plan || !transactionID || !originalTransactionID) {
+    const notificationUUID = verified.payload.notificationUUID;
+    const signedDate = verified.payload.signedDate ?? transaction.signedDate;
+    if (
+      !productID || !plan || !transactionID || !originalTransactionID ||
+      !notificationUUID || !signedDate
+    ) {
       return Response.json({ received: true, updated: false });
     }
 
-    const expiresAt = transaction.expiresDate
-      ? new Date(transaction.expiresDate).toISOString()
+    let effectiveExpiresDate = transaction.expiresDate;
+    const signedRenewal = verified.payload.data?.signedRenewalInfo;
+    if (verified.payload.data?.status === 4 && signedRenewal) {
+      try {
+        const renewal = await verified.verifier.verifyAndDecodeRenewalInfo(
+          signedRenewal,
+        );
+        if (renewal.gracePeriodExpiresDate) {
+          effectiveExpiresDate = Math.max(
+            effectiveExpiresDate ?? 0,
+            renewal.gracePeriodExpiresDate,
+          );
+        }
+      } catch {
+        return Response.json({ error: "Invalid renewal signature" }, {
+          status: 400,
+        });
+      }
+    }
+
+    const expiresAt = effectiveExpiresDate
+      ? new Date(effectiveExpiresDate).toISOString()
       : null;
     const revokedAt = transaction.revocationDate
       ? new Date(transaction.revocationDate).toISOString()
+      : verified.payload.data?.status === 5
+      ? new Date(signedDate).toISOString()
       : null;
     const hash = await sha256(signedTransaction);
 
     const { data: ownerID, error } = await context.supabaseAdmin.rpc(
       "apply_subscription_status",
       {
+        p_notification_uuid: notificationUUID,
         p_original_transaction_id: originalTransactionID,
         p_transaction_id: transactionID,
         p_product_id: productID,
+        p_app_account_token: transaction.appAccountToken ?? null,
         p_expires_at: expiresAt,
         p_revoked_at: revokedAt,
+        p_signed_at: new Date(signedDate).toISOString(),
         p_signed_transaction_hash: hash,
       },
     );
