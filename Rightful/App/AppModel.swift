@@ -21,12 +21,14 @@ final class AppModel {
     var dataError: String?
     var isUsingSampleData = true
     var selectedTab = 0
+    var notificationsEnabled = false
 
     let auth: AuthService
     let subscriptions: SubscriptionStore
     let notifications = NotificationService()
 
     private let defaults: UserDefaults
+    private var pendingPushToken: String?
     private var repository: SupabaseRepository {
         SupabaseRepository(client: auth.client)
     }
@@ -38,11 +40,13 @@ final class AppModel {
         onboardingCompleted = defaults.bool(forKey: Keys.onboardingCompleted)
 
         if let data = defaults.data(forKey: Keys.selectedBrands),
-           let values = try? JSONDecoder().decode([UUID].self, from: data) {
+            let values = try? JSONDecoder().decode([UUID].self, from: data)
+        {
             selectedBrandIDs = Set(values)
         }
         if let data = defaults.data(forKey: Keys.claims),
-           let values = try? JSONDecoder.rightful.decode([Claim].self, from: data) {
+            let values = try? JSONDecoder.rightful.decode([Claim].self, from: data)
+        {
             claims = values
         }
     }
@@ -60,6 +64,12 @@ final class AppModel {
 
     var potentialMaximum: Decimal {
         matchedSettlements.reduce(0) { $0 + $1.payoutMax }
+    }
+
+    var waitingMaximum: Decimal {
+        matchedSettlements
+            .filter { claim(for: $0)?.status != .paid }
+            .reduce(0) { $0 + $1.payoutMax }
     }
 
     var filedClaims: [Claim] {
@@ -95,6 +105,7 @@ final class AppModel {
         }
 
         _ = await (authTask, subscriptionTask)
+        await syncProfileIfPossible()
     }
 
     func brand(for settlement: Settlement) -> Brand? {
@@ -116,13 +127,25 @@ final class AppModel {
     func syncProfileIfPossible() async {
         guard auth.userID != nil else { return }
         do {
+            await hydrateRemoteDataIfPossible()
             try await repository.syncSelectedBrands(selectedBrandIDs)
             if let signedTransaction = subscriptions.latestSignedTransaction {
                 try await repository.verifyPurchase(signedTransaction: signedTransaction)
             }
+            if let pendingPushToken {
+                try await syncPushToken(pendingPushToken, userID: auth.userID)
+            }
         } catch {
             dataError = "Your picks are safe on this phone, but cloud sync will retry later."
         }
+    }
+
+    func signOutAndReset() async {
+        await auth.signOut()
+        selectedBrandIDs = []
+        claims = []
+        notificationsEnabled = false
+        onboardingCompleted = false
     }
 
     func markFiled(settlement: Settlement, reference: String?) async {
@@ -171,24 +194,42 @@ final class AppModel {
 
     func enableNotifications() async -> Bool {
         let granted = await notifications.requestPermission()
+        notificationsEnabled = granted
         if granted {
             await notifications.scheduleDeadlineAlerts(for: matchedSettlements)
             notifications.scheduleWeeklyDigest(
-                waitingAmount: potentialMaximum,
+                waitingAmount: waitingMaximum,
                 claimCount: matchedSettlements.count
             )
+            if let userID = auth.userID {
+                try? await repository.setNotificationsEnabled(true, userID: userID)
+            }
         }
         return granted
     }
 
+    func disableNotifications() async {
+        notificationsEnabled = false
+        notifications.disableAll()
+        if let userID = auth.userID {
+            try? await repository.setNotificationsEnabled(false, userID: userID)
+        }
+    }
+
     func registerPushToken(_ token: String) async {
+        pendingPushToken = token
         guard let userID = auth.userID else { return }
+        try? await syncPushToken(token, userID: userID)
+    }
+
+    private func syncPushToken(_ token: String, userID: UUID?) async throws {
+        guard let userID else { return }
         #if DEBUG
-        let environment = "sandbox"
+            let environment = "sandbox"
         #else
-        let environment = "production"
+            let environment = "production"
         #endif
-        try? await repository.syncDeviceToken(
+        try await repository.syncDeviceToken(
             token,
             userID: userID,
             environment: environment
@@ -196,9 +237,14 @@ final class AppModel {
     }
 
     func deleteAccountAndLocalData() async -> Bool {
-        guard await auth.deleteAccount() else { return false }
+        if auth.isAuthenticated {
+            let deleted = await auth.deleteAccount()
+            guard deleted else { return false }
+        }
         selectedBrandIDs = []
         claims = []
+        notificationsEnabled = false
+        notifications.disableAll()
         onboardingCompleted = false
         defaults.removeObject(forKey: Keys.selectedBrands)
         defaults.removeObject(forKey: Keys.claims)
@@ -206,19 +252,43 @@ final class AppModel {
     }
 
     #if DEBUG
-    func resetDemo() {
-        selectedBrandIDs = []
-        claims = []
-        onboardingCompleted = false
-        defaults.removeObject(forKey: Keys.selectedBrands)
-        defaults.removeObject(forKey: Keys.claims)
-        subscriptions.unlockForPreview()
-    }
+        func resetDemo() {
+            selectedBrandIDs = []
+            claims = []
+            onboardingCompleted = false
+            defaults.removeObject(forKey: Keys.selectedBrands)
+            defaults.removeObject(forKey: Keys.claims)
+            subscriptions.unlockForPreview()
+        }
     #endif
 
     private func persistSelections() {
         if let data = try? JSONEncoder().encode(Array(selectedBrandIDs)) {
             defaults.set(data, forKey: Keys.selectedBrands)
+        }
+    }
+
+    private func hydrateRemoteDataIfPossible() async {
+        guard let userID = auth.userID else { return }
+        do {
+            let remote = try await repository.loadUserData(userID: userID)
+            selectedBrandIDs.formUnion(remote.brandIDs)
+            notificationsEnabled = remote.notificationsEnabled
+            if remote.notificationsEnabled {
+                await notifications.resumeRemoteRegistrationIfAuthorized()
+            }
+
+            var mergedBySettlement = Dictionary(
+                uniqueKeysWithValues: claims.map { ($0.settlementID, $0) }
+            )
+            for claim in remote.claims {
+                mergedBySettlement[claim.settlementID] = claim
+            }
+            claims = Array(mergedBySettlement.values).sorted {
+                ($0.filedAt ?? .distantPast) > ($1.filedAt ?? .distantPast)
+            }
+        } catch {
+            dataError = "Your local progress is available, but cloud data couldn’t be refreshed."
         }
     }
 

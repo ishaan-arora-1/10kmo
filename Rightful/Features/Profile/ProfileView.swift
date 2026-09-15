@@ -6,15 +6,17 @@ struct ProfileView: View {
     @State private var showBrands = false
     @State private var showSignIn = false
     @State private var showDeleteConfirmation = false
-    @State private var notificationsEnabled = false
     @State private var legalPage: LegalPage?
 
     var body: some View {
+        @Bindable var app = app
+
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 RightfulNavigationTitle(
                     title: "Profile",
-                    subtitle: app.auth.isAuthenticated ? "Your progress is synced" : "Your progress is stored on this phone"
+                    subtitle: app.auth.isAuthenticated
+                        ? "Your progress is synced" : "Your progress is stored on this phone"
                 )
 
                 if !app.auth.isAuthenticated {
@@ -56,7 +58,8 @@ struct ProfileView: View {
                     settingsButton(
                         icon: "checkmark.seal.fill",
                         title: app.isPremium ? "Rightful Premium" : "Free plan",
-                        detail: app.isPremium ? app.subscriptions.plan.rawValue.capitalized : "Upgrade to file and track"
+                        detail: app.isPremium
+                            ? app.subscriptions.plan.rawValue.capitalized : "Upgrade to file and track"
                     ) {
                         if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
                             openURL(url)
@@ -65,7 +68,7 @@ struct ProfileView: View {
                 }
 
                 SettingsGroup(title: "Alerts") {
-                    Toggle(isOn: $notificationsEnabled) {
+                    Toggle(isOn: $app.notificationsEnabled) {
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Deadline notifications")
                                 .font(RightfulFont.body(15, weight: .medium))
@@ -75,12 +78,14 @@ struct ProfileView: View {
                         }
                     }
                     .tint(RightfulColor.money)
-                    .onChange(of: notificationsEnabled) { _, enabled in
+                    .onChange(of: app.notificationsEnabled) { _, enabled in
                         if enabled {
                             Task {
                                 let granted = await app.enableNotifications()
-                                if !granted { notificationsEnabled = false }
+                                if !granted { app.notificationsEnabled = false }
                             }
+                        } else {
+                            Task { await app.disableNotifications() }
                         }
                     }
                 }
@@ -102,7 +107,7 @@ struct ProfileView: View {
                 SettingsGroup(title: "Account") {
                     if app.auth.isAuthenticated {
                         settingsButton(icon: "rectangle.portrait.and.arrow.right", title: "Sign out") {
-                            Task { await app.auth.signOut() }
+                            Task { await app.signOutAndReset() }
                         }
                         Divider().overlay(RightfulColor.divider)
                     }
@@ -116,12 +121,12 @@ struct ProfileView: View {
                 }
 
                 #if DEBUG
-                Button("Reset sample experience") {
-                    app.resetDemo()
-                }
-                .font(RightfulFont.mono(11))
-                .foregroundStyle(RightfulColor.muted)
-                .frame(maxWidth: .infinity)
+                    Button("Reset sample experience") {
+                        app.resetDemo()
+                    }
+                    .font(RightfulFont.mono(11))
+                    .foregroundStyle(RightfulColor.muted)
+                    .frame(maxWidth: .infinity)
                 #endif
 
                 VStack(spacing: 4) {
@@ -251,12 +256,15 @@ private struct EditBrandsView: View {
                                 .font(RightfulFont.body(15, weight: .medium))
                                 .foregroundStyle(RightfulColor.ink)
                             Spacer()
-                            Image(systemName: app.selectedBrandIDs.contains(brand.id)
-                                  ? "checkmark.circle.fill"
-                                  : "circle")
-                                .foregroundStyle(app.selectedBrandIDs.contains(brand.id)
-                                                 ? RightfulColor.money
-                                                 : RightfulColor.muted)
+                            Image(
+                                systemName: app.selectedBrandIDs.contains(brand.id)
+                                    ? "checkmark.circle.fill"
+                                    : "circle"
+                            )
+                            .foregroundStyle(
+                                app.selectedBrandIDs.contains(brand.id)
+                                    ? RightfulColor.money
+                                    : RightfulColor.muted)
                         }
                     }
                     .buttonStyle(.plain)

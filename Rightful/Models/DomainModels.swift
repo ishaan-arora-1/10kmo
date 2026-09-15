@@ -8,7 +8,7 @@ enum AppConstants {
     static let supportEmail = "support@rightful.app"
 }
 
-enum BrandCategory: String, Codable, CaseIterable, Identifiable {
+enum BrandCategory: String, Codable, CaseIterable, Identifiable, Sendable {
     case all = "All"
     case social = "Social"
     case phone = "Phone"
@@ -20,7 +20,7 @@ enum BrandCategory: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-struct Brand: Identifiable, Codable, Hashable {
+struct Brand: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let name: String
     let category: BrandCategory
@@ -37,13 +37,13 @@ struct Brand: Identifiable, Codable, Hashable {
     }
 }
 
-enum SettlementStatus: String, Codable {
+enum SettlementStatus: String, Codable, Sendable {
     case draft
     case verified
     case closed
 }
 
-struct Settlement: Identifiable, Codable, Hashable {
+struct Settlement: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let title: String
     let company: String
@@ -75,7 +75,7 @@ struct Settlement: Identifiable, Codable, Hashable {
     var isClosingSoon: Bool { daysUntilDeadline <= 21 }
 }
 
-enum ClaimStatus: String, Codable, CaseIterable {
+enum ClaimStatus: String, Codable, CaseIterable, Sendable {
     case needsFiling = "To file"
     case filed = "Filed"
     case approved = "Approved"
@@ -83,7 +83,7 @@ enum ClaimStatus: String, Codable, CaseIterable {
     case paid = "Paid"
 }
 
-struct Claim: Identifiable, Codable, Hashable {
+struct Claim: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let settlementID: UUID
     var status: ClaimStatus
@@ -93,7 +93,7 @@ struct Claim: Identifiable, Codable, Hashable {
     var paidAt: Date?
 }
 
-enum BrowseFilter: String, CaseIterable, Identifiable {
+enum BrowseFilter: String, CaseIterable, Identifiable, Sendable {
     case matches = "Matches me"
     case noProof = "No proof"
     case closingSoon = "Closing soon"
@@ -102,7 +102,7 @@ enum BrowseFilter: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum SubscriptionPlan: String, Codable {
+enum SubscriptionPlan: String, Codable, Sendable {
     case free
     case yearly
     case weekly
@@ -110,7 +110,7 @@ enum SubscriptionPlan: String, Codable {
     var isPremium: Bool { self != .free }
 }
 
-struct MatchSummary {
+struct MatchSummary: Sendable {
     let settlements: [Settlement]
 
     var totalMinimum: Decimal {
@@ -128,9 +128,12 @@ enum MatchingEngine {
         selectedBrandIDs: Set<UUID>,
         stateCode: String? = nil
     ) -> MatchSummary {
+        let today = Calendar.current.startOfDay(for: .now)
         let matches = settlements.filter { settlement in
             guard settlement.status != .closed,
-                  selectedBrandIDs.contains(settlement.brandID) else {
+                settlement.deadline >= today,
+                selectedBrandIDs.contains(settlement.brandID)
+            else {
                 return false
             }
             guard let stateCode, !settlement.eligibleStateCodes.isEmpty else {

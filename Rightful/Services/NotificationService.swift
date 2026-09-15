@@ -18,6 +18,15 @@ final class NotificationService {
         }
     }
 
+    func resumeRemoteRegistrationIfAuthorized() async {
+        let settings = await center.notificationSettings()
+        if settings.authorizationStatus == .authorized
+            || settings.authorizationStatus == .provisional
+        {
+            UIApplication.shared.registerForRemoteNotifications()
+        }
+    }
+
     func scheduleDeadlineAlerts(for settlements: [Settlement]) async {
         let identifiers = settlements.flatMap {
             ["deadline-\($0.id)-7", "deadline-\($0.id)-1"]
@@ -69,12 +78,20 @@ final class NotificationService {
         )
     }
 
+    func disableAll() {
+        center.removeAllPendingNotificationRequests()
+        center.removeAllDeliveredNotifications()
+        UIApplication.shared.unregisterForRemoteNotifications()
+    }
+
     private func scheduleDeadlineAlert(for settlement: Settlement, daysBefore: Int) async {
-        guard let alertDate = Calendar.current.date(
-            byAdding: .day,
-            value: -daysBefore,
-            to: settlement.deadline
-        ), alertDate > .now else {
+        guard
+            let alertDate = Calendar.current.date(
+                byAdding: .day,
+                value: -daysBefore,
+                to: settlement.deadline
+            ), alertDate > .now
+        else {
             return
         }
 

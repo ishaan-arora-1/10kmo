@@ -49,7 +49,7 @@ struct PaywallView: View {
                 VStack(spacing: 10) {
                     PlanOption(
                         title: "Yearly",
-                        detail: "3-day free trial, then \(yearlyPrice)",
+                        detail: yearlyDetail,
                         badge: "BEST VALUE",
                         selected: selectedPlan == .yearly
                     ) {
@@ -74,7 +74,11 @@ struct PaywallView: View {
                 Button {
                     guard let selectedProduct else { return }
                     Task {
-                        if await app.subscriptions.purchase(selectedProduct) {
+                        if await app.subscriptions.purchase(
+                            selectedProduct,
+                            appAccountToken: app.auth.userID
+                        ) {
+                            await app.syncProfileIfPossible()
                             onSubscribed()
                         }
                     }
@@ -83,7 +87,7 @@ struct PaywallView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Text(selectedPlan == .yearly ? "Start my 3-day trial" : "Continue weekly")
+                        Text(purchaseButtonTitle)
                     }
                 }
                 .buttonStyle(PrimaryButtonStyle())
@@ -94,6 +98,7 @@ struct PaywallView: View {
                     Task {
                         await app.subscriptions.restore()
                         if app.isPremium {
+                            await app.syncProfileIfPossible()
                             onSubscribed()
                         }
                     }
@@ -102,7 +107,7 @@ struct PaywallView: View {
                 .foregroundStyle(RightfulColor.muted)
                 .frame(maxWidth: .infinity)
 
-                Text("Payment is charged to your Apple ID after the trial. Subscription renews unless canceled at least 24 hours before renewal.")
+                Text(billingDisclosure)
                     .font(RightfulFont.body(11))
                     .foregroundStyle(RightfulColor.muted)
                     .multilineTextAlignment(.center)
@@ -127,11 +132,42 @@ struct PaywallView: View {
     }
 
     private var yearlyPrice: String {
-        app.subscriptions.product(for: .yearly)?.displayPrice ?? "$39.99/year"
+        if let price = app.subscriptions.product(for: .yearly)?.displayPrice {
+            return "\(price)/year"
+        }
+        return "$39.99/year"
     }
 
     private var weeklyPrice: String {
         "\(app.subscriptions.product(for: .weekly)?.displayPrice ?? "$4.99")/week"
+    }
+
+    private var yearlyDetail: String {
+        app.subscriptions.isEligibleForYearlyTrial
+            ? "3-day free trial, then \(yearlyPrice)"
+            : yearlyPrice
+    }
+
+    private var purchaseButtonTitle: String {
+        if selectedPlan == .weekly {
+            return "Continue weekly"
+        }
+        return app.subscriptions.isEligibleForYearlyTrial
+            ? "Start my 3-day trial"
+            : "Continue yearly"
+    }
+
+    private var billingDisclosure: String {
+        if selectedPlan == .weekly {
+            return
+                "\(weeklyPrice) is charged to your Apple ID today. Subscription renews weekly unless canceled at least 24 hours before renewal."
+        }
+        if app.subscriptions.isEligibleForYearlyTrial {
+            return
+                "No charge today. \(yearlyPrice) is charged after the 3-day trial. Subscription renews yearly unless canceled at least 24 hours before renewal."
+        }
+        return
+            "\(yearlyPrice) is charged to your Apple ID today. Subscription renews yearly unless canceled at least 24 hours before renewal."
     }
 
     private func feature(_ text: String, _ icon: String) -> some View {
@@ -208,33 +244,35 @@ struct SignInView: View {
 
             Spacer()
 
-            SignInWithAppleButton(.continue) { request in
-                app.auth.configureAppleRequest(request)
-            } onCompletion: { result in
-                Task {
-                    if await app.auth.completeAppleSignIn(result) {
-                        onComplete()
+            if !app.auth.isSampleMode {
+                SignInWithAppleButton(.continue) { request in
+                    app.auth.configureAppleRequest(request)
+                } onCompletion: { result in
+                    Task {
+                        if await app.auth.completeAppleSignIn(result) {
+                            onComplete()
+                        }
                     }
                 }
-            }
-            .signInWithAppleButtonStyle(.black)
-            .frame(height: 52)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Button {
-                Task {
-                    if await app.auth.signInWithGoogle() {
-                        onComplete()
+                Button {
+                    Task {
+                        if await app.auth.signInWithGoogle() {
+                            onComplete()
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text("G")
+                            .font(RightfulFont.body(17, weight: .bold))
+                        Text("Continue with Google")
                     }
                 }
-            } label: {
-                HStack {
-                    Text("G")
-                        .font(RightfulFont.body(17, weight: .bold))
-                    Text("Continue with Google")
-                }
+                .buttonStyle(SecondaryButtonStyle())
             }
-            .buttonStyle(SecondaryButtonStyle())
 
             if app.auth.isSampleMode {
                 Button("Continue in sample mode", action: onSkip)

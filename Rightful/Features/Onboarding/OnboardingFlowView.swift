@@ -124,10 +124,12 @@ private struct WelcomeStep: View {
                 .foregroundStyle(RightfulColor.ink)
                 .padding(.bottom, 18)
 
-            Text("Tap the apps you’ve used. We’ll check open settlements and show what you could claim—before asking you to pay.")
-                .font(RightfulFont.body(17))
-                .foregroundStyle(RightfulColor.muted)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(
+                "Tap the apps you’ve used. We’ll check open settlements and show what you could claim—before asking you to pay."
+            )
+            .font(RightfulFont.body(17))
+            .foregroundStyle(RightfulColor.muted)
+            .fixedSize(horizontal: false, vertical: true)
 
             Spacer()
 
@@ -194,7 +196,7 @@ private struct BrandPickerStep: View {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(RightfulColor.muted)
-                TextField("Search 180 apps & companies", text: $searchText)
+                TextField("Search \(app.brands.count) apps & companies", text: $searchText)
                     .font(RightfulFont.body(15))
             }
             .padding(.horizontal, 13)
@@ -305,7 +307,7 @@ private struct ScanStep: View {
                 VStack(spacing: 1) {
                     Text("\(checkedCount)")
                         .font(RightfulFont.display(38))
-                    Text("of 214")
+                    Text("of \(app.settlements.count)")
                         .font(RightfulFont.mono(11))
                         .foregroundStyle(RightfulColor.muted)
                 }
@@ -346,7 +348,7 @@ private struct ScanStep: View {
             for step in 1...24 {
                 try? await Task.sleep(for: .milliseconds(70))
                 progress = Double(step) / 24
-                checkedCount = Int(progress * 214)
+                checkedCount = Int(progress * Double(app.settlements.count))
             }
             try? await Task.sleep(for: .milliseconds(250))
             onComplete()
@@ -365,8 +367,10 @@ private struct ResultsStep: View {
                 Text("Good news")
                     .font(RightfulFont.mono(11, weight: .medium))
                     .foregroundStyle(RightfulColor.money)
-                Text("You may qualify for \(app.matchedSettlements.count) \(app.matchedSettlements.count == 1 ? "settlement" : "settlements")")
-                    .font(RightfulFont.display(34))
+                Text(
+                    "You may qualify for \(app.matchedSettlements.count) \(app.matchedSettlements.count == 1 ? "settlement" : "settlements")"
+                )
+                .font(RightfulFont.display(34))
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
@@ -374,7 +378,11 @@ private struct ResultsStep: View {
                             .font(RightfulFont.mono(10))
                             .foregroundStyle(RightfulColor.muted)
                         Spacer()
-                        SampleBadge()
+                        if !app.matchedSettlements.isEmpty,
+                            app.matchedSettlements.allSatisfy(\.isSample)
+                        {
+                            SampleBadge()
+                        }
                     }
                     Text(app.potentialMaximum.usd)
                         .font(RightfulFont.display(46))
@@ -408,10 +416,14 @@ private struct ResultsStep: View {
                     )
                 }
 
-                Text("Every item shown here is sample data until verified settlements are loaded by an editor.")
+                if app.matchedSettlements.contains(where: \.isSample) {
+                    Text(
+                        "Sample records are labeled and are not live claims. Production records come from human-verified official notices."
+                    )
                     .font(RightfulFont.body(12))
                     .foregroundStyle(RightfulColor.muted)
                     .padding(.vertical, 4)
+                }
 
                 Button("Explore all settlements", action: onExplore)
                     .buttonStyle(SecondaryButtonStyle())

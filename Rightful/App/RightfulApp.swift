@@ -37,7 +37,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFailToRegisterForRemoteNotificationsWithError error: any Error
     ) {
         #if DEBUG
-        print("Remote notification registration failed: \(error.localizedDescription)")
+            print("Remote notification registration failed: \(error.localizedDescription)")
         #endif
     }
 }

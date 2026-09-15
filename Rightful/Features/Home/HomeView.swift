@@ -16,7 +16,8 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 20) {
                 RightfulNavigationTitle(
                     title: "Hi there",
-                    subtitle: app.isUsingSampleData ? "Previewing the product with sample data" : "Here’s what’s waiting for you"
+                    subtitle: app.isUsingSampleData
+                        ? "Previewing the product with sample data" : "Here’s what’s waiting for you"
                 )
 
                 WaitingCard()
@@ -53,6 +54,9 @@ struct HomeView: View {
             .padding(.horizontal, 18)
             .padding(.top, 18)
         }
+        .refreshable {
+            await app.prepare()
+        }
         .navigationDestination(for: Settlement.self) { settlement in
             SettlementDetailView(settlement: settlement)
         }
@@ -78,10 +82,22 @@ private struct WaitingCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("WAITING FOR YOU")
-                .font(RightfulFont.mono(10, weight: .medium))
-                .foregroundStyle(.white.opacity(0.7))
-            Text(app.potentialMaximum.usd)
+            HStack {
+                Text("WAITING FOR YOU")
+                    .font(RightfulFont.mono(10, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.7))
+                Spacer()
+                if app.isUsingSampleData {
+                    Text("SAMPLE")
+                        .font(RightfulFont.mono(9, weight: .bold))
+                        .foregroundStyle(RightfulColor.deadline)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 4)
+                        .background(.white)
+                        .clipShape(Capsule())
+                }
+            }
+            Text(app.waitingMaximum.usd)
                 .font(RightfulFont.display(44))
                 .foregroundStyle(.white)
 
@@ -143,6 +159,9 @@ private struct UrgentClaimCard: View {
                 Text("Closes in \(settlement.daysUntilDeadline) days")
                     .font(RightfulFont.mono(11, weight: .medium))
                     .foregroundStyle(RightfulColor.deadline)
+                if settlement.isSample {
+                    SampleBadge()
+                }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 7) {

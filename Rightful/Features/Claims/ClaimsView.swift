@@ -48,6 +48,9 @@ struct ClaimsView: View {
             .padding(.horizontal, 18)
             .padding(.top, 18)
         }
+        .refreshable {
+            await app.prepare()
+        }
         .sheet(item: $selectedClaim) { claim in
             if let settlement = app.settlement(for: claim) {
                 PaidConfirmationView(claim: claim, settlement: settlement) {
@@ -80,6 +83,9 @@ private struct ClaimCard: View {
                         Text("ID \(reference)")
                             .font(RightfulFont.mono(10))
                             .foregroundStyle(RightfulColor.muted)
+                    }
+                    if settlement.isSample {
+                        SampleBadge()
                     }
                 }
                 Spacer()
@@ -139,8 +145,12 @@ private struct PaidConfirmationView: View {
                 .frame(width: 38, height: 5)
 
             if let paidAmount {
-                PaidShareCard(company: settlement.company, amount: paidAmount)
-                    .frame(height: 235)
+                PaidShareCard(
+                    company: settlement.company,
+                    amount: paidAmount,
+                    isSample: settlement.isSample
+                )
+                .frame(height: 235)
 
                 if let shareImage {
                     ShareLink(
@@ -150,7 +160,10 @@ private struct PaidConfirmationView: View {
                             image: shareImage
                         )
                     ) {
-                        Label("Share the win", systemImage: "square.and.arrow.up")
+                        Label(
+                            settlement.isSample ? "Share product preview" : "Share the win",
+                            systemImage: "square.and.arrow.up"
+                        )
                     }
                     .buttonStyle(PrimaryButtonStyle())
                 }
@@ -162,7 +175,7 @@ private struct PaidConfirmationView: View {
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.system(size: 54))
                     .foregroundStyle(RightfulColor.money)
-                Text("You got paid!")
+                Text(settlement.isSample ? "Sample payout complete" : "You got paid!")
                     .font(RightfulFont.display(34))
                 Text("How much arrived?")
                     .font(RightfulFont.body(16))
@@ -205,8 +218,12 @@ private struct PaidConfirmationView: View {
 
     @MainActor
     private func renderShareCard(amount: Decimal) {
-        let card = PaidShareCard(company: settlement.company, amount: amount)
-            .frame(width: 1080, height: 1080)
+        let card = PaidShareCard(
+            company: settlement.company,
+            amount: amount,
+            isSample: settlement.isSample
+        )
+        .frame(width: 1080, height: 1080)
         let renderer = ImageRenderer(content: card)
         renderer.scale = 1
         if let uiImage = renderer.uiImage {
@@ -218,6 +235,7 @@ private struct PaidConfirmationView: View {
 private struct PaidShareCard: View {
     let company: String
     let amount: Decimal
+    var isSample = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -229,6 +247,11 @@ private struct PaidShareCard: View {
                 Text("PAID")
                     .font(RightfulFont.mono(12, weight: .bold))
                     .foregroundStyle(RightfulColor.money)
+            }
+            if isSample {
+                Text("SAMPLE EXPERIENCE · NOT A REAL PAYOUT")
+                    .font(RightfulFont.mono(10, weight: .bold))
+                    .foregroundStyle(RightfulColor.deadline)
             }
             Spacer()
             Text("I found")

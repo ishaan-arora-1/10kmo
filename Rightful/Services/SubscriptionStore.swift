@@ -9,6 +9,7 @@ final class SubscriptionStore {
     private(set) var plan: SubscriptionPlan = .free
     private(set) var isLoading = false
     private(set) var latestSignedTransaction: String?
+    private(set) var isEligibleForYearlyTrial = false
     var errorMessage: String?
 
     private var updatesTask: Task<Void, Never>?
@@ -31,19 +32,27 @@ final class SubscriptionStore {
             ).sorted { first, second in
                 first.id == AppConstants.yearlyProductID && second.id != AppConstants.yearlyProductID
             }
+            if let yearly = product(for: .yearly) {
+                isEligibleForYearlyTrial =
+                    await yearly.subscription?.isEligibleForIntroOffer ?? false
+            }
             await refreshEntitlements()
         } catch {
             errorMessage = "The App Store couldn’t load subscription options. Please try again."
         }
     }
 
-    func purchase(_ product: Product) async -> Bool {
+    func purchase(_ product: Product, appAccountToken: UUID? = nil) async -> Bool {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
 
         do {
-            let result = try await product.purchase()
+            let options =
+                appAccountToken.map {
+                    [Product.PurchaseOption.appAccountToken($0)]
+                } ?? []
+            let result = try await product.purchase(options: options)
             switch result {
             case .success(let verification):
                 let transaction = try requireVerified(verification)
@@ -83,8 +92,9 @@ final class SubscriptionStore {
 
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
-                  transaction.revocationDate == nil,
-                  transaction.expirationDate.map({ $0 > .now }) ?? true else {
+                transaction.revocationDate == nil,
+                transaction.expirationDate.map({ $0 > .now }) ?? true
+            else {
                 continue
             }
 
@@ -103,16 +113,17 @@ final class SubscriptionStore {
     }
 
     func product(for plan: SubscriptionPlan) -> Product? {
-        let identifier = plan == .yearly
+        let identifier =
+            plan == .yearly
             ? AppConstants.yearlyProductID
             : AppConstants.weeklyProductID
         return products.first { $0.id == identifier }
     }
 
     #if DEBUG
-    func unlockForPreview() {
-        plan = .yearly
-    }
+        func unlockForPreview() {
+            plan = .yearly
+        }
     #endif
 
     private func observeTransactions() -> Task<Void, Never> {

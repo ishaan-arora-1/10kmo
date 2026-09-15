@@ -8,7 +8,8 @@ import Supabase
 enum AppConfiguration {
     static var supabaseURL: URL? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String,
-              !value.isEmpty else {
+            !value.isEmpty
+        else {
             return nil
         }
         return URL(string: value)
@@ -16,7 +17,8 @@ enum AppConfiguration {
 
     static var supabaseKey: String? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_PUBLISHABLE_KEY") as? String,
-              !value.isEmpty else {
+            !value.isEmpty
+        else {
             return nil
         }
         return value
@@ -39,7 +41,8 @@ final class AuthService {
 
     init() {
         if let url = AppConfiguration.supabaseURL,
-           let key = AppConfiguration.supabaseKey {
+            let key = AppConfiguration.supabaseKey
+        {
             client = SupabaseClient(
                 supabaseURL: url,
                 supabaseKey: key,
@@ -50,7 +53,7 @@ final class AuthService {
         }
     }
 
-    var isAuthenticated: Bool { userID != nil }
+    var isAuthenticated: Bool { client != nil && userID != nil }
     var isSampleMode: Bool { client == nil }
 
     func restoreSession() async {
@@ -71,15 +74,16 @@ final class AuthService {
 
     func completeAppleSignIn(_ result: Result<ASAuthorization, any Error>) async -> Bool {
         guard let client else {
-            userID = UUID()
-            return true
+            errorMessage = "Connect Supabase to enable Apple sign-in."
+            return false
         }
 
         guard case .success(let authorization) = result,
-              let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
-              let tokenData = credential.identityToken,
-              let token = String(data: tokenData, encoding: .utf8),
-              let nonce = currentNonce else {
+            let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+            let tokenData = credential.identityToken,
+            let token = String(data: tokenData, encoding: .utf8),
+            let nonce = currentNonce
+        else {
             errorMessage = "Apple sign-in didn’t finish. Please try again."
             return false
         }
@@ -105,8 +109,8 @@ final class AuthService {
 
     func signInWithGoogle() async -> Bool {
         guard let client else {
-            userID = UUID()
-            return true
+            errorMessage = "Connect Supabase to enable Google sign-in."
+            return false
         }
 
         isLoading = true
@@ -165,22 +169,30 @@ final class AuthService {
     }
 }
 
-struct SupabaseRepository {
+struct SupabaseRepository: Sendable {
     let client: SupabaseClient?
+
+    struct UserData: Sendable {
+        let brandIDs: Set<UUID>
+        let claims: [Claim]
+        let notificationsEnabled: Bool
+    }
 
     func loadPublicData() async throws -> (brands: [Brand], settlements: [Settlement]) {
         guard let client else {
             return (SampleData.brands, SampleData.settlements)
         }
 
-        async let brandRows: [BrandRow] = client
+        async let brandRows: [BrandRow] =
+            client
             .from("brands")
             .select()
             .order("name")
             .execute()
             .value
 
-        async let settlementRows: [SettlementRow] = client
+        async let settlementRows: [SettlementRow] =
+            client
             .from("settlements")
             .select()
             .eq("status", value: "verified")
@@ -189,9 +201,10 @@ struct SupabaseRepository {
             .value
 
         let (loadedBrands, loadedSettlements) = try await (brandRows, settlementRows)
+        let today = Calendar.current.startOfDay(for: .now)
         return (
             loadedBrands.map(\.domain),
-            loadedSettlements.compactMap(\.domain)
+            loadedSettlements.compactMap(\.domain).filter { $0.deadline >= today }
         )
     }
 
@@ -214,6 +227,48 @@ struct SupabaseRepository {
                 onConflict: "user_id,settlement_id"
             )
             .execute()
+    }
+
+    func loadUserData(userID: UUID) async throws -> UserData {
+        guard let client else {
+            return UserData(brandIDs: [], claims: [], notificationsEnabled: false)
+        }
+
+        async let brandRows: [ProfileBrandDownloadRow] =
+            client
+            .from("profile_brands")
+            .select("brand_id")
+            .eq("user_id", value: userID)
+            .execute()
+            .value
+
+        async let claimRows: [ClaimDownloadRow] =
+            client
+            .from("claims")
+            .select()
+            .eq("user_id", value: userID)
+            .execute()
+            .value
+
+        async let profileRows: [ProfileDownloadRow] =
+            client
+            .from("profiles")
+            .select("notifications_enabled")
+            .eq("user_id", value: userID)
+            .limit(1)
+            .execute()
+            .value
+
+        let (loadedBrands, loadedClaims, loadedProfiles) = try await (
+            brandRows,
+            claimRows,
+            profileRows
+        )
+        return UserData(
+            brandIDs: Set(loadedBrands.map(\.brandID)),
+            claims: loadedClaims.map(\.domain),
+            notificationsEnabled: loadedProfiles.first?.notificationsEnabled ?? false
+        )
     }
 
     func verifyPurchase(signedTransaction: String) async throws {
@@ -252,13 +307,30 @@ struct SupabaseRepository {
             )
             .execute()
     }
+
+    func setNotificationsEnabled(_ enabled: Bool, userID: UUID) async throws {
+        guard let client else { return }
+        try await client
+            .from("profiles")
+            .update(["notifications_enabled": enabled])
+            .eq("user_id", value: userID)
+            .execute()
+
+        if !enabled {
+            try await client
+                .from("notification_devices")
+                .delete()
+                .eq("user_id", value: userID)
+                .execute()
+        }
+    }
 }
 
 private enum BackendError: Error {
     case purchaseNotVerified
 }
 
-private struct BrandRow: Decodable {
+private struct BrandRow: Decodable, Sendable {
     let id: UUID
     let name: String
     let category: String
@@ -281,7 +353,7 @@ private struct BrandRow: Decodable {
     }
 }
 
-private struct SettlementRow: Decodable {
+private struct SettlementRow: Decodable, Sendable {
     let id: UUID
     let title: String
     let company: String
@@ -336,7 +408,7 @@ private struct SettlementRow: Decodable {
     }
 }
 
-private struct ClaimRow: Encodable {
+private struct ClaimRow: Encodable, Sendable {
     let id: UUID
     let userID: UUID
     let settlementID: UUID
@@ -368,7 +440,54 @@ private struct ClaimRow: Encodable {
     }
 }
 
-private struct DeviceTokenRow: Encodable {
+private struct ProfileBrandDownloadRow: Decodable, Sendable {
+    let brandID: UUID
+
+    enum CodingKeys: String, CodingKey {
+        case brandID = "brand_id"
+    }
+}
+
+private struct ProfileDownloadRow: Decodable, Sendable {
+    let notificationsEnabled: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case notificationsEnabled = "notifications_enabled"
+    }
+}
+
+private struct ClaimDownloadRow: Decodable, Sendable {
+    let id: UUID
+    let settlementID: UUID
+    let status: ClaimStatus
+    let claimReference: String?
+    let filedAt: String?
+    let paidAmount: Decimal?
+    let paidAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, status
+        case settlementID = "settlement_id"
+        case claimReference = "claim_ref"
+        case filedAt = "filed_at"
+        case paidAmount = "paid_amount"
+        case paidAt = "paid_at"
+    }
+
+    var domain: Claim {
+        Claim(
+            id: id,
+            settlementID: settlementID,
+            status: status,
+            claimReference: claimReference,
+            filedAt: decodeTimestamp(filedAt),
+            paidAmount: paidAmount,
+            paidAt: decodeTimestamp(paidAt)
+        )
+    }
+}
+
+private struct DeviceTokenRow: Encodable, Sendable {
     let userID: UUID
     let token: String
     let environment: String
@@ -415,4 +534,11 @@ private extension DateFormatter {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
+}
+
+private func decodeTimestamp(_ value: String?) -> Date? {
+    guard let value else { return nil }
+    let fractional = ISO8601DateFormatter()
+    fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return fractional.date(from: value) ?? ISO8601DateFormatter().date(from: value)
 }

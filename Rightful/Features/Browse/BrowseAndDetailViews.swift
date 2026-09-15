@@ -76,9 +76,10 @@ struct BrowseView: View {
                 ContentUnavailableView {
                     Label("No settlements found", systemImage: "magnifyingglass")
                 } description: {
-                    Text(filter == .matches
-                         ? "Add more companies in Profile to see more matches."
-                         : "Try another search or filter.")
+                    Text(
+                        filter == .matches
+                            ? "Add more companies in Profile to see more matches."
+                            : "Try another search or filter.")
                 }
                 .frame(maxHeight: .infinity)
             } else {
@@ -93,6 +94,9 @@ struct BrowseView: View {
                     }
                     .padding(.horizontal, 18)
                     .padding(.bottom, 24)
+                }
+                .refreshable {
+                    await app.prepare()
                 }
             }
         }
@@ -147,9 +151,11 @@ struct SettlementDetailView: View {
                 if settlement.isSample {
                     HStack(alignment: .top, spacing: 10) {
                         SampleBadge()
-                        Text("This is demonstration content, not a live claim. The filing button opens the FTC refunds hub.")
-                            .font(RightfulFont.body(12))
-                            .foregroundStyle(RightfulColor.muted)
+                        Text(
+                            "This is demonstration content, not a live claim. The filing button opens the FTC refunds hub."
+                        )
+                        .font(RightfulFont.body(12))
+                        .foregroundStyle(RightfulColor.muted)
                     }
                     .padding(12)
                     .background(RightfulColor.deadline.opacity(0.08))
@@ -207,12 +213,14 @@ struct SettlementDetailView: View {
                 .disabled(!isEligible)
                 .opacity(isEligible ? 1 : 0.42)
 
-                Text("Verified settlement administrator link. Rightful is not a law firm and is not affiliated with this company.")
-                    .font(RightfulFont.body(11))
-                    .foregroundStyle(RightfulColor.muted)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, 16)
+                Text(
+                    "Verified settlement administrator link. Rightful is not a law firm and is not affiliated with this company."
+                )
+                .font(RightfulFont.body(11))
+                .foregroundStyle(RightfulColor.muted)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 16)
             }
             .padding(.horizontal, 18)
             .padding(.top, 16)

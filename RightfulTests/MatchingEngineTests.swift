@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Rightful
 
 final class MatchingEngineTests: XCTestCase {
@@ -9,9 +10,10 @@ final class MatchingEngineTests: XCTestCase {
         )
 
         XCTAssertEqual(result.settlements.count, 2)
-        XCTAssertTrue(result.settlements.allSatisfy {
-            [SampleData.facebookID, SampleData.tmobileID].contains($0.brandID)
-        })
+        XCTAssertTrue(
+            result.settlements.allSatisfy {
+                [SampleData.facebookID, SampleData.tmobileID].contains($0.brandID)
+            })
     }
 
     func testPotentialTotalUsesPayoutRanges() {

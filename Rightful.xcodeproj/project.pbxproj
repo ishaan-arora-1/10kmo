@@ -21,12 +21,8 @@
 		6FC78E94581E1384A007DF61 /* HankenGrotesk.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A58FE36617FFFEB0FF6DD27C /* HankenGrotesk.ttf */; };
 		7393D50724AB63B3B07E75FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82E244A714B56B5758C5C010 /* Assets.xcassets */; };
 		8220B7E33FE3863BD799BFC6 /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA4BFEE7709AF3B4CCCB1DA3 /* SupabaseService.swift */; };
-		95A275F773D9624ED2B21898 /* OFL-Hanken.txt in Resources */ = {isa = PBXBuildFile; fileRef = 0067609615A7CB5CFC3D6FB6 /* OFL-Hanken.txt */; };
-		9BE2B62E1C5AF892CEE0EE54 /* OFL-Bricolage.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6740EC527809D056A78543E3 /* OFL-Bricolage.txt */; };
 		A565D68BB9B0125160E6D9ED /* RightfulApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C6C7D5A61F6E7CDEA6956A /* RightfulApp.swift */; };
 		C5D32E391B71F3E201EBA8F2 /* BricolageGrotesque.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 96013581EE93F13E161B74DE /* BricolageGrotesque.ttf */; };
-		CDB4DABB59291B61167754F8 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B61C79970ABC03CBBEE21AB4 /* Products.storekit */; };
-		D9EA6D252C67A1BA28465390 /* OFL-IBMPlex.txt in Resources */ = {isa = PBXBuildFile; fileRef = CC6DF8AA5614085C598EEB6E /* OFL-IBMPlex.txt */; };
 		DBFAA4DFE03683C9743E9830 /* BrowseAndDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0890E309F2B77A6F8A53239 /* BrowseAndDetailViews.swift */; };
 		E5FBC622D7FABE1DA4D3391C /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC06FC3C4EF410474C9904A /* AppModel.swift */; };
 		E7CB46B6B514855A957B7487 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE389F0FD4932606EEBF7066 /* ProfileView.swift */; };
@@ -46,7 +42,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0067609615A7CB5CFC3D6FB6 /* OFL-Hanken.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-Hanken.txt"; sourceTree = "<group>"; };
 		01C6C7D5A61F6E7CDEA6956A /* RightfulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightfulApp.swift; sourceTree = "<group>"; };
 		0901E0697A5EC71689D98FD4 /* Defaults.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Defaults.xcconfig; sourceTree = "<group>"; };
 		11EC09B88A98121C49E72DEE /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -55,7 +50,6 @@
 		3CA5BEDCEDDFF6E55E9A2CC6 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
 		476354293B651DCF358D2FF6 /* SettlementCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettlementCard.swift; sourceTree = "<group>"; };
 		62D61F24E8D423EC504155BB /* AppModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelTests.swift; sourceTree = "<group>"; };
-		6740EC527809D056A78543E3 /* OFL-Bricolage.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-Bricolage.txt"; sourceTree = "<group>"; };
 		7A69A832A9A19265BC4502EC /* PaywallAndAuthViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAndAuthViews.swift; sourceTree = "<group>"; };
 		7EFC443408CFA8E9993A0B5E /* RightfulTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightfulTheme.swift; sourceTree = "<group>"; };
 		82E244A714B56B5758C5C010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -65,10 +59,8 @@
 		A58FE36617FFFEB0FF6DD27C /* HankenGrotesk.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = HankenGrotesk.ttf; sourceTree = "<group>"; };
 		AC64C45B94048121824034F5 /* Rightful.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rightful.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD76ADA3BDE75957E9FE48C3 /* RightfulTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RightfulTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		B61C79970ABC03CBBEE21AB4 /* Products.storekit */ = {isa = PBXFileReference; path = Products.storekit; sourceTree = "<group>"; };
 		BA4BFEE7709AF3B4CCCB1DA3 /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
 		C6907551E873228902445863 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
-		CC6DF8AA5614085C598EEB6E /* OFL-IBMPlex.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-IBMPlex.txt"; sourceTree = "<group>"; };
 		D8A3D2DB839FE9ABAD987DCB /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
 		EAC06FC3C4EF410474C9904A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		EE389F0FD4932606EEBF7066 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -127,9 +119,6 @@
 				96013581EE93F13E161B74DE /* BricolageGrotesque.ttf */,
 				A58FE36617FFFEB0FF6DD27C /* HankenGrotesk.ttf */,
 				376E38A444BF4B8EE4F01719 /* IBMPlexMono-Regular.ttf */,
-				6740EC527809D056A78543E3 /* OFL-Bricolage.txt */,
-				0067609615A7CB5CFC3D6FB6 /* OFL-Hanken.txt */,
-				CC6DF8AA5614085C598EEB6E /* OFL-IBMPlex.txt */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -222,7 +211,6 @@
 			isa = PBXGroup;
 			children = (
 				82E244A714B56B5758C5C010 /* Assets.xcassets */,
-				B61C79970ABC03CBBEE21AB4 /* Products.storekit */,
 				23AD2AA0DB750D721E61E0CD /* Fonts */,
 			);
 			path = Resources;
@@ -350,10 +338,6 @@
 				C5D32E391B71F3E201EBA8F2 /* BricolageGrotesque.ttf in Resources */,
 				6FC78E94581E1384A007DF61 /* HankenGrotesk.ttf in Resources */,
 				F9C0AE3B57DB01DF9D922FC0 /* IBMPlexMono-Regular.ttf in Resources */,
-				9BE2B62E1C5AF892CEE0EE54 /* OFL-Bricolage.txt in Resources */,
-				95A275F773D9624ED2B21898 /* OFL-Hanken.txt in Resources */,
-				D9EA6D252C67A1BA28465390 /* OFL-IBMPlex.txt in Resources */,
-				CDB4DABB59291B61167754F8 /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -511,6 +495,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0901E0697A5EC71689D98FD4 /* Defaults.xcconfig */;
 			buildSettings = {
+				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Config/Rightful.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -531,6 +516,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0901E0697A5EC71689D98FD4 /* Defaults.xcconfig */;
 			buildSettings = {
+				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Config/Rightful.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";

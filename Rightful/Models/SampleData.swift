@@ -22,17 +22,29 @@ enum SampleData {
         Brand(id: instagramID, name: "Instagram", category: .social, aliases: ["Meta"], monogramColorHex: "#D82C74"),
         Brand(id: tiktokID, name: "TikTok", category: .social, aliases: ["ByteDance"], monogramColorHex: "#17211B"),
         Brand(id: amazonID, name: "Amazon", category: .shopping, aliases: ["Prime"], monogramColorHex: "#D97706"),
-        Brand(id: appleID, name: "Apple", category: .shopping, aliases: ["iPhone", "App Store"], monogramColorHex: "#606862"),
+        Brand(
+            id: appleID, name: "Apple", category: .shopping, aliases: ["iPhone", "App Store"],
+            monogramColorHex: "#606862"),
         Brand(id: tmobileID, name: "T-Mobile", category: .phone, aliases: ["TMobile"], monogramColorHex: "#D40073"),
         Brand(id: verizonID, name: "Verizon", category: .phone, aliases: ["Wireless"], monogramColorHex: "#C71920"),
         Brand(id: uberID, name: "Uber", category: .delivery, aliases: ["Uber Eats"], monogramColorHex: "#16231B"),
-        Brand(id: doordashID, name: "DoorDash", category: .delivery, aliases: ["DashPass"], monogramColorHex: "#D74227"),
-        Brand(id: netflixID, name: "Netflix", category: .entertainment, aliases: ["Streaming"], monogramColorHex: "#B91C1C"),
-        Brand(id: spotifyID, name: "Spotify", category: .entertainment, aliases: ["Music"], monogramColorHex: "#168A4B"),
-        Brand(id: capitalOneID, name: "Capital One", category: .finance, aliases: ["Credit card", "Bank"], monogramColorHex: "#176084"),
-        Brand(id: ticketmasterID, name: "Ticketmaster", category: .entertainment, aliases: ["Live Nation", "Tickets"], monogramColorHex: "#2777C5"),
+        Brand(
+            id: doordashID, name: "DoorDash", category: .delivery, aliases: ["DashPass"], monogramColorHex: "#D74227"),
+        Brand(
+            id: netflixID, name: "Netflix", category: .entertainment, aliases: ["Streaming"],
+            monogramColorHex: "#B91C1C"),
+        Brand(
+            id: spotifyID, name: "Spotify", category: .entertainment, aliases: ["Music"], monogramColorHex: "#168A4B"),
+        Brand(
+            id: capitalOneID, name: "Capital One", category: .finance, aliases: ["Credit card", "Bank"],
+            monogramColorHex: "#176084"),
+        Brand(
+            id: ticketmasterID, name: "Ticketmaster", category: .entertainment, aliases: ["Live Nation", "Tickets"],
+            monogramColorHex: "#2777C5"),
         Brand(id: walmartID, name: "Walmart", category: .shopping, aliases: ["Walmart+"], monogramColorHex: "#1F61A6"),
-        Brand(id: airbnbID, name: "Airbnb", category: .shopping, aliases: ["Vacation rental"], monogramColorHex: "#CC4A57"),
+        Brand(
+            id: airbnbID, name: "Airbnb", category: .shopping, aliases: ["Vacation rental"], monogramColorHex: "#CC4A57"
+        ),
     ]
 
     static let settlements: [Settlement] = [
