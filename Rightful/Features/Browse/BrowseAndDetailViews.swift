@@ -61,7 +61,7 @@ struct BrowseView: View {
                     ForEach(BrowseFilter.allCases) { item in
                         Button(item.rawValue) { filter = item }
                             .font(RightfulFont.body(13, weight: .medium))
-                            .foregroundStyle(filter == item ? .white : RightfulColor.muted)
+                            .foregroundStyle(filter == item ? RightfulColor.onInk : RightfulColor.muted)
                             .padding(.horizontal, 13)
                             .padding(.vertical, 8)
                             .background(filter == item ? RightfulColor.ink : RightfulColor.surfaceMuted)

@@ -4,13 +4,20 @@ import UIKit
 enum RightfulColor {
     static let paper = dynamic(light: "#F1F5F0", dark: "#0B120F")
     static let surface = dynamic(light: "#FFFFFF", dark: "#131D18")
-    static let surfaceMuted = dynamic(light: "#E5ECE7", dark: "#1D2A23")
-    static let ink = dynamic(light: "#14291A", dark: "#EEF5F0")
-    static let muted = dynamic(light: "#586B62", dark: "#A9B8B0")
-    static let divider = dynamic(light: "#CFD9D1", dark: "#2C3B33")
-    static let money = dynamic(light: "#0E7A48", dark: "#3FC486")
-    static let deadline = dynamic(light: "#A85B0C", dark: "#F3A65A")
-    static let danger = dynamic(light: "#83261E", dark: "#EB6A4E")
+    static let surfaceMuted = dynamic(light: "#E8EEE8", dark: "#1D2A23")
+    static let ink = dynamic(light: "#14201A", dark: "#E3ECE6")
+    static let muted = dynamic(light: "#5B6B62", dark: "#93A59A")
+    static let divider = dynamic(light: "#D3DDD5", dark: "#26352D")
+    static let money = dynamic(light: "#0E7A4B", dark: "#3FC486")
+    static let deadline = dynamic(light: "#A85B0C", dark: "#E8A04E")
+    static let danger = dynamic(light: "#B3261E", dark: "#F2786F")
+    /// Text placed on an `ink` background (inverts with the theme).
+    static let onInk = dynamic(light: "#F1F5F0", dark: "#0B120F")
+    /// The dark summary card stays dark in both themes.
+    static let heroCard = dynamic(light: "#14201A", dark: "#1A2A21")
+    static let onHero = dynamic(light: "#FFFFFF", dark: "#E3ECE6")
+    /// Text on a `money` green button.
+    static let onMoney = dynamic(light: "#FFFFFF", dark: "#06140D")
 
     private static func dynamic(light: String, dark: String) -> Color {
         Color(
@@ -41,7 +48,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(RightfulFont.body(16, weight: .bold))
-            .foregroundStyle(role == .destructive ? Color.white : Color.white)
+            .foregroundStyle(role == .destructive ? Color.white : RightfulColor.onMoney)
             .frame(maxWidth: .infinity)
             .frame(height: 54)
             .background(role == .destructive ? RightfulColor.danger : RightfulColor.money)

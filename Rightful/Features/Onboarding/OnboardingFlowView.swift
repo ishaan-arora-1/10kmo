@@ -220,7 +220,7 @@ private struct BrandPickerStep: View {
                     ForEach(BrandCategory.allCases) { item in
                         Button(item.rawValue) { category = item }
                             .font(RightfulFont.body(13, weight: .medium))
-                            .foregroundStyle(category == item ? .white : RightfulColor.muted)
+                            .foregroundStyle(category == item ? RightfulColor.onInk : RightfulColor.muted)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 7)
                             .background(category == item ? RightfulColor.ink : RightfulColor.surfaceMuted)

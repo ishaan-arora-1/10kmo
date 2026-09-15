@@ -86,7 +86,7 @@ struct PaywallView: View {
                 } label: {
                     if app.subscriptions.isLoading {
                         ProgressView()
-                            .tint(.white)
+                            .tint(RightfulColor.onMoney)
                     } else {
                         Text(purchaseButtonTitle)
                     }

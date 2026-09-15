@@ -85,7 +85,7 @@ private struct WaitingCard: View {
             HStack {
                 Text("WAITING FOR YOU")
                     .font(RightfulFont.mono(10, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(RightfulColor.onHero.opacity(0.7))
                 Spacer()
                 if app.isUsingSampleData {
                     Text("SAMPLE")
@@ -99,19 +99,19 @@ private struct WaitingCard: View {
             }
             Text(app.waitingMaximum.usd)
                 .font(RightfulFont.display(44))
-                .foregroundStyle(.white)
+                .foregroundStyle(RightfulColor.onHero)
 
             GeometryReader { proxy in
                 let total = max(1, toFileCount + filedCount + paidCount)
                 HStack(spacing: 3) {
                     Capsule()
-                        .fill(Color.white.opacity(0.9))
+                        .fill(RightfulColor.onHero.opacity(0.9))
                         .frame(width: proxy.size.width * CGFloat(toFileCount) / CGFloat(total))
                     Capsule()
                         .fill(RightfulColor.money)
                         .frame(width: proxy.size.width * CGFloat(filedCount) / CGFloat(total))
                     Capsule()
-                        .fill(Color.white.opacity(0.28))
+                        .fill(RightfulColor.onHero.opacity(0.28))
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -126,7 +126,7 @@ private struct WaitingCard: View {
             }
         }
         .padding(18)
-        .background(RightfulColor.ink)
+        .background(RightfulColor.heroCard)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
@@ -138,7 +138,7 @@ private struct WaitingCard: View {
                 .font(RightfulFont.body(11))
                 .opacity(0.68)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(RightfulColor.onHero)
     }
 }
 
@@ -170,7 +170,7 @@ private struct UrgentClaimCard: View {
                     .foregroundStyle(RightfulColor.money)
                 Text("File")
                     .font(RightfulFont.body(12, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(RightfulColor.onInk)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 7)
                     .background(RightfulColor.ink)

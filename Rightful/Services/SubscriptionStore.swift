@@ -57,10 +57,8 @@ final class SubscriptionStore {
         defer { isLoading = false }
 
         do {
-            let options =
-                appAccountToken.map {
-                    [Product.PurchaseOption.appAccountToken($0)]
-                } ?? []
+            let options: Set<Product.PurchaseOption> =
+                appAccountToken.map { [.appAccountToken($0)] } ?? []
             let result = try await product.purchase(options: options)
             switch result {
             case .success(let verification):
