@@ -68,7 +68,46 @@ export type Database = {
       >;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      record_purchase_event: {
+        Args: {
+          p_transaction_id: string;
+          p_user_id: string;
+          p_product_id: string;
+          p_original_transaction_id: string;
+          p_expires_at: string | null;
+          p_revoked_at: string | null;
+          p_signed_transaction_hash: string;
+        };
+        Returns: string;
+      };
+      existing_notification_ids: {
+        Args: { p_ids: string[] };
+        Returns: { id: string }[];
+      };
+      apply_subscription_status: {
+        Args: {
+          p_original_transaction_id: string;
+          p_transaction_id: string;
+          p_product_id: string;
+          p_expires_at: string | null;
+          p_revoked_at: string | null;
+          p_signed_transaction_hash: string;
+          p_plan: "free" | "yearly" | "weekly";
+          p_is_active: boolean;
+        };
+        Returns: string | null;
+      };
+      record_notification_sent: {
+        Args: {
+          p_id: string;
+          p_user_id: string;
+          p_notification_type: string;
+          p_payload: Json;
+        };
+        Returns: undefined;
+      };
+    };
     Enums: {
       settlement_status: "draft" | "verified" | "closed";
       claim_status: "To file" | "Filed" | "Approved" | "Rejected" | "Paid";
@@ -98,6 +137,17 @@ export type Database = {
           expires_at: string | null;
           revoked_at: string | null;
           signed_transaction_hash: string;
+        }
+      >;
+      subscription_owners: Table<
+        {
+          original_transaction_id: string;
+          user_id: string;
+          created_at: string;
+        },
+        {
+          original_transaction_id: string;
+          user_id: string;
         }
       >;
       notification_log: Table<

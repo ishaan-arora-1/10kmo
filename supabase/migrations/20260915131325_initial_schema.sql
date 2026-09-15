@@ -101,6 +101,12 @@ create table private.purchase_events (
   updated_at timestamptz not null default now()
 );
 
+create table private.subscription_owners (
+  original_transaction_id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
 create table private.notification_log (
   id text primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -111,6 +117,184 @@ create table private.notification_log (
 
 create index notification_log_user_sent_idx
   on private.notification_log (user_id, sent_at desc);
+
+grant usage on schema private to service_role;
+grant select, insert, update on private.purchase_events to service_role;
+grant select, insert on private.subscription_owners to service_role;
+grant select, insert on private.notification_log to service_role;
+
+create or replace function public.record_purchase_event(
+  p_transaction_id text,
+  p_user_id uuid,
+  p_product_id text,
+  p_original_transaction_id text,
+  p_expires_at timestamptz,
+  p_revoked_at timestamptz,
+  p_signed_transaction_hash text
+)
+returns uuid
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  owner_id uuid;
+begin
+  insert into private.subscription_owners (
+    original_transaction_id,
+    user_id
+  )
+  values (
+    p_original_transaction_id,
+    p_user_id
+  )
+  on conflict (original_transaction_id) do nothing;
+
+  select user_id
+  into owner_id
+  from private.subscription_owners
+  where original_transaction_id = p_original_transaction_id;
+
+  if owner_id <> p_user_id then
+    return owner_id;
+  end if;
+
+  insert into private.purchase_events (
+    transaction_id,
+    user_id,
+    product_id,
+    original_transaction_id,
+    expires_at,
+    revoked_at,
+    signed_transaction_hash
+  )
+  values (
+    p_transaction_id,
+    p_user_id,
+    p_product_id,
+    p_original_transaction_id,
+    p_expires_at,
+    p_revoked_at,
+    p_signed_transaction_hash
+  )
+  on conflict (transaction_id) do nothing;
+
+  return owner_id;
+end;
+$$;
+
+create or replace function public.existing_notification_ids(p_ids text[])
+returns table (id text)
+language sql
+security invoker
+set search_path = ''
+as $$
+  select notification_log.id
+  from private.notification_log
+  where notification_log.id = any (p_ids);
+$$;
+
+create or replace function public.apply_subscription_status(
+  p_original_transaction_id text,
+  p_transaction_id text,
+  p_product_id text,
+  p_expires_at timestamptz,
+  p_revoked_at timestamptz,
+  p_signed_transaction_hash text,
+  p_plan public.plan_type,
+  p_is_active boolean
+)
+returns uuid
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  owner_id uuid;
+begin
+  select user_id
+  into owner_id
+  from private.subscription_owners
+  where original_transaction_id = p_original_transaction_id;
+
+  if owner_id is null then
+    return null;
+  end if;
+
+  insert into private.purchase_events (
+    transaction_id,
+    user_id,
+    product_id,
+    original_transaction_id,
+    expires_at,
+    revoked_at,
+    signed_transaction_hash
+  )
+  values (
+    p_transaction_id,
+    owner_id,
+    p_product_id,
+    p_original_transaction_id,
+    p_expires_at,
+    p_revoked_at,
+    p_signed_transaction_hash
+  )
+  on conflict (transaction_id) do update set
+    expires_at = excluded.expires_at,
+    revoked_at = excluded.revoked_at,
+    signed_transaction_hash = excluded.signed_transaction_hash;
+
+  update public.profiles
+  set plan = case when p_is_active then p_plan else 'free'::public.plan_type end
+  where user_id = owner_id;
+
+  return owner_id;
+end;
+$$;
+
+create or replace function public.record_notification_sent(
+  p_id text,
+  p_user_id uuid,
+  p_notification_type text,
+  p_payload jsonb
+)
+returns void
+language sql
+security invoker
+set search_path = ''
+as $$
+  insert into private.notification_log (
+    id,
+    user_id,
+    notification_type,
+    payload
+  )
+  values (
+    p_id,
+    p_user_id,
+    p_notification_type,
+    p_payload
+  )
+  on conflict (id) do nothing;
+$$;
+
+revoke all on function public.record_purchase_event(text, uuid, text, text, timestamptz, timestamptz, text)
+  from public, anon, authenticated;
+revoke all on function public.existing_notification_ids(text[])
+  from public, anon, authenticated;
+revoke all on function public.apply_subscription_status(text, text, text, timestamptz, timestamptz, text, public.plan_type, boolean)
+  from public, anon, authenticated;
+revoke all on function public.record_notification_sent(text, uuid, text, jsonb)
+  from public, anon, authenticated;
+
+grant execute on function public.record_purchase_event(text, uuid, text, text, timestamptz, timestamptz, text)
+  to service_role;
+grant execute on function public.existing_notification_ids(text[])
+  to service_role;
+grant execute on function public.apply_subscription_status(text, text, text, timestamptz, timestamptz, text, public.plan_type, boolean)
+  to service_role;
+grant execute on function public.record_notification_sent(text, uuid, text, jsonb)
+  to service_role;
 
 create index settlements_brand_deadline_idx
   on public.settlements (brand_id, deadline)

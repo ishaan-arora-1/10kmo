@@ -175,10 +175,9 @@ export default {
       }
 
       const { data: alreadySent } = await context.supabaseAdmin
-        .schema("private")
-        .from("notification_log")
-        .select("id")
-        .in("id", pushes.map((push) => push.id));
+        .rpc("existing_notification_ids", {
+          p_ids: pushes.map((push) => push.id),
+        });
       const sentIDs = new Set((alreadySent ?? []).map((row) => row.id));
 
       let sent = 0;
@@ -206,13 +205,11 @@ export default {
         if (delivered) {
           sent += 1;
           await context.supabaseAdmin
-            .schema("private")
-            .from("notification_log")
-            .insert({
-              id: push.id,
-              user_id: push.userID,
-              notification_type: push.type,
-              payload: { title: push.title, body: push.body },
+            .rpc("record_notification_sent", {
+              p_id: push.id,
+              p_user_id: push.userID,
+              p_notification_type: push.type,
+              p_payload: { title: push.title, body: push.body },
             });
         }
       }

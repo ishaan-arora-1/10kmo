@@ -420,6 +420,10 @@ verify_jwt = true
 [functions.delete-account]
 verify_jwt = true
 
+[functions.app-store-notifications]
+# Apple authenticates this webhook with a JWS signed payload.
+verify_jwt = false
+
 [functions.notify]
 # Internal scheduler calls this function with the named "automations" secret key.
 verify_jwt = false

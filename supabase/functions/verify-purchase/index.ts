@@ -14,8 +14,8 @@ const validProducts: ReadonlyMap<string, "yearly" | "weekly"> = new Map([
 ]);
 
 const roots = await Promise.all([
-  Deno.readFile(new URL("./AppleRootCA-G2.cer", import.meta.url)),
-  Deno.readFile(new URL("./AppleRootCA-G3.cer", import.meta.url)),
+  Deno.readFile(new URL("../_shared/AppleRootCA-G2.cer", import.meta.url)),
+  Deno.readFile(new URL("../_shared/AppleRootCA-G3.cer", import.meta.url)),
 ]);
 
 type RequestBody = {
@@ -58,6 +58,12 @@ export default {
         { status: 400 },
       );
     }
+    if (transaction.appAccountToken && transaction.appAccountToken !== userID) {
+      return Response.json(
+        { error: "Transaction belongs to a different account" },
+        { status: 409 },
+      );
+    }
 
     const expiresAt = transaction.expiresDate
       ? new Date(transaction.expiresDate).toISOString()
@@ -76,24 +82,16 @@ export default {
     }
 
     const signedTransactionHash = await sha256(body.signedTransaction);
-    const { error: insertError } = await context.supabaseAdmin
-      .schema("private")
-      .from("purchase_events")
-      .upsert(
-        {
-          transaction_id: transactionID,
-          user_id: userID,
-          product_id: productID,
-          original_transaction_id: originalTransactionID,
-          expires_at: expiresAt,
-          revoked_at: revokedAt,
-          signed_transaction_hash: signedTransactionHash,
-        },
-        {
-          onConflict: "transaction_id",
-          ignoreDuplicates: true,
-        },
-      );
+    const { data: ownerID, error: insertError } = await context.supabaseAdmin
+      .rpc("record_purchase_event", {
+        p_transaction_id: transactionID,
+        p_user_id: userID,
+        p_product_id: productID,
+        p_original_transaction_id: originalTransactionID,
+        p_expires_at: expiresAt,
+        p_revoked_at: revokedAt,
+        p_signed_transaction_hash: signedTransactionHash,
+      });
 
     if (insertError) {
       console.error("purchase event insert failed", insertError);
@@ -102,14 +100,7 @@ export default {
       });
     }
 
-    const { data: owner, error: ownerError } = await context.supabaseAdmin
-      .schema("private")
-      .from("purchase_events")
-      .select("user_id")
-      .eq("transaction_id", transactionID)
-      .single();
-
-    if (ownerError || owner?.user_id !== userID) {
+    if (ownerID !== userID) {
       return Response.json(
         { error: "Transaction is already linked to another account" },
         { status: 409 },
@@ -137,10 +128,13 @@ export default {
 };
 
 async function verifyTransaction(signedTransaction: string) {
-  const environments: Environment[] = [
-    Environment.PRODUCTION,
-    Environment.SANDBOX,
-  ];
+  const configuredEnvironment = Deno.env.get("APPLE_TRANSACTION_ENVIRONMENT") ??
+    "production";
+  const environments: Environment[] = configuredEnvironment === "sandbox"
+    ? [Environment.SANDBOX]
+    : configuredEnvironment === "both"
+    ? [Environment.PRODUCTION, Environment.SANDBOX]
+    : [Environment.PRODUCTION];
 
   for (const environment of environments) {
     try {

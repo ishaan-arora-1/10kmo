@@ -68,6 +68,7 @@ Set the production secrets:
 npx supabase secrets set \
   APPLE_BUNDLE_ID=com.rightful.app \
   APPLE_APP_ID=YOUR_NUMERIC_APP_ID \
+  APPLE_TRANSACTION_ENVIRONMENT=production \
   APPLE_APNS_KEY_ID=YOUR_APNS_KEY_ID \
   APPLE_TEAM_ID=YOUR_TEAM_ID \
   APPLE_APNS_PRIVATE_KEY="$(cat AuthKey_YOUR_KEY.p8)"
@@ -78,12 +79,15 @@ Then deploy:
 ```bash
 npx supabase functions deploy verify-purchase
 npx supabase functions deploy delete-account
+npx supabase functions deploy app-store-notifications --no-verify-jwt
 npx supabase functions deploy notify --no-verify-jwt
 ```
 
 Create a named Supabase secret API key called `automations`. Schedule a daily POST to the `notify` function with that key in the `apikey` header.
 
 The notification function uses Apple APNs directly. Production requires an APNs key, the Apple team ID, and device-token registration wiring in the Apple Developer portal.
+
+In App Store Connect, set the Version 2 App Store Server Notifications URL to the deployed `app-store-notifications` function. It verifies Apple’s signed payload before changing subscription state. Use `APPLE_TRANSACTION_ENVIRONMENT=both` only on a staging project that must accept Sandbox transactions.
 
 ## App Store Connect
 
