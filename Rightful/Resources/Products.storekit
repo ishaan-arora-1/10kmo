@@ -1,0 +1,105 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : "https://rightful.app/terms"
+      }
+    ]
+  },
+  "identifier" : "4A42D8D2-7004-4BED-9A2A-RIGHTFUL0001",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      { "enabled" : false, "name" : "Load Products" },
+      { "enabled" : false, "name" : "Purchase" },
+      { "enabled" : false, "name" : "Verification" },
+      { "enabled" : false, "name" : "App Store Sync" },
+      { "enabled" : false, "name" : "Subscription Status" },
+      { "enabled" : false, "name" : "App Transaction" },
+      { "enabled" : false, "name" : "Manage Subscriptions Sheet" },
+      { "enabled" : false, "name" : "Refund Request Sheet" },
+      { "enabled" : false, "name" : "Offer Code Redeem Sheet" }
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "RIGHTFUL_PREMIUM",
+      "localizations" : [
+        {
+          "description" : "File and track eligible settlement claims",
+          "displayName" : "Rightful Premium",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Rightful Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "RIGHTFUL_YEARLY",
+          "introductoryOffer" : {
+            "displayPrice" : "0",
+            "internalID" : "RIGHTFUL_YEARLY_TRIAL",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Three-day free trial, then $39.99 per year",
+              "displayName" : "Rightful Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.rightful.app.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Rightful Yearly",
+          "subscriptionGroupID" : "RIGHTFUL_PREMIUM",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "RIGHTFUL_WEEKLY",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "$4.99 per week",
+              "displayName" : "Rightful Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.rightful.app.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Rightful Weekly",
+          "subscriptionGroupID" : "RIGHTFUL_PREMIUM",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : []
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 5,
+    "minor" : 0
+  }
+}

@@ -1,0 +1,27 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Secrets and local configuration
+Config/Secrets.xcconfig
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.mobileprovision
+
+# Supabase local development
+supabase/.branches/
+supabase/.temp/
+
+# Tooling
+.xcodegen/
