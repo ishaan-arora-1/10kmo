@@ -14,7 +14,7 @@ configs:
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift.git
-    exactVersion: 2.55.1
+    exactVersion: 2.55.2
 
 settings:
   base:

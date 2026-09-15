@@ -80,8 +80,10 @@ struct OnboardingFlowView: View {
                             }
                         },
                         onRemind: {
-                            app.remindTomorrow(for: selectedSettlement)
-                            app.completeOnboarding()
+                            Task {
+                                await app.remindTomorrow(for: selectedSettlement)
+                                app.completeOnboarding()
+                            }
                         }
                     )
                 }

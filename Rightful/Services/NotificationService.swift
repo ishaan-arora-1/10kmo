@@ -27,19 +27,32 @@ final class NotificationService {
         }
     }
 
-    func scheduleDeadlineAlerts(for settlements: [Settlement]) async {
+    func scheduleDeadlineAlerts(for settlements: [Settlement]) async throws {
         let identifiers = settlements.flatMap {
             ["deadline-\($0.id)-7", "deadline-\($0.id)-1"]
         }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
 
         for settlement in settlements where !settlement.isSample {
-            await scheduleDeadlineAlert(for: settlement, daysBefore: 7)
-            await scheduleDeadlineAlert(for: settlement, daysBefore: 1)
+            try await scheduleDeadlineAlert(for: settlement, daysBefore: 7)
+            try await scheduleDeadlineAlert(for: settlement, daysBefore: 1)
         }
     }
 
-    func scheduleFilingReminder(for settlement: Settlement) {
+    func scheduleFilingReminder(for settlement: Settlement) async -> Bool {
+        let settings = await center.notificationSettings()
+        var isAuthorized =
+            settings.authorizationStatus == .authorized
+            || settings.authorizationStatus == .provisional
+
+        if settings.authorizationStatus == .notDetermined {
+            isAuthorized = await requestPermission()
+        }
+
+        guard isAuthorized else {
+            return false
+        }
+
         let content = UNMutableNotificationContent()
         content.title = "Did you finish your \(settlement.company) claim?"
         content.body = "Mark it filed so Rightful can keep the claim on track."
@@ -49,16 +62,21 @@ final class NotificationService {
             timeInterval: 24 * 60 * 60,
             repeats: false
         )
-        center.add(
-            UNNotificationRequest(
-                identifier: "filing-\(settlement.id)",
-                content: content,
-                trigger: trigger
+        do {
+            try await center.add(
+                UNNotificationRequest(
+                    identifier: "filing-\(settlement.id)",
+                    content: content,
+                    trigger: trigger
+                )
             )
-        )
+            return true
+        } catch {
+            return false
+        }
     }
 
-    func scheduleWeeklyDigest(waitingAmount: Decimal, claimCount: Int) {
+    func scheduleWeeklyDigest(waitingAmount: Decimal, claimCount: Int) async throws {
         let content = UNMutableNotificationContent()
         content.title = "\(waitingAmount.usd) may still be waiting"
         content.body = "Review your \(claimCount) open \(claimCount == 1 ? "claim" : "claims") this week."
@@ -69,7 +87,7 @@ final class NotificationService {
         date.hour = 10
         let trigger = UNCalendarNotificationTrigger(dateMatching: date, repeats: true)
 
-        center.add(
+        try await center.add(
             UNNotificationRequest(
                 identifier: "weekly-digest",
                 content: content,
@@ -84,7 +102,7 @@ final class NotificationService {
         UIApplication.shared.unregisterForRemoteNotifications()
     }
 
-    private func scheduleDeadlineAlert(for settlement: Settlement, daysBefore: Int) async {
+    private func scheduleDeadlineAlert(for settlement: Settlement, daysBefore: Int) async throws {
         guard
             let alertDate = Calendar.current.date(
                 byAdding: .day,
@@ -105,11 +123,12 @@ final class NotificationService {
             from: alertDate
         )
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-        let request = UNNotificationRequest(
-            identifier: "deadline-\(settlement.id)-\(daysBefore)",
-            content: content,
-            trigger: trigger
+        try await center.add(
+            UNNotificationRequest(
+                identifier: "deadline-\(settlement.id)-\(daysBefore)",
+                content: content,
+                trigger: trigger
+            )
         )
-        try? await center.add(request)
     }
 }

@@ -2,7 +2,6 @@ import XCTest
 
 @testable import Rightful
 
-@MainActor
 final class AppModelTests: XCTestCase {
     private var defaults: UserDefaults!
 
@@ -18,6 +17,7 @@ final class AppModelTests: XCTestCase {
         super.tearDown()
     }
 
+    @MainActor
     func testFilingAndPaymentFlowPersistsClaim() async throws {
         let app = AppModel(defaults: defaults)
         let settlement = try XCTUnwrap(SampleData.settlements.first)
@@ -33,6 +33,7 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(paid.paidAmount, 42)
     }
 
+    @MainActor
     func testSelectedBrandsSurviveRelaunch() {
         var first: AppModel? = AppModel(defaults: defaults)
         first?.selectedBrandIDs = [SampleData.facebookID, SampleData.amazonID]

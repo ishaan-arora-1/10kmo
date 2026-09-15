@@ -193,19 +193,26 @@ final class AppModel {
         }
     }
 
-    func remindTomorrow(for settlement: Settlement) {
-        notifications.scheduleFilingReminder(for: settlement)
+    func remindTomorrow(for settlement: Settlement) async {
+        guard await notifications.scheduleFilingReminder(for: settlement) else {
+            dataError = "Allow notifications in Settings to receive a filing reminder."
+            return
+        }
     }
 
     func enableNotifications() async -> Bool {
         let granted = await notifications.requestPermission()
         notificationsEnabled = granted
         if granted {
-            await notifications.scheduleDeadlineAlerts(for: matchedSettlements)
-            notifications.scheduleWeeklyDigest(
-                waitingAmount: waitingMaximum,
-                claimCount: matchedSettlements.count
-            )
+            do {
+                try await notifications.scheduleDeadlineAlerts(for: matchedSettlements)
+                try await notifications.scheduleWeeklyDigest(
+                    waitingAmount: waitingMaximum,
+                    claimCount: matchedSettlements.count
+                )
+            } catch {
+                dataError = "Notifications are allowed, but reminders couldn’t be scheduled."
+            }
             if let userID = auth.userID {
                 try? await repository.setNotificationsEnabled(true, userID: userID)
             }

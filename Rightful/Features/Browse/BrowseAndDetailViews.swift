@@ -117,6 +117,7 @@ struct SettlementDetailView: View {
     @State private var showSafari = false
     @State private var showConfirmation = false
     @State private var showPaywall = false
+    @State private var showSignIn = false
     @State private var claimReference = ""
 
     init(settlement: Settlement, onFiledExternally: (() -> Void)? = nil) {
@@ -232,7 +233,23 @@ struct SettlementDetailView: View {
                 onClose: { showPaywall = false },
                 onSubscribed: {
                     showPaywall = false
-                    showSafari = true
+                    if app.auth.isAuthenticated || app.auth.isSampleMode {
+                        showSafari = true
+                    } else {
+                        showSignIn = true
+                    }
+                }
+            )
+        }
+        .sheet(isPresented: $showSignIn) {
+            SignInView(
+                onSkip: { showSignIn = false },
+                onComplete: {
+                    Task {
+                        await app.syncProfileIfPossible()
+                        showSignIn = false
+                        showSafari = true
+                    }
                 }
             )
         }
@@ -252,8 +269,10 @@ struct SettlementDetailView: View {
                     }
                 },
                 onRemind: {
-                    app.remindTomorrow(for: settlement)
-                    showConfirmation = false
+                    Task {
+                        await app.remindTomorrow(for: settlement)
+                        showConfirmation = false
+                    }
                 }
             )
             .presentationDetents([.medium, .large])
