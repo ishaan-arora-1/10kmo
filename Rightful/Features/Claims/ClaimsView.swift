@@ -145,12 +145,19 @@ private struct PaidConfirmationView: View {
                 .frame(width: 38, height: 5)
 
             if let paidAmount {
-                PaidShareCard(
+                Text(settlement.isSample ? "Sample payout" : "You got paid")
+                    .font(RightfulFont.display(32))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("\(settlement.company) · \(settlement.title)")
+                    .font(RightfulFont.body(15))
+                    .foregroundStyle(RightfulColor.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                PaidCheck(
                     company: settlement.company,
                     amount: paidAmount,
                     isSample: settlement.isSample
                 )
-                .frame(height: 235)
+                .padding(.vertical, 8)
 
                 if let shareImage {
                     ShareLink(
@@ -218,61 +225,61 @@ private struct PaidConfirmationView: View {
 
     @MainActor
     private func renderShareCard(amount: Decimal) {
-        let card = PaidShareCard(
+        let card = PaidShareImage(
             company: settlement.company,
             amount: amount,
             isSample: settlement.isSample
         )
-        .frame(width: 1080, height: 1080)
         let renderer = ImageRenderer(content: card)
-        renderer.scale = 1
+        renderer.scale = 3
         if let uiImage = renderer.uiImage {
             shareImage = Image(uiImage: uiImage)
         }
     }
 }
 
-private struct PaidShareCard: View {
+private struct PaidCheck: View {
     let company: String
     let amount: Decimal
     var isSample = false
 
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
+        MoneyCheck(
+            number: "0001",
+            payee: "Me",
+            amountLabel: "Amount",
+            amount: amount,
+            memo: "\(company) settlement",
+            footer: isSample ? "SAMPLE · NOT A REAL PAYOUT" : "‖ FIND YOURS ‖ RIGHTFUL APP",
+            stamped: true
+        )
+    }
+}
+
+/// 1080×1260 image (rendered at 3×) for sharing to Stories and Messages.
+private struct PaidShareImage: View {
+    let company: String
+    let amount: Decimal
+    var isSample = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
                 BrandSeal()
                 Text(AppConstants.name)
-                    .font(RightfulFont.mono(13, weight: .bold))
-                Spacer()
-                Text("PAID")
-                    .font(RightfulFont.mono(12, weight: .bold))
-                    .foregroundStyle(RightfulColor.money)
+                    .font(RightfulFont.mono(12, weight: .medium))
+                    .foregroundStyle(RightfulColor.muted)
             }
-            if isSample {
-                Text("SAMPLE EXPERIENCE · NOT A REAL PAYOUT")
-                    .font(RightfulFont.mono(10, weight: .bold))
-                    .foregroundStyle(RightfulColor.deadline)
-            }
-            Spacer()
-            Text("I found")
-                .font(RightfulFont.body(20))
-                .foregroundStyle(RightfulColor.muted)
-            Text(amount.usd)
-                .font(RightfulFont.display(56))
-                .foregroundStyle(RightfulColor.money)
-            Text("that was rightfully mine.")
-                .font(RightfulFont.display(25))
-            Spacer()
-            Text("\(company) settlement · amounts vary")
-                .font(RightfulFont.mono(10))
-                .foregroundStyle(RightfulColor.muted)
+            Text("I got \(amount.usd) from a settlement I didn’t know I was owed.")
+                .font(RightfulFont.display(22))
+                .foregroundStyle(RightfulColor.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            PaidCheck(company: company, amount: amount, isSample: isSample)
+            Spacer(minLength: 0)
         }
-        .padding(22)
-        .background(RightfulColor.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(RightfulColor.money.opacity(0.45))
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .padding(24)
+        .frame(width: 360, height: 420)
+        .background(RightfulColor.paper)
     }
 }

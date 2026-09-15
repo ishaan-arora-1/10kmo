@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(AppModel.self) private var app
+    @State private var showStates = false
 
     private var nextToFile: [Settlement] {
         app.matchedSettlements.filter { app.claim(for: $0) == nil }
@@ -42,8 +43,12 @@ struct HomeView: View {
                     }
                 }
 
-                FindMoreCard {
-                    app.selectedTab = 1
+                FindMoreCard(needsStates: app.selectedStateCodes.isEmpty) {
+                    if app.selectedStateCodes.isEmpty {
+                        showStates = true
+                    } else {
+                        app.selectedTab = 1
+                    }
                 }
 
                 Text("Rightful is not a law firm and is not affiliated with settlement administrators.")
@@ -59,6 +64,9 @@ struct HomeView: View {
         }
         .navigationDestination(for: Settlement.self) { settlement in
             SettlementDetailView(settlement: settlement)
+        }
+        .sheet(isPresented: $showStates) {
+            EditStatesView()
         }
         .navigationBarHidden(true)
         .rightfulScreen()
@@ -188,6 +196,7 @@ private struct UrgentClaimCard: View {
 }
 
 private struct FindMoreCard: View {
+    let needsStates: Bool
     let action: () -> Void
 
     var body: some View {
@@ -196,7 +205,11 @@ private struct FindMoreCard: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Find more money")
                         .font(RightfulFont.body(16, weight: .bold))
-                    Text("Browse open settlements and add companies you’ve used.")
+                    Text(
+                        needsStates
+                            ? "Add the states you’ve lived in to check state-only settlements."
+                            : "Browse open settlements and add companies you’ve used."
+                    )
                         .font(RightfulFont.body(13))
                         .foregroundStyle(RightfulColor.muted)
                         .multilineTextAlignment(.leading)

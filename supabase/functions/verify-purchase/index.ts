@@ -60,7 +60,12 @@ export default {
         { status: 400 },
       );
     }
-    if (transaction.appAccountToken !== userID) {
+    // Purchases made before sign-in carry no account token. The first account that
+    // verifies one becomes its owner (enforced in record_purchase_event).
+    if (
+      transaction.appAccountToken &&
+      transaction.appAccountToken.toLowerCase() !== userID.toLowerCase()
+    ) {
       return Response.json(
         { error: "Transaction is not bound to this account" },
         { status: 409 },

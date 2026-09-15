@@ -15,7 +15,8 @@ struct BrowseView: View {
 
         switch filter {
         case .matches:
-            values = values.filter { app.selectedBrandIDs.contains($0.brandID) }
+            let matchedIDs = Set(app.matchedSettlements.map(\.id))
+            values = values.filter { matchedIDs.contains($0.id) }
         case .noProof:
             values = values.filter { !$0.proofRequired }
         case .closingSoon:
@@ -117,7 +118,7 @@ struct SettlementDetailView: View {
     @State private var showSafari = false
     @State private var showConfirmation = false
     @State private var showPaywall = false
-    @State private var showSignIn = false
+    @State private var openOfficialSiteAfterPaywall = false
     @State private var claimReference = ""
 
     init(settlement: Settlement, onFiledExternally: (() -> Void)? = nil) {
@@ -228,28 +229,21 @@ struct SettlementDetailView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showPaywall) {
+        .sheet(
+            isPresented: $showPaywall,
+            onDismiss: {
+                // Present the official site only after the paywall sheet has fully closed.
+                if openOfficialSiteAfterPaywall {
+                    openOfficialSiteAfterPaywall = false
+                    showSafari = true
+                }
+            }
+        ) {
             PaywallView(
                 onClose: { showPaywall = false },
                 onSubscribed: {
+                    openOfficialSiteAfterPaywall = true
                     showPaywall = false
-                    if app.auth.isAuthenticated || app.auth.isSampleMode {
-                        showSafari = true
-                    } else {
-                        showSignIn = true
-                    }
-                }
-            )
-        }
-        .sheet(isPresented: $showSignIn) {
-            SignInView(
-                onSkip: { showSignIn = false },
-                onComplete: {
-                    Task {
-                        await app.syncProfileIfPossible()
-                        showSignIn = false
-                        showSafari = true
-                    }
                 }
             )
         }

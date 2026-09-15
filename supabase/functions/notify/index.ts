@@ -15,7 +15,7 @@ type Device = {
   environment: "sandbox" | "production";
 };
 
-type Profile = { user_id: string };
+type Profile = { user_id: string; state_codes: string[] | null };
 type BrandPick = { user_id: string; brand_id: string };
 
 type Settlement = {
@@ -23,6 +23,7 @@ type Settlement = {
   company: string;
   title: string;
   brand_id: string;
+  eligible_state_codes: string[] | null;
   payout_min: number;
   payout_max: number;
   deadline: string;
@@ -96,7 +97,7 @@ export default {
           fetchPages<Profile>(async (from, to) => {
             const result = await context.supabaseAdmin
               .from("profiles")
-              .select("user_id")
+              .select("user_id,state_codes")
               .eq("notifications_enabled", true)
               .order("user_id")
               .range(from, to);
@@ -121,7 +122,7 @@ export default {
             const result = await context.supabaseAdmin
               .from("settlements")
               .select(
-                "id,company,title,brand_id,payout_min,payout_max,deadline,payout_window_start,published_at",
+                "id,company,title,brand_id,eligible_state_codes,payout_min,payout_max,deadline,payout_window_start,published_at",
               )
               .eq("status", "verified")
               .eq("is_sample", false)
@@ -161,12 +162,15 @@ export default {
       );
       const pushes: PendingPush[] = [];
 
-      for (const { user_id: userID } of profiles) {
+      for (const profile of profiles) {
+        const userID = profile.user_id;
+        const stateCodes = new Set(profile.state_codes ?? []);
         const brandIDs = brandsByUser.get(userID) ?? new Set<string>();
         const filedIDs = filedByUser.get(userID) ?? new Set<string>();
         const payoutIDs = payoutByUser.get(userID) ?? new Set<string>();
         const brandMatches = settlements.filter((settlement) =>
-          brandIDs.has(settlement.brand_id)
+          brandIDs.has(settlement.brand_id) &&
+          matchesStates(settlement.eligible_state_codes, stateCodes)
         );
         const openMatches = brandMatches.filter((settlement) =>
           settlement.deadline >= today
@@ -473,6 +477,14 @@ function requiredEnvironment(name: string): string {
   const value = Deno.env.get(name);
   if (!value) throw new Error(`Missing ${name}`);
   return value;
+}
+
+function matchesStates(
+  eligible: string[] | null,
+  userStates: Set<string>,
+): boolean {
+  if (!eligible || eligible.length === 0) return true;
+  return eligible.some((code) => userStates.has(code.toUpperCase()));
 }
 
 function utcDateString(date: Date): string {

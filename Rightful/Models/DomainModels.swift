@@ -14,8 +14,13 @@ enum BrandCategory: String, Codable, CaseIterable, Identifiable, Sendable {
     case phone = "Phone"
     case shopping = "Shopping"
     case delivery = "Delivery"
+    case food = "Food"
     case entertainment = "Entertainment"
     case finance = "Finance"
+    case tech = "Tech"
+    case travel = "Travel"
+    case health = "Health"
+    case auto = "Auto"
 
     var id: String { rawValue }
 }
@@ -127,9 +132,10 @@ enum MatchingEngine {
     static func matches(
         settlements: [Settlement],
         selectedBrandIDs: Set<UUID>,
-        stateCode: String? = nil
+        stateCodes: Set<String> = []
     ) -> MatchSummary {
         let today = Calendar.current.startOfDay(for: .now)
+        let states = Set(stateCodes.map { $0.uppercased() })
         let matches = settlements.filter { settlement in
             guard settlement.status != .closed,
                 settlement.deadline >= today,
@@ -137,13 +143,29 @@ enum MatchingEngine {
             else {
                 return false
             }
-            guard let stateCode, !settlement.eligibleStateCodes.isEmpty else {
-                return true
-            }
-            return settlement.eligibleStateCodes.contains(stateCode.uppercased())
+            // State-limited settlements only count once the user has said where they've lived,
+            // so totals are never inflated by settlements they can't claim.
+            guard !settlement.eligibleStateCodes.isEmpty else { return true }
+            return !states.isDisjoint(with: settlement.eligibleStateCodes.map { $0.uppercased() })
         }
         return MatchSummary(settlements: matches)
     }
+}
+
+enum USStates {
+    static let all: [(code: String, name: String)] = [
+        ("AL", "Alabama"), ("AK", "Alaska"), ("AZ", "Arizona"), ("AR", "Arkansas"), ("CA", "California"),
+        ("CO", "Colorado"), ("CT", "Connecticut"), ("DE", "Delaware"), ("DC", "District of Columbia"),
+        ("FL", "Florida"), ("GA", "Georgia"), ("HI", "Hawaii"), ("ID", "Idaho"), ("IL", "Illinois"),
+        ("IN", "Indiana"), ("IA", "Iowa"), ("KS", "Kansas"), ("KY", "Kentucky"), ("LA", "Louisiana"),
+        ("ME", "Maine"), ("MD", "Maryland"), ("MA", "Massachusetts"), ("MI", "Michigan"), ("MN", "Minnesota"),
+        ("MS", "Mississippi"), ("MO", "Missouri"), ("MT", "Montana"), ("NE", "Nebraska"), ("NV", "Nevada"),
+        ("NH", "New Hampshire"), ("NJ", "New Jersey"), ("NM", "New Mexico"), ("NY", "New York"),
+        ("NC", "North Carolina"), ("ND", "North Dakota"), ("OH", "Ohio"), ("OK", "Oklahoma"), ("OR", "Oregon"),
+        ("PA", "Pennsylvania"), ("RI", "Rhode Island"), ("SC", "South Carolina"), ("SD", "South Dakota"),
+        ("TN", "Tennessee"), ("TX", "Texas"), ("UT", "Utah"), ("VT", "Vermont"), ("VA", "Virginia"),
+        ("WA", "Washington"), ("WV", "West Virginia"), ("WI", "Wisconsin"), ("WY", "Wyoming"),
+    ]
 }
 
 extension Decimal {

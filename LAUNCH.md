@@ -2,7 +2,7 @@
 
 Do these in order. Each step says where to click and what to copy. Keep a private note with every value marked **SAVE**. Never commit those values to git.
 
-Status: code fixes from the review are still in progress (paywall flow, pay-before-sign-in, onboarding reminders, check designs, state filter). None of the steps below are blocked by them, so start now. Re-run step 5.6 (deploy functions) after those fixes land.
+Status: all planned app code is in. `db push` also loads a ~230-company catalog and adds the `state_codes` column. If you already ran step 5 before pulling, run `npx supabase db push` again and re-run the function deploys in step 5.6.
 
 ---
 
@@ -125,8 +125,9 @@ The app shows only what's in the `settlements` table with `status = verified`. B
 
 1. Add ~40 **currently open** settlements from official administrator sites. Claude can draft these as SQL from official notices; **you** must check each one against the notice.
 2. Each needs: company brand, payout range, deadline, proof required, a plain-English "who qualifies" summary, 2 eligibility checkboxes, `claim_url` (official site), `official_notice_url`, and `source_checked_at` (the database refuses to publish without these).
-3. Add more companies to `brands` (target ~180) so the picker feels complete.
-4. Re-check weekly: close expired settlements and add new ones.
+3. The company picker already has ~230 brands from the `brand_catalog` migration. Add a brand row whenever a new settlement names a company that isn't listed.
+4. If a settlement only covers certain states, fill `eligible_state_codes` (for example `{CA,IL}`). Only users who picked one of those states will match or be notified.
+5. Re-check weekly: close expired settlements and add new ones.
 
 ## 8. Website
 

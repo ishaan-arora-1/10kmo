@@ -69,7 +69,7 @@ Set the production secrets:
 npx supabase secrets set \
   APPLE_BUNDLE_ID=com.rightful.app \
   APPLE_APP_ID=YOUR_NUMERIC_APP_ID \
-  APPLE_TRANSACTION_ENVIRONMENT=production \
+  APPLE_TRANSACTION_ENVIRONMENT=both \
   APPLE_APNS_KEY_ID=YOUR_APNS_KEY_ID \
   APPLE_TEAM_ID=YOUR_TEAM_ID \
   APPLE_APNS_PRIVATE_KEY="$(cat AuthKey_YOUR_KEY.p8)"
@@ -92,7 +92,7 @@ Create a named Supabase secret API key called `automations`. Schedule a daily PO
 
 The notification function uses Apple APNs directly. Production requires an APNs key, the Apple team ID, and device-token registration wiring in the Apple Developer portal.
 
-In App Store Connect, set the Version 2 App Store Server Notifications URL to the deployed `app-store-notifications` function. It verifies Apple’s signed payload before changing subscription state. Use `APPLE_TRANSACTION_ENVIRONMENT=both` only on a staging project that must accept Sandbox transactions.
+In App Store Connect, set the Version 2 App Store Server Notifications URL to the deployed `app-store-notifications` function. It verifies Apple’s signed payload before changing subscription state. Keep `APPLE_TRANSACTION_ENVIRONMENT=both` in production: App Review purchases with Sandbox accounts, and rejecting those transactions would break review. Sandbox purchases only affect the server-side plan used for notifications.
 
 ## App Store Connect
 

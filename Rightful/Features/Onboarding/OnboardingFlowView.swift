@@ -3,97 +3,70 @@ import SwiftUI
 struct OnboardingFlowView: View {
     @Environment(AppModel.self) private var app
     @State private var stage: Stage = .welcome
-    @State private var selectedSettlement: Settlement?
-    @State private var claimReference = ""
 
     var body: some View {
         ZStack {
             switch stage {
             case .welcome:
-                WelcomeStep {
-                    withAnimation(.snappy) { stage = .brands }
-                }
+                WelcomeStep { go(.brands) }
             case .brands:
-                BrandPickerStep {
-                    withAnimation(.snappy) { stage = .scanning }
-                }
+                BrandPickerStep { go(.scanning) }
             case .scanning:
-                ScanStep {
-                    withAnimation(.snappy) { stage = .results }
-                }
+                ScanStep { go(.results) }
             case .results:
                 ResultsStep(
-                    onSelect: { settlement in
-                        selectedSettlement = settlement
-                        withAnimation(.snappy) {
-                            stage = app.isPremium
-                                ? (app.auth.isAuthenticated || app.auth.isSampleMode
-                                    ? .detail : .signIn)
-                                : .paywall
-                        }
-                    },
-                    onExplore: app.completeOnboarding
+                    onStartClaiming: startClaiming,
+                    onPickMore: { go(.brands) },
+                    onContinue: app.completeOnboarding
                 )
             case .paywall:
                 PaywallView(
-                    onClose: { withAnimation(.snappy) { stage = .results } },
-                    onSubscribed: { withAnimation(.snappy) { stage = .detail } }
+                    onClose: app.completeOnboarding,
+                    onSubscribed: afterSubscribing
                 )
             case .signIn:
                 SignInView(
-                    onSkip: { withAnimation(.snappy) { stage = .detail } },
+                    onSkip: { go(.reminders) },
                     onComplete: {
                         Task { await app.syncProfileIfPossible() }
-                        withAnimation(.snappy) { stage = .detail }
+                        go(.reminders)
                     }
                 )
-            case .detail:
-                if let selectedSettlement {
-                    NavigationStack {
-                        SettlementDetailView(
-                            settlement: selectedSettlement,
-                            onFiledExternally: {
-                                withAnimation(.snappy) { stage = .confirmation }
-                            }
-                        )
-                        .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button {
-                                    withAnimation(.snappy) { stage = .results }
-                                } label: {
-                                    Image(systemName: "chevron.left")
-                                }
-                            }
+            case .reminders:
+                RemindersStep(
+                    onEnable: {
+                        Task {
+                            _ = await app.enableNotifications()
+                            app.completeOnboarding()
                         }
-                    }
-                }
-            case .confirmation:
-                if let selectedSettlement {
-                    SubmissionConfirmationView(
-                        settlement: selectedSettlement,
-                        reference: $claimReference,
-                        onFiled: {
-                            Task {
-                                await app.markFiled(
-                                    settlement: selectedSettlement,
-                                    reference: claimReference
-                                )
-                                app.completeOnboarding()
-                                app.selectedTab = 2
-                            }
-                        },
-                        onRemind: {
-                            Task {
-                                await app.remindTomorrow(for: selectedSettlement)
-                                app.completeOnboarding()
-                            }
-                        }
-                    )
-                }
+                    },
+                    onSkip: app.completeOnboarding
+                )
             }
         }
         .transition(.opacity.combined(with: .move(edge: .trailing)))
         .rightfulScreen()
+    }
+
+    private func go(_ next: Stage) {
+        withAnimation(.snappy) { stage = next }
+    }
+
+    private func startClaiming() {
+        if app.isPremium {
+            afterSubscribing()
+        } else {
+            go(.paywall)
+        }
+    }
+
+    /// Sign-in is offered after paying, never required to pay.
+    private func afterSubscribing() {
+        if app.auth.isAuthenticated || app.auth.isSampleMode {
+            go(.reminders)
+        } else {
+            go(.signIn)
+        }
     }
 
     private enum Stage {
@@ -103,8 +76,7 @@ struct OnboardingFlowView: View {
         case results
         case paywall
         case signIn
-        case detail
-        case confirmation
+        case reminders
     }
 }
 
@@ -245,15 +217,18 @@ private struct BrandPickerStep: View {
                                 app.selectedBrandIDs.insert(brand.id)
                             }
                         } label: {
-                            VStack(spacing: 8) {
-                                BrandMonogram(brand: brand, fallbackName: brand.name, size: 42)
+                            VStack(spacing: 7) {
+                                BrandMonogram(brand: brand, fallbackName: brand.name, size: 40)
                                 Text(brand.name)
                                     .font(RightfulFont.body(12, weight: .medium))
-                                    .lineLimit(1)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.85)
+                                    .multilineTextAlignment(.center)
                                     .foregroundStyle(RightfulColor.ink)
+                                    .padding(.horizontal, 4)
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(height: 92)
+                            .frame(height: 96)
                             .background(selected ? RightfulColor.money.opacity(0.1) : RightfulColor.surface)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 13)
@@ -363,79 +338,184 @@ private struct ScanStep: View {
 
 private struct ResultsStep: View {
     @Environment(AppModel.self) private var app
-    let onSelect: (Settlement) -> Void
-    let onExplore: () -> Void
+    let onStartClaiming: () -> Void
+    let onPickMore: () -> Void
+    let onContinue: () -> Void
+
+    private var matches: [Settlement] { app.matchedSettlements }
+
+    private var noProofCount: Int {
+        matches.filter { !$0.proofRequired }.count
+    }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Good news")
-                    .font(RightfulFont.mono(11, weight: .medium))
-                    .foregroundStyle(RightfulColor.money)
-                Text(
-                    "You may qualify for \(app.matchedSettlements.count) \(app.matchedSettlements.count == 1 ? "settlement" : "settlements")"
-                )
-                .font(RightfulFont.display(34))
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(matches.isEmpty ? "Scan complete" : "Good news")
+                        .font(RightfulFont.mono(11, weight: .medium))
+                        .foregroundStyle(RightfulColor.money)
+                    Text(headline)
+                        .font(RightfulFont.display(32))
+                        .fixedSize(horizontal: false, vertical: true)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("EST. UP TO")
-                            .font(RightfulFont.mono(10))
+                    if matches.isEmpty {
+                        Text("New settlements open every week. Add more companies you’ve used, or continue and we’ll show new matches as they’re verified.")
+                            .font(RightfulFont.body(16))
                             .foregroundStyle(RightfulColor.muted)
-                        Spacer()
-                        if !app.matchedSettlements.isEmpty,
-                            app.matchedSettlements.allSatisfy(\.isSample)
-                        {
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        if matches.allSatisfy(\.isSample) {
                             SampleBadge()
                         }
+
+                        MoneyCheck(
+                            number: String(format: "%04d", matches.count),
+                            payee: "You",
+                            amountLabel: "Est. up to",
+                            amount: app.potentialMaximum,
+                            memo: "\(matches.count) \(matches.count == 1 ? "settlement" : "settlements") · \(noProofCount) need no proof",
+                            footer: "‖ \(app.settlements.count) CHECKED ‖ \(matches.count) MATCHED"
+                        )
+                        .padding(.vertical, 8)
+
+                        ForEach(Array(matches.prefix(3))) { settlement in
+                            Button(action: onStartClaiming) {
+                                SettlementCard(settlement: settlement)
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        if matches.count > 3 {
+                            Text("+ \(matches.count - 3) more \(matches.count - 3 == 1 ? "match" : "matches")")
+                                .font(RightfulFont.body(14, weight: .bold))
+                                .foregroundStyle(RightfulColor.muted)
+                                .frame(maxWidth: .infinity)
+                        }
+
+                        Text("Estimates come from court filings. Final amounts depend on how many people claim.")
+                            .font(RightfulFont.body(12))
+                            .foregroundStyle(RightfulColor.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if matches.contains(where: \.isSample) {
+                            Text("Sample records are labeled and are not live claims.")
+                                .font(RightfulFont.body(12))
+                                .foregroundStyle(RightfulColor.muted)
+                        }
                     }
-                    Text(app.potentialMaximum.usd)
-                        .font(RightfulFont.display(46))
-                        .foregroundStyle(RightfulColor.money)
-                    Text("Estimated ranges, never promised")
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 22)
+                .padding(.bottom, 16)
+            }
+
+            VStack(spacing: 6) {
+                if matches.isEmpty {
+                    Button("Pick more companies", action: onPickMore)
+                        .buttonStyle(PrimaryButtonStyle())
+                    Button("Continue to Rightful", action: onContinue)
+                        .font(RightfulFont.body(14, weight: .medium))
+                        .foregroundStyle(RightfulColor.muted)
+                        .padding(.vertical, 8)
+                } else {
+                    Button("Start claiming", action: onStartClaiming)
+                        .buttonStyle(PrimaryButtonStyle())
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 8)
+            .background(RightfulColor.paper)
+        }
+        .safeAreaPadding(.top)
+    }
+
+    private var headline: String {
+        guard !matches.isEmpty else { return "No open matches yet" }
+        return "You may qualify for \(matches.count) \(matches.count == 1 ? "settlement" : "settlements")"
+    }
+}
+
+private struct RemindersStep: View {
+    @Environment(AppModel.self) private var app
+    let onEnable: () -> Void
+    let onSkip: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Spacer()
+            ExampleNotification(settlement: app.nearestDeadlineSettlement)
+            Spacer()
+
+            Text("Deadlines don’t wait")
+                .font(RightfulFont.display(38))
+            Text("We’ll remind you before a claim closes and when a new settlement matches you.")
+                .font(RightfulFont.body(17))
+                .foregroundStyle(RightfulColor.muted)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button("Turn on reminders", action: onEnable)
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.top, 8)
+            Button("Not now", action: onSkip)
+                .font(RightfulFont.body(15, weight: .medium))
+                .foregroundStyle(RightfulColor.muted)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+        }
+        .padding(.horizontal, 22)
+        .padding(.bottom, 14)
+        .safeAreaPadding(.top)
+    }
+}
+
+private struct ExampleNotification: View {
+    let settlement: Settlement?
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 11) {
+            Text("R")
+                .font(RightfulFont.display(17))
+                .foregroundStyle(RightfulColor.onMoney)
+                .frame(width: 38, height: 38)
+                .background(RightfulColor.money)
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(AppConstants.name)
+                        .font(RightfulFont.body(14, weight: .bold))
+                    Spacer()
+                    Text("now")
                         .font(RightfulFont.body(13))
                         .foregroundStyle(RightfulColor.muted)
                 }
-                .padding(18)
-                .background(RightfulColor.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(RightfulColor.divider)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-
-                ForEach(app.matchedSettlements) { settlement in
-                    Button {
-                        onSelect(settlement)
-                    } label: {
-                        SettlementCard(settlement: settlement)
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                if app.matchedSettlements.isEmpty {
-                    ContentUnavailableView(
-                        "No matches yet",
-                        systemImage: "checkmark.magnifyingglass",
-                        description: Text("Add more companies to improve your scan.")
-                    )
-                }
-
-                if app.matchedSettlements.contains(where: \.isSample) {
-                    Text(
-                        "Sample records are labeled and are not live claims. Production records come from human-verified official notices."
-                    )
-                    .font(RightfulFont.body(12))
+                Text(title)
+                    .font(RightfulFont.body(15, weight: .bold))
+                Text(detail)
+                    .font(RightfulFont.body(14))
                     .foregroundStyle(RightfulColor.muted)
-                    .padding(.vertical, 4)
-                }
-
-                Button("Explore all settlements", action: onExplore)
-                    .buttonStyle(SecondaryButtonStyle())
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 22)
         }
-        .safeAreaPadding(.top)
+        .padding(14)
+        .background(RightfulColor.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(RightfulColor.divider)
+        )
+        .shadow(color: .black.opacity(0.12), radius: 18, y: 10)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Example reminder. \(title). \(detail)")
+    }
+
+    private var title: String {
+        guard let settlement else { return "A settlement you match closes in 3 days" }
+        return "\(settlement.company) settlement closes in 3 days"
+    }
+
+    private var detail: String {
+        guard let settlement else { return "Filing takes about 3 minutes." }
+        return "Est. \(settlement.payoutRange). Filing takes about 3 minutes."
     }
 }

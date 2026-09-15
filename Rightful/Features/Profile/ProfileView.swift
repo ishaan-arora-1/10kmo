@@ -4,6 +4,7 @@ struct ProfileView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.openURL) private var openURL
     @State private var showBrands = false
+    @State private var showStates = false
     @State private var showSignIn = false
     @State private var showDeleteConfirmation = false
     @State private var legalPage: LegalPage?
@@ -52,6 +53,16 @@ struct ProfileView: View {
                     ) {
                         showBrands = true
                     }
+                    Divider().overlay(RightfulColor.divider)
+                    settingsButton(
+                        icon: "map.fill",
+                        title: "States you’ve lived in",
+                        detail: app.selectedStateCodes.isEmpty
+                            ? "Add to check state-only settlements"
+                            : app.selectedStateCodes.sorted().joined(separator: ", ")
+                    ) {
+                        showStates = true
+                    }
                 }
 
                 SettingsGroup(title: "Membership") {
@@ -63,6 +74,13 @@ struct ProfileView: View {
                     ) {
                         if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
                             openURL(url)
+                        }
+                    }
+                    Divider().overlay(RightfulColor.divider)
+                    settingsButton(icon: "arrow.clockwise", title: "Restore purchases") {
+                        Task {
+                            await app.subscriptions.restore()
+                            await app.syncProfileIfPossible()
                         }
                     }
                 }
@@ -144,6 +162,9 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showBrands) {
             EditBrandsView()
+        }
+        .sheet(isPresented: $showStates) {
+            EditStatesView()
         }
         .sheet(isPresented: $showSignIn) {
             SignInView(
@@ -275,6 +296,68 @@ private struct EditBrandsView: View {
             .background(RightfulColor.paper)
             .searchable(text: $searchText, prompt: "Search companies")
             .navigationTitle("Companies")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        Task { await app.syncProfileIfPossible() }
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .rightfulScreen()
+    }
+}
+
+struct EditStatesView: View {
+    @Environment(AppModel.self) private var app
+    @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+
+    private var states: [(code: String, name: String)] {
+        guard !searchText.isEmpty else { return USStates.all }
+        return USStates.all.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+                || $0.code.localizedCaseInsensitiveContains(searchText)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(states, id: \.code) { state in
+                        let selected = app.selectedStateCodes.contains(state.code)
+                        Button {
+                            if selected {
+                                app.selectedStateCodes.remove(state.code)
+                            } else {
+                                app.selectedStateCodes.insert(state.code)
+                            }
+                        } label: {
+                            HStack {
+                                Text(state.name)
+                                    .font(RightfulFont.body(15, weight: .medium))
+                                    .foregroundStyle(RightfulColor.ink)
+                                Spacer()
+                                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                                    .foregroundStyle(selected ? RightfulColor.money : RightfulColor.muted)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(RightfulColor.surface)
+                        .accessibilityValue(selected ? "Selected" : "Not selected")
+                    }
+                } footer: {
+                    Text("Some settlements only cover people in certain states. Pick every state you’ve lived in since 2015.")
+                        .font(RightfulFont.body(12))
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(RightfulColor.paper)
+            .searchable(text: $searchText, prompt: "Search states")
+            .navigationTitle("States")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {

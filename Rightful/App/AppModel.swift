@@ -9,6 +9,9 @@ final class AppModel {
     var selectedBrandIDs: Set<UUID> = [] {
         didSet { persistSelections() }
     }
+    var selectedStateCodes: Set<String> = [] {
+        didSet { persistStates() }
+    }
     var claims: [Claim] = [] {
         didSet { persistClaims() }
     }
@@ -51,6 +54,11 @@ final class AppModel {
         {
             selectedBrandIDs = Set(values)
         }
+        if let data = defaults.data(forKey: Keys.selectedStates),
+            let values = try? JSONDecoder().decode([String].self, from: data)
+        {
+            selectedStateCodes = Set(values)
+        }
         if let data = defaults.data(forKey: Keys.claims),
             let values = try? JSONDecoder.rightful.decode([Claim].self, from: data)
         {
@@ -66,7 +74,8 @@ final class AppModel {
     var matchSummary: MatchSummary {
         MatchingEngine.matches(
             settlements: settlements,
-            selectedBrandIDs: selectedBrandIDs
+            selectedBrandIDs: selectedBrandIDs,
+            stateCodes: selectedStateCodes
         )
     }
 
@@ -79,6 +88,11 @@ final class AppModel {
             guard let status = claim(for: $0)?.status else { return true }
             return status == .needsFiling || status == .rejected
         }
+    }
+
+    /// The unfiled match that closes first; drives the paywall and reminder copy.
+    var nearestDeadlineSettlement: Settlement? {
+        unfiledMatchedSettlements.first
     }
 
     var potentialMaximum: Decimal {
@@ -144,10 +158,11 @@ final class AppModel {
     }
 
     func syncProfileIfPossible() async {
-        guard auth.userID != nil else { return }
+        guard let userID = auth.userID else { return }
         do {
             try await hydrateRemoteDataIfPossible()
             try await repository.syncSelectedBrands(selectedBrandIDs)
+            try await repository.syncStateCodes(selectedStateCodes, userID: userID)
             try await syncDirtyClaims()
             if let signedTransaction = subscriptions.latestSignedTransaction {
                 try await repository.verifyPurchase(signedTransaction: signedTransaction)
@@ -178,6 +193,7 @@ final class AppModel {
         pendingPushToken = nil
         defaults.removeObject(forKey: Keys.pushToken)
         selectedBrandIDs = []
+        selectedStateCodes = []
         claims = []
         dirtyClaimIDs = []
         notificationsEnabled = false
@@ -298,6 +314,7 @@ final class AppModel {
             guard deleted else { return false }
         }
         selectedBrandIDs = []
+        selectedStateCodes = []
         claims = []
         dirtyClaimIDs = []
         notificationsEnabled = false
@@ -306,6 +323,7 @@ final class AppModel {
         defaults.removeObject(forKey: Keys.pushToken)
         onboardingCompleted = false
         defaults.removeObject(forKey: Keys.selectedBrands)
+        defaults.removeObject(forKey: Keys.selectedStates)
         defaults.removeObject(forKey: Keys.claims)
         defaults.removeObject(forKey: Keys.dirtyClaims)
         defaults.removeObject(forKey: Keys.notificationsEnabled)
@@ -315,12 +333,14 @@ final class AppModel {
     #if DEBUG
         func resetDemo() {
             selectedBrandIDs = []
+            selectedStateCodes = []
             claims = []
             dirtyClaimIDs = []
             notificationsEnabled = false
             onboardingCompleted = false
             pendingPushToken = nil
             defaults.removeObject(forKey: Keys.selectedBrands)
+            defaults.removeObject(forKey: Keys.selectedStates)
             defaults.removeObject(forKey: Keys.claims)
             defaults.removeObject(forKey: Keys.dirtyClaims)
             defaults.removeObject(forKey: Keys.notificationsEnabled)
@@ -335,10 +355,17 @@ final class AppModel {
         }
     }
 
+    private func persistStates() {
+        if let data = try? JSONEncoder().encode(selectedStateCodes.sorted()) {
+            defaults.set(data, forKey: Keys.selectedStates)
+        }
+    }
+
     private func hydrateRemoteDataIfPossible() async throws {
         guard let userID = auth.userID else { return }
         let remote = try await repository.loadUserData(userID: userID)
         selectedBrandIDs.formUnion(remote.brandIDs)
+        selectedStateCodes.formUnion(remote.stateCodes)
 
         let hasLocalNotificationPreference =
             defaults.object(forKey: Keys.notificationsEnabled) != nil
@@ -461,6 +488,7 @@ final class AppModel {
 
     private enum Keys {
         static let selectedBrands = "rightful.selected-brands"
+        static let selectedStates = "rightful.selected-states"
         static let claims = "rightful.claims"
         static let dirtyClaims = "rightful.dirty-claims"
         static let notificationsEnabled = "rightful.notifications-enabled"

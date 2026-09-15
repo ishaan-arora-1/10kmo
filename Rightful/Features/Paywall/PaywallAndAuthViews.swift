@@ -6,9 +6,6 @@ struct PaywallView: View {
     @Environment(AppModel.self) private var app
     @State private var selectedPlan: SubscriptionPlan = .yearly
     @State private var legalPage: LegalPage?
-    @State private var pendingProduct: Product?
-    @State private var pendingRestore = false
-    @State private var showSignIn = false
     let onClose: () -> Void
     let onSubscribed: () -> Void
 
@@ -16,9 +13,13 @@ struct PaywallView: View {
         app.subscriptions.product(for: selectedPlan)
     }
 
+    private var waiting: Decimal { app.waitingMaximum }
+    private var nearest: Settlement? { app.nearestDeadlineSettlement }
+    private var matchCount: Int { app.unfiledMatchedSettlements.count }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     BrandSeal()
                     Spacer()
@@ -30,22 +31,40 @@ struct PaywallView: View {
                             .background(RightfulColor.surfaceMuted)
                             .clipShape(Circle())
                     }
+                    .accessibilityLabel("Close")
                 }
 
-                VStack(alignment: .leading, spacing: 9) {
-                    Text("Turn matches into money")
-                        .font(RightfulFont.display(36))
-                    Text("You already saw what may be waiting. Rightful guides every filing and keeps it on track.")
+                Text(waiting > 0 ? "Don’t let \(waiting.usd) expire" : "Turn matches into money")
+                    .font(RightfulFont.display(36))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let nearest {
+                    HStack {
+                        Text("Your first deadline")
+                            .font(RightfulFont.body(15, weight: .bold))
+                        Spacer()
+                        Text(deadlineText(for: nearest))
+                            .font(RightfulFont.mono(12, weight: .medium))
+                            .foregroundStyle(RightfulColor.deadline)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(RightfulColor.deadline.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                } else {
+                    Text("Rightful guides every filing and keeps each claim on track until you’re paid.")
                         .font(RightfulFont.body(16))
                         .foregroundStyle(RightfulColor.muted)
                 }
 
                 VStack(alignment: .leading, spacing: 14) {
-                    feature("Verified official claim links", "checkmark.shield.fill")
-                    feature("Deadline and new-match alerts", "bell.badge.fill")
-                    feature("Every claim tracked until payout", "checkmark.seal.fill")
+                    feature(filingFeature, "list.bullet.clipboard.fill")
+                    feature("An alert the day a new settlement matches you", "bell.badge.fill")
+                    feature("Deadline reminders, so nothing closes on you", "calendar.badge.clock")
+                    feature("A tracker for every claim until you’re paid", "checkmark.seal.fill")
                 }
                 .padding(17)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(RightfulColor.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
@@ -76,13 +95,7 @@ struct PaywallView: View {
 
                 Button {
                     guard let selectedProduct else { return }
-                    if requiresAuthentication {
-                        pendingProduct = selectedProduct
-                        pendingRestore = false
-                        showSignIn = true
-                    } else {
-                        purchase(selectedProduct)
-                    }
+                    purchase(selectedProduct)
                 } label: {
                     if app.subscriptions.isLoading {
                         ProgressView()
@@ -95,18 +108,10 @@ struct PaywallView: View {
                 .disabled(selectedProduct == nil || app.subscriptions.isLoading)
                 .opacity(selectedProduct == nil ? 0.55 : 1)
 
-                Button("Restore purchases") {
-                    if requiresAuthentication {
-                        pendingProduct = nil
-                        pendingRestore = true
-                        showSignIn = true
-                    } else {
-                        restorePurchases()
-                    }
-                }
-                .font(RightfulFont.body(14, weight: .medium))
-                .foregroundStyle(RightfulColor.muted)
-                .frame(maxWidth: .infinity)
+                Button("Restore purchases", action: restorePurchases)
+                    .font(RightfulFont.body(14, weight: .medium))
+                    .foregroundStyle(RightfulColor.muted)
+                    .frame(maxWidth: .infinity)
 
                 Text(billingDisclosure)
                     .font(RightfulFont.body(11))
@@ -129,35 +134,25 @@ struct PaywallView: View {
         .sheet(item: $legalPage) { page in
             LegalView(page: page)
         }
-        .sheet(isPresented: $showSignIn) {
-            SignInView(
-                onSkip: {
-                    pendingProduct = nil
-                    pendingRestore = false
-                    showSignIn = false
-                },
-                onComplete: {
-                    let product = pendingProduct
-                    let shouldRestore = pendingRestore
-                    pendingProduct = nil
-                    pendingRestore = false
-                    showSignIn = false
-
-                    if let product {
-                        purchase(product)
-                    } else if shouldRestore {
-                        restorePurchases()
-                    }
-                }
-            )
-        }
         .rightfulScreen()
     }
 
-    private var requiresAuthentication: Bool {
-        !app.auth.isSampleMode && !app.auth.isAuthenticated
+    private var filingFeature: String {
+        switch matchCount {
+        case 0: "Step-by-step filing for every match"
+        case 1: "Step-by-step filing for your match"
+        case 2: "Step-by-step filing for both of your matches"
+        default: "Step-by-step filing for all \(matchCount) of your matches"
+        }
     }
 
+    private func deadlineText(for settlement: Settlement) -> String {
+        let days = settlement.daysUntilDeadline
+        return "\(settlement.deadlineLabel) · \(days) \(days == 1 ? "day" : "days")"
+    }
+
+    /// Purchases never require an account. If the user is signed in, the transaction
+    /// is tagged with their ID; otherwise it's linked when they sign in later.
     private func purchase(_ product: Product) {
         Task {
             if await app.subscriptions.purchase(
@@ -230,6 +225,7 @@ struct PaywallView: View {
                 .frame(width: 24)
             Text(text)
                 .font(RightfulFont.body(15, weight: .medium))
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -276,6 +272,7 @@ private struct PlanOption: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
@@ -327,13 +324,11 @@ struct SignInView: View {
                 .buttonStyle(SecondaryButtonStyle())
             }
 
-            if app.auth.isSampleMode {
-                Button("Continue in sample mode", action: onSkip)
-                    .font(RightfulFont.body(14, weight: .medium))
-                    .foregroundStyle(RightfulColor.muted)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-            }
+            Button(app.auth.isSampleMode ? "Continue in sample mode" : "Not now", action: onSkip)
+                .font(RightfulFont.body(14, weight: .medium))
+                .foregroundStyle(RightfulColor.muted)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
 
             if let message = app.auth.errorMessage {
                 Text(message)

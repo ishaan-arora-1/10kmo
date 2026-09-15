@@ -7,7 +7,7 @@ values
   ('00000000-0000-0000-0000-000000000002', 'Instagram', 'Social', array['Meta'], '#D82C74'),
   ('00000000-0000-0000-0000-000000000003', 'TikTok', 'Social', array['ByteDance'], '#17211B'),
   ('00000000-0000-0000-0000-000000000004', 'Amazon', 'Shopping', array['Prime'], '#D97706'),
-  ('00000000-0000-0000-0000-000000000005', 'Apple', 'Shopping', array['iPhone', 'App Store'], '#606862'),
+  ('00000000-0000-0000-0000-000000000005', 'Apple', 'Tech', array['iPhone', 'App Store'], '#606862'),
   ('00000000-0000-0000-0000-000000000006', 'T-Mobile', 'Phone', array['TMobile'], '#D40073'),
   ('00000000-0000-0000-0000-000000000007', 'Verizon', 'Phone', array['Wireless'], '#C71920'),
   ('00000000-0000-0000-0000-000000000008', 'Uber', 'Delivery', array['Uber Eats'], '#16231B'),
@@ -17,7 +17,7 @@ values
   ('00000000-0000-0000-0000-000000000012', 'Capital One', 'Finance', array['Credit card', 'Bank'], '#176084'),
   ('00000000-0000-0000-0000-000000000013', 'Ticketmaster', 'Entertainment', array['Live Nation', 'Tickets'], '#2777C5'),
   ('00000000-0000-0000-0000-000000000014', 'Walmart', 'Shopping', array['Walmart+'], '#1F61A6'),
-  ('00000000-0000-0000-0000-000000000015', 'Airbnb', 'Shopping', array['Vacation rental'], '#CC4A57')
+  ('00000000-0000-0000-0000-000000000015', 'Airbnb', 'Travel', array['Vacation rental'], '#CC4A57')
 on conflict (id) do update set
   name = excluded.name,
   category = excluded.category,

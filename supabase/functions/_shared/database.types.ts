@@ -21,6 +21,7 @@ export type Database = {
           user_id: string;
           display_name: string | null;
           state_code: string | null;
+          state_codes: string[];
           plan: "free" | "yearly" | "weekly";
           notifications_enabled: boolean;
           created_at: string;
@@ -49,6 +50,7 @@ export type Database = {
           company: string;
           title: string;
           brand_id: string;
+          eligible_state_codes: string[];
           payout_min: number;
           payout_max: number;
           deadline: string;

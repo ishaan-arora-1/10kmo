@@ -11,6 +11,8 @@ enum RightfulColor {
     static let money = dynamic(light: "#0E7A4B", dark: "#3FC486")
     static let deadline = dynamic(light: "#A85B0C", dark: "#E8A04E")
     static let danger = dynamic(light: "#B3261E", dark: "#F2786F")
+    static let check = dynamic(light: "#E4EFE2", dark: "#16261E")
+    static let checkLine = dynamic(light: "#9FBFA9", dark: "#3C6150")
     /// Text placed on an `ink` background (inverts with the theme).
     static let onInk = dynamic(light: "#F1F5F0", dark: "#0B120F")
     /// The dark summary card stays dark in both themes.
@@ -114,6 +116,11 @@ struct BrandMonogram: View {
             .frame(width: size, height: size)
             .background(Color(hex: brand?.monogramColorHex ?? "#0E7A48"))
             .clipShape(RoundedRectangle(cornerRadius: size * 0.28, style: .continuous))
+            .overlay(
+                // Keeps very dark brand colors visible on dark surfaces.
+                RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+                    .stroke(RightfulColor.ink.opacity(0.14), lineWidth: 1)
+            )
             .accessibilityHidden(true)
     }
 }

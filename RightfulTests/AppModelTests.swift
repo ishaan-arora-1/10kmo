@@ -44,6 +44,16 @@ final class AppModelTests: XCTestCase {
     }
 
     @MainActor
+    func testSelectedStatesSurviveRelaunchAndReset() {
+        var first: AppModel? = AppModel(defaults: defaults)
+        first?.selectedStateCodes = ["CA", "TX"]
+        first = nil
+
+        let restored = AppModel(defaults: defaults)
+        XCTAssertEqual(restored.selectedStateCodes, ["CA", "TX"])
+    }
+
+    @MainActor
     func testSelectedBrandsSurviveRelaunch() {
         var first: AppModel? = AppModel(defaults: defaults)
         first?.selectedBrandIDs = [SampleData.facebookID, SampleData.amazonID]

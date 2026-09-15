@@ -199,6 +199,7 @@ struct SupabaseRepository: Sendable {
 
     struct UserData: Sendable {
         let brandIDs: Set<UUID>
+        let stateCodes: Set<String>
         let claims: [Claim]
         let historicalSettlements: [Settlement]
         let notificationsEnabled: Bool
@@ -244,6 +245,15 @@ struct SupabaseRepository: Sendable {
             .execute()
     }
 
+    func syncStateCodes(_ stateCodes: Set<String>, userID: UUID) async throws {
+        guard let client else { return }
+        try await client
+            .from("profiles")
+            .update(["state_codes": stateCodes.sorted()])
+            .eq("user_id", value: userID)
+            .execute()
+    }
+
     func syncClaim(_ claim: Claim, userID: UUID) async throws {
         guard let client else { return }
         try await client
@@ -259,6 +269,7 @@ struct SupabaseRepository: Sendable {
         guard let client else {
             return UserData(
                 brandIDs: [],
+                stateCodes: [],
                 claims: [],
                 historicalSettlements: [],
                 notificationsEnabled: false
@@ -284,7 +295,7 @@ struct SupabaseRepository: Sendable {
         async let profileRows: [ProfileDownloadRow] =
             client
             .from("profiles")
-            .select("notifications_enabled")
+            .select("notifications_enabled,state_codes")
             .eq("user_id", value: userID)
             .limit(1)
             .execute()
@@ -309,6 +320,7 @@ struct SupabaseRepository: Sendable {
         }
         return UserData(
             brandIDs: Set(loadedBrands.map(\.brandID)),
+            stateCodes: Set(loadedProfiles.first?.stateCodes ?? []),
             claims: loadedClaims.map(\.domain),
             historicalSettlements: historicalRows.compactMap(\.domain),
             notificationsEnabled: loadedProfiles.first?.notificationsEnabled ?? false
@@ -501,9 +513,11 @@ private struct ProfileBrandDownloadRow: Decodable, Sendable {
 
 private struct ProfileDownloadRow: Decodable, Sendable {
     let notificationsEnabled: Bool
+    let stateCodes: [String]?
 
     enum CodingKeys: String, CodingKey {
         case notificationsEnabled = "notifications_enabled"
+        case stateCodes = "state_codes"
     }
 }
 

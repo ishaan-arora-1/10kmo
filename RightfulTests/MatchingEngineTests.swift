@@ -49,15 +49,26 @@ final class MatchingEngineTests: XCTestCase {
         let accepted = MatchingEngine.matches(
             settlements: [settlement],
             selectedBrandIDs: [settlement.brandID],
-            stateCode: "ca"
+            stateCodes: ["ca"]
         )
         let rejected = MatchingEngine.matches(
             settlements: [settlement],
             selectedBrandIDs: [settlement.brandID],
-            stateCode: "ny"
+            stateCodes: ["ny"]
+        )
+        let unknownState = MatchingEngine.matches(
+            settlements: [settlement],
+            selectedBrandIDs: [settlement.brandID]
         )
 
         XCTAssertEqual(accepted.settlements.count, 1)
         XCTAssertTrue(rejected.settlements.isEmpty)
+        XCTAssertTrue(unknownState.settlements.isEmpty, "State-limited settlements need a known state")
+    }
+
+    func testBrandCatalogIsLargeAndUnique() {
+        XCTAssertGreaterThanOrEqual(SampleData.brands.count, 180)
+        XCTAssertEqual(Set(SampleData.brands.map(\.id)).count, SampleData.brands.count)
+        XCTAssertEqual(Set(SampleData.brands.map(\.name)).count, SampleData.brands.count)
     }
 }
