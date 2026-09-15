@@ -200,6 +200,8 @@ struct SupabaseRepository: Sendable {
     struct UserData: Sendable {
         let brandIDs: Set<UUID>
         let stateCodes: Set<String>
+        let serverPlan: SubscriptionPlan
+        let planSource: String?
         let claims: [Claim]
         let historicalSettlements: [Settlement]
         let notificationsEnabled: Bool
@@ -270,6 +272,8 @@ struct SupabaseRepository: Sendable {
             return UserData(
                 brandIDs: [],
                 stateCodes: [],
+                serverPlan: .free,
+                planSource: nil,
                 claims: [],
                 historicalSettlements: [],
                 notificationsEnabled: false
@@ -295,7 +299,7 @@ struct SupabaseRepository: Sendable {
         async let profileRows: [ProfileDownloadRow] =
             client
             .from("profiles")
-            .select("notifications_enabled,state_codes")
+            .select("notifications_enabled,state_codes,plan,plan_source")
             .eq("user_id", value: userID)
             .limit(1)
             .execute()
@@ -321,6 +325,8 @@ struct SupabaseRepository: Sendable {
         return UserData(
             brandIDs: Set(loadedBrands.map(\.brandID)),
             stateCodes: Set(loadedProfiles.first?.stateCodes ?? []),
+            serverPlan: SubscriptionPlan(rawValue: loadedProfiles.first?.plan ?? "free") ?? .free,
+            planSource: loadedProfiles.first?.planSource,
             claims: loadedClaims.map(\.domain),
             historicalSettlements: historicalRows.compactMap(\.domain),
             notificationsEnabled: loadedProfiles.first?.notificationsEnabled ?? false
@@ -514,10 +520,14 @@ private struct ProfileBrandDownloadRow: Decodable, Sendable {
 private struct ProfileDownloadRow: Decodable, Sendable {
     let notificationsEnabled: Bool
     let stateCodes: [String]?
+    let plan: String?
+    let planSource: String?
 
     enum CodingKeys: String, CodingKey {
         case notificationsEnabled = "notifications_enabled"
         case stateCodes = "state_codes"
+        case plan
+        case planSource = "plan_source"
     }
 }
 

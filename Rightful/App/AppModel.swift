@@ -12,6 +12,8 @@ final class AppModel {
     var selectedStateCodes: Set<String> = [] {
         didSet { persistStates() }
     }
+    /// Plan recorded on the server, including subscriptions bought on the website.
+    var serverPlan: SubscriptionPlan = .free
     var claims: [Claim] = [] {
         didSet { persistClaims() }
     }
@@ -114,7 +116,7 @@ final class AppModel {
     }
 
     var isPremium: Bool {
-        subscriptions.plan.isPremium
+        subscriptions.plan.isPremium || serverPlan.isPremium
     }
 
     func prepare() async {
@@ -194,6 +196,7 @@ final class AppModel {
         defaults.removeObject(forKey: Keys.pushToken)
         selectedBrandIDs = []
         selectedStateCodes = []
+        serverPlan = .free
         claims = []
         dirtyClaimIDs = []
         notificationsEnabled = false
@@ -315,6 +318,7 @@ final class AppModel {
         }
         selectedBrandIDs = []
         selectedStateCodes = []
+        serverPlan = .free
         claims = []
         dirtyClaimIDs = []
         notificationsEnabled = false
@@ -334,6 +338,7 @@ final class AppModel {
         func resetDemo() {
             selectedBrandIDs = []
             selectedStateCodes = []
+            serverPlan = .free
             claims = []
             dirtyClaimIDs = []
             notificationsEnabled = false
@@ -366,6 +371,7 @@ final class AppModel {
         let remote = try await repository.loadUserData(userID: userID)
         selectedBrandIDs.formUnion(remote.brandIDs)
         selectedStateCodes.formUnion(remote.stateCodes)
+        serverPlan = remote.serverPlan
 
         let hasLocalNotificationPreference =
             defaults.object(forKey: Keys.notificationsEnabled) != nil

@@ -1,0 +1,1838 @@
+[
+{
+"id": "00000000-0000-0000-0000-000000000001",
+"name": "Facebook",
+"category": "Social",
+"aliases": [
+"Meta"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "00000000-0000-0000-0000-000000000002",
+"name": "Instagram",
+"category": "Social",
+"aliases": [
+"Meta"
+],
+"monogramColor": "#D82C74"
+},
+{
+"id": "00000000-0000-0000-0000-000000000003",
+"name": "TikTok",
+"category": "Social",
+"aliases": [
+"ByteDance"
+],
+"monogramColor": "#17211B"
+},
+{
+"id": "34344bb5-a52c-5dbe-a90c-cce7e2062d6c",
+"name": "Snapchat",
+"category": "Social",
+"aliases": [
+"Snap"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "9b7dc62d-a829-5d66-b095-0e007a59df57",
+"name": "X",
+"category": "Social",
+"aliases": [
+"Twitter"
+],
+"monogramColor": "#176084"
+},
+{
+"id": "5d00ac63-c331-5595-a38b-4cd1779a4c9c",
+"name": "Reddit",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#B45309"
+},
+{
+"id": "f49ed287-e6fc-54b5-8839-8d98200f756e",
+"name": "Pinterest",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "36f4503e-485a-5722-9104-fc68209366e2",
+"name": "LinkedIn",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "3c46bc97-11c0-5bc9-aec6-4df34cc7d8dc",
+"name": "YouTube",
+"category": "Social",
+"aliases": [
+"Google"
+],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "e4163133-d515-5691-b28c-ae025b1a28c1",
+"name": "Discord",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "fd3473e9-4193-5288-8ce9-46cda4cf0a84",
+"name": "WhatsApp",
+"category": "Social",
+"aliases": [
+"Meta"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "4dd7ebd7-58ed-5e38-ba8c-07e3fad78d46",
+"name": "Tinder",
+"category": "Social",
+"aliases": [
+"Match Group"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "6ef2d5b1-4114-5924-9a0f-33ff252f208a",
+"name": "Bumble",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "ede7e7f5-aeec-56e9-be3d-c2e4edb0211a",
+"name": "Hinge",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "f26a7cde-2cd8-5f4f-b073-cc0e76d7f797",
+"name": "Match.com",
+"category": "Social",
+"aliases": [
+"Match"
+],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "419d3594-91d1-5238-95f8-b4de6b6c0fae",
+"name": "Grindr",
+"category": "Social",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "00000000-0000-0000-0000-000000000006",
+"name": "T-Mobile",
+"category": "Phone",
+"aliases": [
+"TMobile",
+"Sprint"
+],
+"monogramColor": "#D40073"
+},
+{
+"id": "00000000-0000-0000-0000-000000000007",
+"name": "Verizon",
+"category": "Phone",
+"aliases": [
+"Wireless",
+"Fios"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "243d749d-c7e4-5920-946f-9a778e7921be",
+"name": "AT&T",
+"category": "Phone",
+"aliases": [
+"ATT"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "b59ed639-edb8-599a-9d19-4ad73c9192ed",
+"name": "Sprint",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "7493bec7-ffbc-5959-97b9-90b30769189b",
+"name": "Comcast Xfinity",
+"category": "Phone",
+"aliases": [
+"Xfinity",
+"Comcast"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "75b98ed9-cbe9-536e-9d98-e2e30d2c77ef",
+"name": "Spectrum",
+"category": "Phone",
+"aliases": [
+"Charter"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "a90f8c6b-cc18-5442-9580-a9a7bbea1b5a",
+"name": "Cox",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "fd1a5fec-9cd5-5a63-9710-95818ea5184f",
+"name": "Optimum",
+"category": "Phone",
+"aliases": [
+"Altice"
+],
+"monogramColor": "#B45309"
+},
+{
+"id": "159ec21f-6573-55d1-a4bb-d96697a169ce",
+"name": "Frontier Communications",
+"category": "Phone",
+"aliases": [
+"Frontier Internet"
+],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "77d583bc-dad3-52ec-830d-2d02dc29b5aa",
+"name": "CenturyLink",
+"category": "Phone",
+"aliases": [
+"Lumen"
+],
+"monogramColor": "#9A3412"
+},
+{
+"id": "dc8d3ba2-28d9-50dd-9127-dc3bfd68a7ad",
+"name": "Cricket Wireless",
+"category": "Phone",
+"aliases": [
+"Cricket"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "31e0d89e-a565-5eaa-b3d3-440069ad431e",
+"name": "Boost Mobile",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "daf85b8f-0223-5b7a-9693-da980b652a5a",
+"name": "Metro by T-Mobile",
+"category": "Phone",
+"aliases": [
+"MetroPCS"
+],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "c0bcb77d-7a07-5163-a05f-658f44c16133",
+"name": "Google Fi",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "a5ef2687-6a41-5544-9924-ce59b77314f1",
+"name": "Mint Mobile",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "5a5db87e-968b-5885-890f-389a10854518",
+"name": "Visible",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "744a3bc1-89d4-5b08-9167-605af70a1818",
+"name": "DirecTV",
+"category": "Phone",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "0cea8146-9e43-5714-88ee-f8e1c04b7179",
+"name": "Dish Network",
+"category": "Phone",
+"aliases": [
+"Dish",
+"Sling"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "00000000-0000-0000-0000-000000000004",
+"name": "Amazon",
+"category": "Shopping",
+"aliases": [
+"Prime"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "00000000-0000-0000-0000-000000000014",
+"name": "Walmart",
+"category": "Shopping",
+"aliases": [
+"Walmart+"
+],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "c3b9350e-2b71-583a-aadd-260a690e9996",
+"name": "Target",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "eeb10acc-3fd8-5b97-94f2-fee229bfa3e4",
+"name": "Costco",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "65a4de93-b453-5b00-b718-207908808586",
+"name": "Best Buy",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "87467085-a15f-5bf5-b60c-f788b9f5f04f",
+"name": "eBay",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "e0915b77-5da9-50d4-a54d-64f253ccf23d",
+"name": "Etsy",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#176084"
+},
+{
+"id": "3c2cc3d0-82d4-5b41-8303-76ac16a6a239",
+"name": "Home Depot",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "4c882eba-1984-5f49-b497-d0202c4b6045",
+"name": "Lowe's",
+"category": "Shopping",
+"aliases": [
+"Lowes"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "e77f1301-0ca3-5999-b62f-f754ff927c41",
+"name": "Kroger",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "3c6f0183-5472-541c-8375-79aebd0dbe8e",
+"name": "Walgreens",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "a2119c95-8be9-51f9-9107-8e16d1d8a5ac",
+"name": "CVS",
+"category": "Shopping",
+"aliases": [
+"CVS Pharmacy"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "9687f2fe-e119-5253-b400-bfa82532897a",
+"name": "Macy's",
+"category": "Shopping",
+"aliases": [
+"Macys"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "3258a8ec-7651-5cb8-9f48-8ef880527d16",
+"name": "Nordstrom",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "688771fb-b4b3-5f4e-bba4-1aa5b97416ad",
+"name": "Kohl's",
+"category": "Shopping",
+"aliases": [
+"Kohls"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "33edb479-3ffd-5a06-bb69-8cf4f470dca1",
+"name": "Sephora",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "feb9412c-4952-5ad7-876e-503e65fe65eb",
+"name": "Ulta Beauty",
+"category": "Shopping",
+"aliases": [
+"Ulta"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "ff825dca-1ced-5b33-b067-73a3663a8984",
+"name": "Nike",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#B45309"
+},
+{
+"id": "4f681824-0881-51eb-af8a-a78997ae4252",
+"name": "Adidas",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "4fdb7745-a6cd-5796-8e06-a2fa31d10039",
+"name": "Shein",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "6a0f1a05-e748-542b-9fe3-ea124e61a10e",
+"name": "Temu",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "ecfced12-9647-5efe-959a-5af896f5ac37",
+"name": "Wayfair",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#2777C5"
+},
+{
+"id": "fb9f5ede-82a8-58ac-989a-362c1117905b",
+"name": "Chewy",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "1634d623-0a45-50e5-8590-841f6a8013e5",
+"name": "IKEA",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#D82C74"
+},
+{
+"id": "dc6bef26-4bdf-5449-9f78-77bf01633273",
+"name": "Dollar General",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "c791e763-af7a-5aca-bbbe-a9b3444e05e5",
+"name": "Gap",
+"category": "Shopping",
+"aliases": [
+"Old Navy",
+"Banana Republic"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "4b69b2c3-ce8b-5f2d-958e-5d542aebd559",
+"name": "H&M",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "8b60a3c8-0f79-5709-aff6-f136409a0cb3",
+"name": "Victoria's Secret",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "a61bc296-a4d8-5063-bd33-a2480bc1b3e9",
+"name": "Bath & Body Works",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "847d5319-d35c-5761-bfe7-f8a27090a3df",
+"name": "Whole Foods",
+"category": "Shopping",
+"aliases": [
+"Amazon"
+],
+"monogramColor": "#D82C74"
+},
+{
+"id": "44f5a04b-0901-52bb-a22f-430b02706028",
+"name": "Safeway",
+"category": "Shopping",
+"aliases": [
+"Albertsons"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "e2751633-d779-5531-a146-d9dc8de93015",
+"name": "Publix",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "6a2353fd-5593-565a-97c0-10d384a02742",
+"name": "Sam's Club",
+"category": "Shopping",
+"aliases": [],
+"monogramColor": "#B45309"
+},
+{
+"id": "00000000-0000-0000-0000-000000000008",
+"name": "Uber",
+"category": "Delivery",
+"aliases": [
+"Uber Eats"
+],
+"monogramColor": "#16231B"
+},
+{
+"id": "00000000-0000-0000-0000-000000000009",
+"name": "DoorDash",
+"category": "Delivery",
+"aliases": [
+"DashPass"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "99634bce-0741-51be-ad4d-3acc069c29a2",
+"name": "Lyft",
+"category": "Delivery",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "0981f704-7c6c-5962-8e19-b790f7194361",
+"name": "Instacart",
+"category": "Delivery",
+"aliases": [],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "0e558844-f0bb-5b2b-aeba-2987cd53f9d5",
+"name": "Grubhub",
+"category": "Delivery",
+"aliases": [
+"Seamless"
+],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "7eb00185-f1bf-5e15-b32b-4c841a74ea51",
+"name": "Postmates",
+"category": "Delivery",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "b5606657-c75b-59f9-b8f6-c46b57af62f0",
+"name": "Gopuff",
+"category": "Delivery",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "515f3cef-4191-565b-8b4a-76ed51efdc3d",
+"name": "FedEx",
+"category": "Delivery",
+"aliases": [],
+"monogramColor": "#0F766E"
+},
+{
+"id": "8bf10e9f-4fb7-53df-93c2-c39e5e24578a",
+"name": "UPS",
+"category": "Delivery",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "e9bf1548-d996-5ec3-baa5-5becac511e5c",
+"name": "McDonald's",
+"category": "Food",
+"aliases": [
+"McDonalds"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "b796b472-7533-502c-a42a-648ed307824d",
+"name": "Starbucks",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "73d30c17-8f14-5302-a640-81fd047bf62c",
+"name": "Chipotle",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "2f7a560e-fbd5-5742-8051-9f337dbeac1c",
+"name": "Domino's",
+"category": "Food",
+"aliases": [
+"Dominos"
+],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "8700074c-0a68-598b-aa85-48c64a2aacba",
+"name": "Pizza Hut",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "5319136a-4fed-509c-9fb7-9becdf621342",
+"name": "Subway",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#2777C5"
+},
+{
+"id": "0f47cc6e-c60b-5a2d-8922-6bfd64add500",
+"name": "Burger King",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "774efa83-fcf4-51a4-8e3b-14773856e454",
+"name": "Wendy's",
+"category": "Food",
+"aliases": [
+"Wendys"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "55f8bf94-1800-5400-87d1-fe24a9d648c3",
+"name": "Taco Bell",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#D82C74"
+},
+{
+"id": "d46005cf-282c-5953-aff1-9a73a8dcb08e",
+"name": "Chick-fil-A",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#0F766E"
+},
+{
+"id": "2418ac4d-30c1-5862-9732-df8fea965e6a",
+"name": "Panera Bread",
+"category": "Food",
+"aliases": [
+"Panera"
+],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "46323d94-ab05-50fb-8894-d26e2531d1bd",
+"name": "Dunkin'",
+"category": "Food",
+"aliases": [
+"Dunkin Donuts"
+],
+"monogramColor": "#176084"
+},
+{
+"id": "831e28a0-bed0-527c-8aae-23413e84cf02",
+"name": "KFC",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#168A4B"
+},
+{
+"id": "c0414330-2348-519f-bd39-957e0e3ce46c",
+"name": "Papa John's",
+"category": "Food",
+"aliases": [
+"Papa Johns"
+],
+"monogramColor": "#B45309"
+},
+{
+"id": "383f1c23-1f3c-598b-9ba6-1ab16ed06de7",
+"name": "HelloFresh",
+"category": "Food",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "00000000-0000-0000-0000-000000000010",
+"name": "Netflix",
+"category": "Entertainment",
+"aliases": [
+"Streaming"
+],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "00000000-0000-0000-0000-000000000011",
+"name": "Spotify",
+"category": "Entertainment",
+"aliases": [
+"Music"
+],
+"monogramColor": "#168A4B"
+},
+{
+"id": "00000000-0000-0000-0000-000000000013",
+"name": "Ticketmaster",
+"category": "Entertainment",
+"aliases": [
+"Live Nation",
+"Tickets"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "e4a8bdb6-ec00-5795-b567-6cda0fad0ed9",
+"name": "Hulu",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "c45a65ce-5c01-544b-a147-69c891909696",
+"name": "Disney+",
+"category": "Entertainment",
+"aliases": [
+"Disney Plus",
+"Disney"
+],
+"monogramColor": "#0F766E"
+},
+{
+"id": "2064e187-970e-5b1b-99df-787d5a4547e9",
+"name": "Max",
+"category": "Entertainment",
+"aliases": [
+"HBO Max",
+"HBO"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "de23e47f-391f-56c5-bf08-e24af64edfd8",
+"name": "Paramount+",
+"category": "Entertainment",
+"aliases": [
+"Paramount Plus",
+"CBS"
+],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "962860f1-fe4b-52f8-b66f-f5b812ace0a8",
+"name": "Peacock",
+"category": "Entertainment",
+"aliases": [
+"NBC"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "61306df4-0863-57e7-9011-939590567568",
+"name": "SiriusXM",
+"category": "Entertainment",
+"aliases": [
+"Sirius"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "bb3f5015-da86-5a0f-b884-4e7e88f391f7",
+"name": "Audible",
+"category": "Entertainment",
+"aliases": [
+"Amazon"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "594bc295-9880-558e-8705-b7f11ae5f53c",
+"name": "Xbox",
+"category": "Entertainment",
+"aliases": [
+"Microsoft"
+],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "d6983ba4-7ecb-531d-947e-4e3c831a5ebe",
+"name": "PlayStation",
+"category": "Entertainment",
+"aliases": [
+"Sony",
+"PSN"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "29fcd00c-06a6-5895-b447-40cb4fc252f5",
+"name": "Nintendo",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "76aac3ad-21bc-5375-b2c6-b159b9909b43",
+"name": "Epic Games",
+"category": "Entertainment",
+"aliases": [
+"Fortnite"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "633b9494-6652-5848-9d59-09cbaae57b31",
+"name": "Roblox",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#168A4B"
+},
+{
+"id": "dfd04591-4fa2-5945-a178-82e4059d9082",
+"name": "Steam",
+"category": "Entertainment",
+"aliases": [
+"Valve"
+],
+"monogramColor": "#D82C74"
+},
+{
+"id": "a14214fa-8ab6-5645-8c4b-bc47a4bfa8d8",
+"name": "Electronic Arts",
+"category": "Entertainment",
+"aliases": [
+"EA"
+],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "032bb9c7-ae85-5045-a3df-35f0ef8547ec",
+"name": "Activision Blizzard",
+"category": "Entertainment",
+"aliases": [
+"Call of Duty"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "9f0286b8-7378-57fc-b963-bc1f92c8bbe2",
+"name": "StubHub",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "5545ebaa-4c41-54a9-a1de-ee080c768150",
+"name": "SeatGeek",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "7e14af49-f020-5bcb-b90f-85cf6838c8c8",
+"name": "Vivid Seats",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#176084"
+},
+{
+"id": "84d39ff0-6798-5c1c-ac21-ef81a6a82b03",
+"name": "AMC Theatres",
+"category": "Entertainment",
+"aliases": [
+"AMC"
+],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "ab5ae180-666c-51cc-8601-8a381ecd42c2",
+"name": "Fandango",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "7d5fd395-da31-5e48-a191-ff833eac3d8b",
+"name": "Pandora",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#D82C74"
+},
+{
+"id": "e88da485-7426-527a-af48-a7fcb28cb8c5",
+"name": "Twitch",
+"category": "Entertainment",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "00000000-0000-0000-0000-000000000012",
+"name": "Capital One",
+"category": "Finance",
+"aliases": [
+"Credit card",
+"Bank"
+],
+"monogramColor": "#176084"
+},
+{
+"id": "265369bf-c4f5-5f90-bdc6-5e0c7dca1ad5",
+"name": "Chase",
+"category": "Finance",
+"aliases": [
+"JPMorgan"
+],
+"monogramColor": "#D82C74"
+},
+{
+"id": "6a13b471-db67-55c8-b1af-f98fe5e687b6",
+"name": "Bank of America",
+"category": "Finance",
+"aliases": [
+"BofA"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "2f65b16e-5199-528e-a0b1-9f636d23b2ea",
+"name": "Wells Fargo",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#0F766E"
+},
+{
+"id": "703fa80a-338b-5a9b-b95f-be01842e0359",
+"name": "Citi",
+"category": "Finance",
+"aliases": [
+"Citibank"
+],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "29a5b07f-51f9-509e-9c23-b78d9bf856fb",
+"name": "U.S. Bank",
+"category": "Finance",
+"aliases": [
+"US Bank"
+],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "3519a74d-3155-50c1-be38-d2e819bc30fb",
+"name": "PNC",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "fe122c94-d3ab-505f-8ee1-41f676046416",
+"name": "TD Bank",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "bca2df30-cf28-5882-b08b-b8df09229b63",
+"name": "Truist",
+"category": "Finance",
+"aliases": [
+"SunTrust",
+"BB&T"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "addd0f9d-36cd-51b0-a835-2533786518d9",
+"name": "Discover",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#2777C5"
+},
+{
+"id": "e7142277-aa0e-54d0-bfdc-9b10ab42dff4",
+"name": "American Express",
+"category": "Finance",
+"aliases": [
+"Amex"
+],
+"monogramColor": "#D82C74"
+},
+{
+"id": "cc789641-2c65-535a-895c-b212cdcb27a1",
+"name": "Synchrony",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#D97706"
+},
+{
+"id": "4c53cd4a-9c79-5c7f-8527-8a9838f77116",
+"name": "Ally",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "2263c542-343d-5009-a7ec-b5e650df75c4",
+"name": "Navy Federal",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "684a8959-9031-5190-952b-18df7b495fb1",
+"name": "USAA",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#2777C5"
+},
+{
+"id": "7f027919-c1ba-52c4-baa1-1332261cf808",
+"name": "PayPal",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "936e7f65-9bc1-5150-9edf-6b1c9374d410",
+"name": "Venmo",
+"category": "Finance",
+"aliases": [
+"PayPal"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "b3e72e2f-f709-5943-abf1-50310d85ed43",
+"name": "Cash App",
+"category": "Finance",
+"aliases": [
+"Block",
+"Square"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "f5274a82-1645-5362-899e-0553c2c625e9",
+"name": "Robinhood",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "3e572263-9771-5de7-841f-b179ef782f6a",
+"name": "Coinbase",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "837ba9fb-cb5a-5a23-91af-44ee8c28684c",
+"name": "Chime",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "e34e7674-3792-5374-af56-d7795bfc808c",
+"name": "SoFi",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "bd89cf24-4d99-5be2-9900-3384300e196a",
+"name": "Credit Karma",
+"category": "Finance",
+"aliases": [
+"Intuit"
+],
+"monogramColor": "#B45309"
+},
+{
+"id": "2a0b5849-9348-5e4b-8daf-fb8f76f96fc5",
+"name": "Equifax",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#D82C74"
+},
+{
+"id": "a2755bc3-d49c-5a75-9e78-482e7afb63ca",
+"name": "Experian",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "8499e035-61fd-5753-a744-0982bd761e52",
+"name": "TransUnion",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#0F766E"
+},
+{
+"id": "abbb4a5d-b534-5fb0-a99f-37f0cc8fc3ea",
+"name": "Navient",
+"category": "Finance",
+"aliases": [
+"Student loans"
+],
+"monogramColor": "#B45309"
+},
+{
+"id": "10c5b8d8-3b4c-5c19-a801-01a844bcd928",
+"name": "Sallie Mae",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#D82C74"
+},
+{
+"id": "3a14d34c-4442-551d-af97-cf99aee454a0",
+"name": "H&R Block",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "d8a7edf0-b718-526d-83e9-a7b7bbbd64e3",
+"name": "TurboTax",
+"category": "Finance",
+"aliases": [
+"Intuit"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "d37e2d9f-9991-5199-9175-fa6591070875",
+"name": "Western Union",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "83a9d2d8-9089-538a-8843-4943aca569c8",
+"name": "MoneyGram",
+"category": "Finance",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "00000000-0000-0000-0000-000000000005",
+"name": "Apple",
+"category": "Tech",
+"aliases": [
+"iPhone",
+"App Store"
+],
+"monogramColor": "#606862"
+},
+{
+"id": "4e31bb49-10e5-56df-8548-ba310010cb57",
+"name": "Google",
+"category": "Tech",
+"aliases": [
+"Gmail",
+"Android"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "f44409c7-b728-51c2-ae1c-e088faa89df4",
+"name": "Microsoft",
+"category": "Tech",
+"aliases": [
+"Windows",
+"Outlook"
+],
+"monogramColor": "#606862"
+},
+{
+"id": "7632c0c8-ed11-5c8b-a0d9-6c3417cf8006",
+"name": "Samsung",
+"category": "Tech",
+"aliases": [
+"Galaxy"
+],
+"monogramColor": "#D82C74"
+},
+{
+"id": "11149dcc-9851-59f0-96a8-f2f011b4cdd3",
+"name": "Adobe",
+"category": "Tech",
+"aliases": [
+"Photoshop"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "864817ca-55f5-5902-bf03-582bcab43a2c",
+"name": "Yahoo",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "7112057a-66de-56d8-b8e9-c5e4ad1ced1d",
+"name": "Zoom",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "78eba201-b505-5260-8a1d-4c2e6702d169",
+"name": "Dropbox",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "82f04697-98f1-5f9b-9ff7-e822558a5159",
+"name": "Ring",
+"category": "Tech",
+"aliases": [
+"Amazon"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "5fb9419e-b2bd-584c-8ced-b605c6aa6fbd",
+"name": "Fitbit",
+"category": "Tech",
+"aliases": [
+"Google"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "3e44fa91-7653-54c7-b86e-64b3b52709c6",
+"name": "HP",
+"category": "Tech",
+"aliases": [
+"Hewlett-Packard"
+],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "0553ceb6-5ad4-54c6-99f8-27a117f8a2fa",
+"name": "Dell",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#B45309"
+},
+{
+"id": "3128bec7-4813-5f21-bfc1-c4c4c075190a",
+"name": "Lenovo",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "0063d0ab-db40-536e-9a45-493bf180f1c8",
+"name": "Sony",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "6dd1e4d0-4e7c-5d4f-885f-2ede57519f0e",
+"name": "LG",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "971f1303-b2d5-51b1-857c-5505b20c9d8f",
+"name": "Canon",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#176084"
+},
+{
+"id": "e0346574-0aaf-5b90-8b52-4e31583cac5c",
+"name": "Epson",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "71cc60b9-cfd2-56c7-84c0-011b4cd3acdb",
+"name": "GoDaddy",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "708cf6dd-7d81-58bf-8e8c-db6f7ad6e8a2",
+"name": "Norton",
+"category": "Tech",
+"aliases": [
+"LifeLock",
+"Gen Digital"
+],
+"monogramColor": "#0F766E"
+},
+{
+"id": "f382f357-280a-56e4-888a-8425f540d55d",
+"name": "McAfee",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "19adc289-2e1e-5293-9995-fe2522b2a63d",
+"name": "Garmin",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "2d9896d4-af0f-5954-80e8-a5ff2e507907",
+"name": "Roku",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "82de03fa-841a-5b3c-af00-18339089b40e",
+"name": "Western Digital",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "00000000-0000-0000-0000-000000000015",
+"name": "Airbnb",
+"category": "Travel",
+"aliases": [
+"Vacation rental"
+],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "65dc175e-8d64-59b3-8050-8d25a5928543",
+"name": "Vrbo",
+"category": "Travel",
+"aliases": [
+"HomeAway"
+],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "618b9433-4c9f-5d49-ae4d-08648bc75e16",
+"name": "Expedia",
+"category": "Travel",
+"aliases": [
+"Hotels.com"
+],
+"monogramColor": "#0F766E"
+},
+{
+"id": "f37a4a20-f039-57f3-a047-40c4a198169e",
+"name": "Booking.com",
+"category": "Travel",
+"aliases": [
+"Priceline"
+],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "a0e3cfd5-a2fb-545d-9b9d-7a0801709f6c",
+"name": "Marriott",
+"category": "Travel",
+"aliases": [
+"Starwood"
+],
+"monogramColor": "#9A3412"
+},
+{
+"id": "4fe96946-4377-507e-aa24-9a88d7503fca",
+"name": "Hilton",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "a3b99c10-43e0-54ba-b1b1-11e81d26c7de",
+"name": "Hyatt",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "fb7eee98-ea61-56d6-bef0-5440a588ee63",
+"name": "MGM Resorts",
+"category": "Travel",
+"aliases": [
+"MGM"
+],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "341f499c-e9d2-5580-a86a-d5148803ae7f",
+"name": "American Airlines",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "3fa5d1d0-28c8-5657-b53b-b7dc0a00401b",
+"name": "Delta Air Lines",
+"category": "Travel",
+"aliases": [
+"Delta"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "88ee2d62-6eb3-5c2e-9850-22a539498c65",
+"name": "United Airlines",
+"category": "Travel",
+"aliases": [
+"United"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "6caa87bf-dd49-5ad6-928b-5ff528d60120",
+"name": "Southwest Airlines",
+"category": "Travel",
+"aliases": [
+"Southwest"
+],
+"monogramColor": "#9A3412"
+},
+{
+"id": "066eac88-a631-5aea-95b7-785a357d3748",
+"name": "JetBlue",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#9A3412"
+},
+{
+"id": "a9653fd7-d06a-5e89-8a36-56b3999c4f08",
+"name": "Spirit Airlines",
+"category": "Travel",
+"aliases": [
+"Spirit"
+],
+"monogramColor": "#B45309"
+},
+{
+"id": "9b99eb68-2864-5f63-b6fb-614ee4889c8f",
+"name": "Frontier Airlines",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "a0ec8e86-7523-594f-b6cf-bdf08b9d0f83",
+"name": "Alaska Airlines",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "6bf09157-4bce-58fb-9e47-1f4cd1293d20",
+"name": "Hertz",
+"category": "Travel",
+"aliases": [],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "aede4c7b-1e35-5875-aadf-63e45e739510",
+"name": "Avis",
+"category": "Travel",
+"aliases": [
+"Budget"
+],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "1b826f66-770f-5f5b-9383-f6a6d541d5d9",
+"name": "Enterprise",
+"category": "Travel",
+"aliases": [
+"National",
+"Alamo"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "6d7c8f20-2f79-5c56-8ef6-7a67a06216ab",
+"name": "Carnival Cruise Line",
+"category": "Travel",
+"aliases": [
+"Carnival"
+],
+"monogramColor": "#4664A5"
+},
+{
+"id": "5891e11a-8f2f-534f-88e4-5e5ead5aa9f3",
+"name": "23andMe",
+"category": "Health",
+"aliases": [
+"DNA test"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "2898a4c4-8d6b-5bdc-b458-85a1a5a3a988",
+"name": "Ancestry",
+"category": "Health",
+"aliases": [
+"DNA"
+],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "e04cd6d0-0587-5ad0-bdd8-5e9a8c168057",
+"name": "UnitedHealthcare",
+"category": "Health",
+"aliases": [
+"UnitedHealth",
+"Optum"
+],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "405b404a-8f35-5dd9-9c36-03d2b4227e75",
+"name": "Anthem",
+"category": "Health",
+"aliases": [
+"Elevance"
+],
+"monogramColor": "#0F766E"
+},
+{
+"id": "ec14b58a-6409-5926-88d4-928ce5759d8a",
+"name": "Aetna",
+"category": "Health",
+"aliases": [
+"CVS"
+],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "58a8920d-ca6b-5952-99cf-ac809304685f",
+"name": "Cigna",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#168A4B"
+},
+{
+"id": "c12c0d0d-44d5-5156-8154-0857f731fa90",
+"name": "Kaiser Permanente",
+"category": "Health",
+"aliases": [
+"Kaiser"
+],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "a40b7ab6-5a3e-5b9e-a39f-d7cfe2c2f471",
+"name": "Blue Cross Blue Shield",
+"category": "Health",
+"aliases": [
+"BCBS"
+],
+"monogramColor": "#168A4B"
+},
+{
+"id": "b8a1a3cb-9624-551c-8725-99766043f5f4",
+"name": "Humana",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "71b11fd8-6a1a-5766-8037-536551bcaa8b",
+"name": "GoodRx",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "e784bd34-d10a-562f-a283-8023e39a6914",
+"name": "BetterHelp",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "6fadf48b-1c87-561d-8ed2-3e17ecbfa5b3",
+"name": "Planet Fitness",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "10e61c30-a751-56dd-b746-f54514ad7303",
+"name": "LA Fitness",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#0F766E"
+},
+{
+"id": "d01696c6-a193-52bf-8a1c-c5b76b0ca524",
+"name": "Peloton",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "ef62e013-3e41-5fc3-a82a-ec9d1a960e2c",
+"name": "Noom",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "6d1cb843-65b2-54e3-8bef-829bcbfe6a56",
+"name": "WeightWatchers",
+"category": "Health",
+"aliases": [
+"WW"
+],
+"monogramColor": "#606862"
+},
+{
+"id": "4151d46e-8d46-50e1-ab63-c9f49c5fd9dc",
+"name": "Rite Aid",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#CC4A57"
+},
+{
+"id": "0626fcf9-cb66-54df-b42a-7125420a66c2",
+"name": "Quest Diagnostics",
+"category": "Health",
+"aliases": [
+"Quest"
+],
+"monogramColor": "#C71920"
+},
+{
+"id": "5a386d1f-328b-5723-9648-51c540336b54",
+"name": "Labcorp",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "1b53e33a-0a3a-5adb-83f7-4213214cce1c",
+"name": "Change Healthcare",
+"category": "Health",
+"aliases": [],
+"monogramColor": "#5B4B8A"
+},
+{
+"id": "5e6036d1-5bda-525d-bf94-bd27931fc524",
+"name": "Tesla",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#D74227"
+},
+{
+"id": "e6ee6e15-ec66-5188-b86d-9d02e13aef06",
+"name": "Toyota",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#C71920"
+},
+{
+"id": "8d246f14-9e4c-522d-a725-de2d4587c765",
+"name": "Honda",
+"category": "Auto",
+"aliases": [
+"Acura"
+],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "1df4c796-0a22-54c4-818e-99e8378a8a51",
+"name": "Ford",
+"category": "Auto",
+"aliases": [
+"Lincoln"
+],
+"monogramColor": "#0F766E"
+},
+{
+"id": "d1621a76-967c-5578-a5b1-1d1430355845",
+"name": "Chevrolet",
+"category": "Auto",
+"aliases": [
+"GM",
+"General Motors",
+"GMC"
+],
+"monogramColor": "#2777C5"
+},
+{
+"id": "b24f3b5c-8658-5113-9ec9-aba874224ffa",
+"name": "Hyundai",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#606862"
+},
+{
+"id": "0e71dc9a-5746-5f2b-81ac-8e96ce8b24f0",
+"name": "Kia",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "3be379c7-94d1-52e0-99ba-ab9dff3ddb3e",
+"name": "Nissan",
+"category": "Auto",
+"aliases": [
+"Infiniti"
+],
+"monogramColor": "#D97706"
+},
+{
+"id": "6d56ed45-80d3-5d56-9c61-955ef2298a1b",
+"name": "Jeep",
+"category": "Auto",
+"aliases": [
+"Stellantis",
+"Chrysler",
+"Dodge",
+"Ram"
+],
+"monogramColor": "#D74227"
+},
+{
+"id": "e95490a4-ca95-5b26-b683-3441bcf36774",
+"name": "Subaru",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#D82C74"
+},
+{
+"id": "459bea49-b549-5d17-b13b-3785654b204c",
+"name": "Volkswagen",
+"category": "Auto",
+"aliases": [
+"VW",
+"Audi"
+],
+"monogramColor": "#4D7C0F"
+},
+{
+"id": "67362e67-f7e4-590e-ade3-ee182098fced",
+"name": "BMW",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#1E2B24"
+},
+{
+"id": "5d03f0aa-6565-503c-a0cf-08e1219c51bb",
+"name": "GEICO",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#B91C1C"
+},
+{
+"id": "fee3709f-bb78-5c24-bc3f-65e48d200804",
+"name": "Progressive",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#1F61A6"
+},
+{
+"id": "7d7d4d30-c593-5294-9072-d621c1434038",
+"name": "State Farm",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "9b5fc1bf-95bd-576c-9966-8881efc36974",
+"name": "Allstate",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#4664A5"
+},
+{
+"id": "77c624b0-6a75-54f0-9d89-18d71ac0f12b",
+"name": "Liberty Mutual",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#168A4B"
+},
+{
+"id": "e200c07e-525d-5bf6-a65d-6f010f06b12c",
+"name": "Carvana",
+"category": "Auto",
+"aliases": [],
+"monogramColor": "#B45309"
+}
+]

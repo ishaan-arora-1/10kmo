@@ -38,6 +38,19 @@ brew install xcodegen
 xcodegen generate
 ```
 
+## Run the website and web app
+
+The `website/` folder is a Vite + React project. It serves the marketing pages (`/`, `/privacy`, `/terms`, `/support`) and the full web app at `/app`, which does everything the iPhone app does against the same Supabase backend.
+
+```bash
+cd website
+cp .env.example .env.local   # optional: add your Supabase URL and publishable key
+npm install
+npm run dev                  # http://localhost:5173 and http://localhost:5173/app
+```
+
+Without `.env.local` the web app runs in clearly labeled sample mode. Web subscriptions use Stripe and unlock the iPhone app too; web reminders are sent by email (Resend).
+
 ## Connect Supabase
 
 1. Create a Supabase project.

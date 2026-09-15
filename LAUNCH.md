@@ -61,7 +61,8 @@ Status: all planned app code is in. `db push` also loads a ~230-company catalog 
 5. **Authentication → Sign In / Providers**:
    - **Apple**: enable; Client IDs = `com.rightful.app`
    - **Google**: enable; paste Client ID and secret from step 3
-6. **Authentication → URL Configuration → Redirect URLs**: add `rightful://auth/callback`
+6. **Authentication → URL Configuration**: set **Site URL** to `https://YOUR_DOMAIN`, and add these **Redirect URLs**: `rightful://auth/callback`, `https://YOUR_DOMAIN/app/**`, `http://localhost:5173/app/**`
+7. **Authentication → Emails → SMTP Settings**: enable custom SMTP with Resend (host `smtp.resend.com`, port `465`, user `resend`, password = your Resend API key from step 5b) so email sign-in links arrive reliably.
 
 ## 5. Database + server functions (Terminal, in the repo folder)
 
@@ -94,6 +95,9 @@ npx supabase functions deploy verify-purchase
 npx supabase functions deploy delete-account
 npx supabase functions deploy app-store-notifications --no-verify-jwt
 npx supabase functions deploy notify --no-verify-jwt
+npx supabase functions deploy stripe-checkout
+npx supabase functions deploy stripe-portal
+npx supabase functions deploy stripe-webhook --no-verify-jwt
 ```
 
 7. **Daily notifications**: Dashboard → **Integrations → Cron → Create job**
@@ -101,6 +105,41 @@ npx supabase functions deploy notify --no-verify-jwt
    - Type: HTTP request, **POST** `https://YOUR_PROJECT_REF.supabase.co/functions/v1/notify`
    - Header `apikey: <your automations secret key>`
 8. Go back to step 2.5 and paste the App Store Server Notifications URL.
+
+## 5b. Web payments and email reminders
+
+The website runs the full app at `/app`. Web subscriptions are paid through **Stripe** (Apple doesn't handle web payments) and unlock the iPhone app too. Web reminders go out by **email** through Resend.
+
+**Stripe** ([dashboard.stripe.com](https://dashboard.stripe.com)). Do this in **Test mode** first, then repeat in Live mode:
+1. Activate your account (business and bank details).
+2. **Product catalog → + Add product** "Rightful Premium" with two recurring prices: **$39.99 / year** and **$4.99 / week**. **SAVE** both price IDs (`price_...`). The 3-day trial for first-time yearly subscribers is added by the app.
+3. **Settings → Billing → Customer portal**: allow customers to cancel, switch plans, and update payment methods. Save.
+4. **Developers → Webhooks → Add endpoint**: URL `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`, events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. **SAVE** the signing secret (`whsec_...`).
+5. **Developers → API keys**: **SAVE** the secret key (`sk_...`).
+
+**Resend** ([resend.com](https://resend.com)):
+1. **Domains → Add domain**, add the DNS records it shows, wait for "Verified".
+2. **API Keys → Create**. **SAVE** it.
+
+Set the web secrets:
+
+```bash
+npx supabase secrets set \
+  STRIPE_SECRET_KEY=sk_... \
+  STRIPE_WEBHOOK_SECRET=whsec_... \
+  STRIPE_PRICE_YEARLY=price_... \
+  STRIPE_PRICE_WEEKLY=price_... \
+  WEB_APP_URL=https://YOUR_DOMAIN \
+  WEB_APP_ORIGINS=https://YOUR_DOMAIN,https://www.YOUR_DOMAIN \
+  RESEND_API_KEY=re_... \
+  EMAIL_FROM="Rightful <reminders@YOUR_DOMAIN>"
+```
+
+**Optional: Sign in with Apple on the website.** Until you do this, the website offers Google and email-link sign-in (the iPhone app keeps native Apple sign-in).
+1. Apple Developer → **Identifiers → + → Services IDs**, e.g. `com.rightful.app.web`. Enable Sign in with Apple; domain `YOUR_PROJECT_REF.supabase.co`, return URL `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`.
+2. **Keys → +** with Sign in with Apple enabled. Download the `.p8`.
+3. Supabase → **Authentication → Providers → Apple**: add the Services ID to Client IDs (keep `com.rightful.app`), and fill in the secret from the key.
+4. Set `VITE_ENABLE_APPLE_SIGN_IN=true` in Vercel (step 8).
 
 ## 6. Connect the app (Xcode)
 
@@ -131,9 +170,11 @@ The app shows only what's in the `settlements` table with `status = verified`. B
 
 ## 8. Website
 
-1. [vercel.com](https://vercel.com) → **Add New → Project** → import `ishaan-arora-1/10kmo` → **Root Directory: `website`** → Deploy.
-2. **Settings → Domains**: add your domain and follow the DNS instructions.
-3. Check `/privacy`, `/terms` and `/support` load. These are the App Store URLs.
+1. [vercel.com](https://vercel.com) → **Add New → Project** → import `ishaan-arora-1/10kmo` → **Root Directory: `website`**. Vercel detects Vite (build `npm run build`, output `dist`).
+2. **Environment Variables** (before the first deploy): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and optionally `VITE_ENABLE_APPLE_SIGN_IN=true`. Deploy.
+3. **Settings → Domains**: add your domain and follow the DNS instructions.
+4. Check `/privacy`, `/terms` and `/support` load (these are the App Store URLs), then test `/app`: pick companies → sign in → Stripe test checkout (card `4242 4242 4242 4242`) → Home shows Premium → file a claim → Profile → Manage billing.
+5. Sign in on the iPhone app with the same account and confirm it shows Premium too.
 
 ## 9. Ship
 

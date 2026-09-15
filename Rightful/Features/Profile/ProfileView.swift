@@ -69,8 +69,11 @@ struct ProfileView: View {
                     settingsButton(
                         icon: "checkmark.seal.fill",
                         title: app.isPremium ? "Rightful Premium" : "Free plan",
-                        detail: app.isPremium
-                            ? app.subscriptions.plan.rawValue.capitalized : "Upgrade to file and track"
+                        detail: app.subscriptions.plan.isPremium
+                            ? app.subscriptions.plan.rawValue.capitalized
+                            : app.serverPlan.isPremium
+                                ? "\(app.serverPlan.rawValue.capitalized) · subscribed on the web"
+                                : "Upgrade to file and track"
                     ) {
                         if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
                             openURL(url)

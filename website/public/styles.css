@@ -69,6 +69,7 @@ p { margin: 0; }
 .nav-links { display: flex; gap: 22px; font-size: 15px; color: var(--muted); }
 .nav-links a { text-decoration: none; }
 .nav-links a:hover { color: var(--ink); }
+.nav-links .nav-cta { color: var(--money); font-weight: 700; }
 @media (max-width: 640px) { .nav-links .hide-sm { display: none; } }
 
 /* ---------- buttons ---------- */

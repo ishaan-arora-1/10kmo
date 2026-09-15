@@ -15,7 +15,13 @@ type Device = {
   environment: "sandbox" | "production";
 };
 
-type Profile = { user_id: string; state_codes: string[] | null };
+type Profile = {
+  user_id: string;
+  state_codes: string[] | null;
+  notifications_enabled: boolean;
+  email: string | null;
+  email_reminders: boolean;
+};
 type BrandPick = { user_id: string; brand_id: string };
 
 type Settlement = {
@@ -97,8 +103,10 @@ export default {
           fetchPages<Profile>(async (from, to) => {
             const result = await context.supabaseAdmin
               .from("profiles")
-              .select("user_id,state_codes")
-              .eq("notifications_enabled", true)
+              .select(
+                "user_id,state_codes,notifications_enabled,email,email_reminders",
+              )
+              .or("notifications_enabled.eq.true,email_reminders.eq.true")
               .order("user_id")
               .range(from, to);
             return {
@@ -274,8 +282,15 @@ export default {
           alreadyClaimed: true,
         };
       });
+      const pushUsers = new Set(
+        profiles
+          .filter((profile) => profile.notifications_enabled)
+          .map((profile) => profile.user_id),
+      );
       const newDeliveries: Delivery[] = pushes.flatMap((push) =>
-        (devicesByUser.get(push.userID) ?? []).map((device) => ({
+        (pushUsers.has(push.userID)
+          ? devicesByUser.get(push.userID) ?? []
+          : []).map((device) => ({
           deliveryID: `${push.id}:${device.id}`,
           push,
           device,
@@ -350,7 +365,14 @@ export default {
         }
       }
 
-      return Response.json({ sent, failed, skipped });
+      const emailed = await sendEmailDigests(
+        context.supabaseAdmin,
+        profiles,
+        pushes,
+        today,
+      );
+
+      return Response.json({ sent, failed, skipped, emailed });
     },
   ),
 };
@@ -477,6 +499,119 @@ function requiredEnvironment(name: string): string {
   const value = Deno.env.get(name);
   if (!value) throw new Error(`Missing ${name}`);
   return value;
+}
+
+// One email per person per day, listing every reminder the push path would send.
+async function sendEmailDigests(
+  // deno-lint-ignore no-explicit-any
+  admin: any,
+  profiles: Profile[],
+  pushes: PendingPush[],
+  today: string,
+): Promise<number> {
+  const apiKey = Deno.env.get("RESEND_API_KEY");
+  const from = Deno.env.get("EMAIL_FROM");
+  const appURL = (Deno.env.get("WEB_APP_URL") ?? "").replace(/\/$/, "");
+  if (!apiKey || !from) return 0;
+
+  const pushesByUser = groupRows(pushes, (push) => push.userID);
+  let emailed = 0;
+
+  for (const profile of profiles) {
+    if (!profile.email_reminders || !profile.email) continue;
+    const items = pushesByUser.get(profile.user_id);
+    if (!items || items.length === 0) continue;
+
+    const deliveryID = `email:${profile.user_id}:${today}`;
+    const { data: claimed, error: claimError } = await admin.rpc(
+      "claim_notification_delivery",
+      {
+        p_id: deliveryID,
+        p_user_id: profile.user_id,
+        p_device_id: null,
+        p_notification_type: "email_digest",
+        p_payload: { items: items.map(({ title, body }) => ({ title, body })) },
+      },
+    );
+    if (claimError) {
+      console.error("email claim failed", claimError);
+      continue;
+    }
+    if (!claimed) continue;
+
+    const subject = items.length === 1
+      ? items[0].title
+      : `${items.length} updates on your settlement claims`;
+    const ok = await sendEmail(apiKey, from, profile.email, subject, items, appURL);
+    await admin.rpc("complete_notification_delivery", {
+      p_id: deliveryID,
+      p_result: ok ? "sent" : "failed",
+    });
+    if (ok) emailed += 1;
+  }
+
+  return emailed;
+}
+
+function escapeHTML(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+async function sendEmail(
+  apiKey: string,
+  from: string,
+  to: string,
+  subject: string,
+  items: PendingPush[],
+  appURL: string,
+): Promise<boolean> {
+  const link = appURL ? `${appURL}/app` : "";
+  const profileLink = appURL ? `${appURL}/app/profile` : "";
+  const html = `<div style="font-family:Helvetica,Arial,sans-serif;color:#14201A;max-width:520px">
+  <p style="font-family:monospace;color:#5B6B62">Rightful</p>
+  ${
+    items.map((item) =>
+      `<h2 style="margin:18px 0 4px;font-size:20px">${escapeHTML(item.title)}</h2>
+  <p style="margin:0;color:#5B6B62">${escapeHTML(item.body)}</p>`
+    ).join("\n")
+  }
+  ${
+    link
+      ? `<p style="margin-top:24px"><a href="${link}" style="background:#0E7A4B;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:bold">Open Rightful</a></p>`
+      : ""
+  }
+  <p style="margin-top:28px;font-size:12px;color:#5B6B62">You're getting this because you turned on email reminders.${
+    profileLink
+      ? ` <a href="${profileLink}" style="color:#5B6B62">Turn them off</a>.`
+      : ""
+  } Rightful is not a law firm.</p>
+</div>`;
+  const text = items.map((item) => `${item.title}\n${item.body}`).join("\n\n") +
+    (link ? `\n\nOpen Rightful: ${link}` : "") +
+    "\n\nYou're getting this because you turned on email reminders. Turn them off in Profile.";
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ from, to: [to], subject, html, text }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) {
+      console.error("email send failed", response.status, await response.text());
+    }
+    return response.ok;
+  } catch (error) {
+    console.error("email send failed", error);
+    return false;
+  }
 }
 
 function matchesStates(

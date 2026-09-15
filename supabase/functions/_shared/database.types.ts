@@ -23,6 +23,9 @@ export type Database = {
           state_code: string | null;
           state_codes: string[];
           plan: "free" | "yearly" | "weekly";
+          plan_source: "apple" | "stripe" | null;
+          email: string | null;
+          email_reminders: boolean;
           notifications_enabled: boolean;
           created_at: string;
           updated_at: string;
@@ -89,7 +92,7 @@ export type Database = {
         Args: {
           p_id: string;
           p_user_id: string;
-          p_device_id: string;
+          p_device_id: string | null;
           p_notification_type: string;
           p_payload: Json;
         };
@@ -127,6 +130,35 @@ export type Database = {
           p_result: "sent" | "failed" | "retry";
         };
         Returns: undefined;
+      };
+      upsert_stripe_subscription: {
+        Args: {
+          p_subscription_id: string;
+          p_user_id: string;
+          p_customer_id: string;
+          p_price_id: string;
+          p_plan: "free" | "yearly" | "weekly";
+          p_status: string;
+          p_current_period_end: string | null;
+          p_cancel_at_period_end: boolean;
+        };
+        Returns: "free" | "yearly" | "weekly";
+      };
+      stripe_customer_for_user: {
+        Args: { p_user_id: string };
+        Returns: string | null;
+      };
+      stripe_user_for_customer: {
+        Args: { p_customer_id: string };
+        Returns: string | null;
+      };
+      user_had_stripe_subscription: {
+        Args: { p_user_id: string };
+        Returns: boolean;
+      };
+      active_stripe_subscription_ids: {
+        Args: { p_user_id: string };
+        Returns: string[];
       };
       register_notification_device: {
         Args: {
