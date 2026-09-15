@@ -170,6 +170,16 @@ values
     true
   )
 on conflict (id) do update set
+  title = excluded.title,
+  company = excluded.company,
+  brand_id = excluded.brand_id,
+  payout_min = excluded.payout_min,
+  payout_max = excluded.payout_max,
   deadline = excluded.deadline,
+  proof_required = excluded.proof_required,
+  qualifies_summary = excluded.qualifies_summary,
+  eligibility_details = excluded.eligibility_details,
+  claim_url = excluded.claim_url,
+  expected_payout_date = excluded.expected_payout_date,
   status = excluded.status,
   is_sample = excluded.is_sample;

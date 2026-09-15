@@ -83,6 +83,10 @@ npx supabase functions deploy app-store-notifications --no-verify-jwt
 npx supabase functions deploy notify --no-verify-jwt
 ```
 
+Run these deployments with Docker available. The Apple verification functions
+bundle root certificates through `static_files`, which Supabase cannot deploy
+through its API-only fallback.
+
 Create a named Supabase secret API key called `automations`. Schedule a daily POST to the `notify` function with that key in the `apikey` header.
 
 The notification function uses Apple APNs directly. Production requires an APNs key, the Apple team ID, and device-token registration wiring in the Apple Developer portal.
