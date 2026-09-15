@@ -120,7 +120,7 @@ create table private.pending_subscription_events (
   transaction_id text not null,
   original_transaction_id text not null,
   product_id text not null,
-  app_account_token uuid,
+  app_account_token uuid references auth.users(id) on delete set null,
   expires_at timestamptz,
   revoked_at timestamptz,
   signed_at timestamptz not null,
@@ -135,8 +135,10 @@ create table private.notification_log (
   notification_type text not null,
   payload jsonb not null,
   status text not null default 'claimed'
-    check (status in ('claimed', 'sent', 'failed')),
+    check (status in ('claimed', 'retry', 'sent', 'failed')),
+  attempt_count integer not null default 1 check (attempt_count > 0),
   attempted_at timestamptz not null default now(),
+  next_attempt_at timestamptz,
   sent_at timestamptz
 );
 
@@ -342,12 +344,86 @@ begin
     p_payload
   )
   on conflict (id) do update set
-    attempted_at = now()
-  where private.notification_log.status = 'claimed'
-    and private.notification_log.attempted_at < now() - interval '15 minutes'
+    status = 'claimed',
+    attempt_count = private.notification_log.attempt_count + 1,
+    attempted_at = now(),
+    next_attempt_at = null
+  where (
+      private.notification_log.status = 'retry'
+      and private.notification_log.next_attempt_at <= now()
+    )
+    or (
+      private.notification_log.status = 'claimed'
+      and private.notification_log.attempted_at < now() - interval '15 minutes'
+    )
   returning true into claimed;
 
   return coalesce(claimed, false);
+end;
+$$;
+
+create or replace function public.claim_pending_notification_deliveries(
+  p_limit integer default 100
+)
+returns table (
+  delivery_id text,
+  delivery_user_id uuid,
+  delivery_device_id uuid,
+  delivery_type text,
+  delivery_payload jsonb,
+  apns_token text,
+  apns_environment text
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  return query
+  with candidates as (
+    select notification_log.id
+    from private.notification_log as notification_log
+    where (
+        notification_log.status = 'retry'
+        and notification_log.next_attempt_at <= now()
+      )
+      or (
+        notification_log.status = 'claimed'
+        and notification_log.attempted_at < now() - interval '15 minutes'
+      )
+    order by
+      notification_log.next_attempt_at asc nulls first,
+      notification_log.attempted_at asc
+    for update skip locked
+    limit greatest(1, least(p_limit, 500))
+  ),
+  claimed as (
+    update private.notification_log as notification_log
+    set
+      status = 'claimed',
+      attempt_count = notification_log.attempt_count + 1,
+      attempted_at = now(),
+      next_attempt_at = null
+    from candidates
+    where notification_log.id = candidates.id
+    returning
+      notification_log.id,
+      notification_log.user_id,
+      notification_log.device_id,
+      notification_log.notification_type,
+      notification_log.payload
+  )
+  select
+    claimed.id,
+    claimed.user_id,
+    claimed.device_id,
+    claimed.notification_type,
+    claimed.payload,
+    devices.apns_token,
+    devices.environment
+  from claimed
+  join public.notification_devices as devices
+    on devices.id = claimed.device_id;
 end;
 $$;
 
@@ -364,12 +440,18 @@ create or replace function public.apply_subscription_status(
 )
 returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = ''
 as $$
 declare
   owner_id uuid;
+  valid_app_account_token uuid;
 begin
+  select id
+  into valid_app_account_token
+  from auth.users
+  where id = p_app_account_token;
+
   insert into private.pending_subscription_events (
     notification_uuid,
     transaction_id,
@@ -386,7 +468,7 @@ begin
     p_transaction_id,
     p_original_transaction_id,
     p_product_id,
-    p_app_account_token,
+    valid_app_account_token,
     p_expires_at,
     p_revoked_at,
     p_signed_at,
@@ -400,12 +482,7 @@ begin
   where original_transaction_id = p_original_transaction_id;
 
   if owner_id is null
-    and p_app_account_token is not null
-    and exists (
-      select 1
-      from auth.users
-      where id = p_app_account_token
-    )
+    and valid_app_account_token is not null
   then
     insert into private.subscription_owners (
       original_transaction_id,
@@ -413,7 +490,7 @@ begin
     )
     values (
       p_original_transaction_id,
-      p_app_account_token
+      valid_app_account_token
     )
     on conflict (original_transaction_id) do nothing;
 
@@ -475,7 +552,10 @@ set search_path = ''
 as $$
 begin
   if p_result = 'retry' then
-    delete from private.notification_log
+    update private.notification_log
+    set
+      status = 'retry',
+      next_attempt_at = now() + interval '15 minutes'
     where id = p_id
       and status = 'claimed';
   elsif p_result in ('sent', 'failed') then
@@ -495,6 +575,8 @@ revoke all on function public.record_purchase_event(text, uuid, text, text, time
   from public, anon, authenticated;
 revoke all on function public.claim_notification_delivery(text, uuid, uuid, text, jsonb)
   from public, anon, authenticated;
+revoke all on function public.claim_pending_notification_deliveries(integer)
+  from public, anon, authenticated;
 revoke all on function public.apply_subscription_status(uuid, text, text, text, uuid, timestamptz, timestamptz, timestamptz, text)
   from public, anon, authenticated;
 revoke all on function public.complete_notification_delivery(text, text)
@@ -503,6 +585,8 @@ revoke all on function public.complete_notification_delivery(text, text)
 grant execute on function public.record_purchase_event(text, uuid, text, text, timestamptz, timestamptz, timestamptz, text)
   to service_role;
 grant execute on function public.claim_notification_delivery(text, uuid, uuid, text, jsonb)
+  to service_role;
+grant execute on function public.claim_pending_notification_deliveries(integer)
   to service_role;
 grant execute on function public.apply_subscription_status(uuid, text, text, text, uuid, timestamptz, timestamptz, timestamptz, text)
   to service_role;
@@ -757,3 +841,8 @@ revoke all on public.profile_brands, public.claims, public.notification_devices 
 grant select, insert, update, delete on public.profile_brands to authenticated;
 grant select, insert, update, delete on public.claims to authenticated;
 grant select, delete on public.notification_devices to authenticated;
+
+grant select, update on public.profiles to service_role;
+grant select on public.profile_brands, public.settlements, public.claims
+  to service_role;
+grant select, delete on public.notification_devices to service_role;

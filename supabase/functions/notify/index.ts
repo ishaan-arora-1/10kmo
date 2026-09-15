@@ -45,6 +45,13 @@ type PendingPush = {
   body: string;
 };
 
+type Delivery = {
+  deliveryID: string;
+  push: PendingPush;
+  device: Device;
+  alreadyClaimed: boolean;
+};
+
 type Page<T> = { data: T[] | null; error: unknown };
 
 type APNsResult = {
@@ -230,12 +237,48 @@ export default {
         }
       }
 
-      const deliveries = pushes.flatMap((push) =>
+      const { data: retryRows, error: retryError } = await context.supabaseAdmin
+        .rpc("claim_pending_notification_deliveries", { p_limit: 500 });
+      if (retryError) {
+        console.error("pending notification claim failed", retryError);
+        return Response.json(
+          { error: "Pending notifications could not be claimed" },
+          { status: 500 },
+        );
+      }
+
+      const pendingDeliveries: Delivery[] = (retryRows ?? []).map((row) => {
+        const payload = row.delivery_payload as {
+          title: string;
+          body: string;
+        };
+        return {
+          deliveryID: row.delivery_id,
+          push: {
+            id: row.delivery_id,
+            userID: row.delivery_user_id,
+            type: row.delivery_type,
+            title: payload.title,
+            body: payload.body,
+          },
+          device: {
+            id: row.delivery_device_id,
+            user_id: row.delivery_user_id,
+            apns_token: row.apns_token,
+            environment: row.apns_environment,
+          },
+          alreadyClaimed: true,
+        };
+      });
+      const newDeliveries: Delivery[] = pushes.flatMap((push) =>
         (devicesByUser.get(push.userID) ?? []).map((device) => ({
+          deliveryID: `${push.id}:${device.id}`,
           push,
           device,
+          alreadyClaimed: false,
         }))
       );
+      const deliveries = [...pendingDeliveries, ...newDeliveries];
 
       let sent = 0;
       let failed = 0;
@@ -248,20 +291,21 @@ export default {
       ) {
         const batch = deliveries.slice(offset, offset + DELIVERY_CONCURRENCY);
         const outcomes = await Promise.all(
-          batch.map(async ({ push, device }) => {
-            const deliveryID = `${push.id}:${device.id}`;
+          batch.map(async ({ deliveryID, push, device, alreadyClaimed }) => {
             const payload: Json = { title: push.title, body: push.body };
-            const { data: claimed, error: claimError } = await context
-              .supabaseAdmin.rpc("claim_notification_delivery", {
-                p_id: deliveryID,
-                p_user_id: push.userID,
-                p_device_id: device.id,
-                p_notification_type: push.type,
-                p_payload: payload,
-              });
+            if (!alreadyClaimed) {
+              const { data: claimed, error: claimError } = await context
+                .supabaseAdmin.rpc("claim_notification_delivery", {
+                  p_id: deliveryID,
+                  p_user_id: push.userID,
+                  p_device_id: device.id,
+                  p_notification_type: push.type,
+                  p_payload: payload,
+                });
 
-            if (claimError) throw claimError;
-            if (!claimed) return "skipped" as const;
+              if (claimError) throw claimError;
+              if (!claimed) return "skipped" as const;
+            }
 
             const result = await sendAPNs(device, push);
             const completion = result.ok

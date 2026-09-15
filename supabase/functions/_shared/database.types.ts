@@ -93,6 +93,18 @@ export type Database = {
         };
         Returns: boolean;
       };
+      claim_pending_notification_deliveries: {
+        Args: { p_limit?: number };
+        Returns: {
+          delivery_id: string;
+          delivery_user_id: string;
+          delivery_device_id: string;
+          delivery_type: string;
+          delivery_payload: Json;
+          apns_token: string;
+          apns_environment: "sandbox" | "production";
+        }[];
+      };
       apply_subscription_status: {
         Args: {
           p_notification_uuid: string;
@@ -187,8 +199,10 @@ export type Database = {
           device_id: string | null;
           notification_type: string;
           payload: Json;
-          status: "claimed" | "sent" | "failed";
+          status: "claimed" | "retry" | "sent" | "failed";
+          attempt_count: number;
           attempted_at: string;
+          next_attempt_at: string | null;
           sent_at: string | null;
         },
         {
