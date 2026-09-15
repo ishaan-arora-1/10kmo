@@ -291,20 +291,27 @@ struct SupabaseRepository: Sendable {
 
     func syncDeviceToken(
         _ token: String,
-        userID: UUID,
         environment: String
     ) async throws {
         guard let client else { return }
         try await client
-            .from("notification_devices")
-            .upsert(
-                DeviceTokenRow(
-                    userID: userID,
-                    token: token,
-                    environment: environment
-                ),
-                onConflict: "user_id,apns_token"
+            .rpc(
+                "register_notification_device",
+                params: [
+                    "p_apns_token": token,
+                    "p_environment": environment,
+                ]
             )
+            .execute()
+    }
+
+    func removeDeviceToken(_ token: String, userID: UUID) async throws {
+        guard let client else { return }
+        try await client
+            .from("notification_devices")
+            .delete()
+            .eq("user_id", value: userID)
+            .eq("apns_token", value: token)
             .execute()
     }
 
@@ -484,18 +491,6 @@ private struct ClaimDownloadRow: Decodable, Sendable {
             paidAmount: paidAmount,
             paidAt: decodeTimestamp(paidAt)
         )
-    }
-}
-
-private struct DeviceTokenRow: Encodable, Sendable {
-    let userID: UUID
-    let token: String
-    let environment: String
-
-    enum CodingKeys: String, CodingKey {
-        case environment
-        case userID = "user_id"
-        case token = "apns_token"
     }
 }
 

@@ -93,8 +93,6 @@ export type Database = {
           p_expires_at: string | null;
           p_revoked_at: string | null;
           p_signed_transaction_hash: string;
-          p_plan: "free" | "yearly" | "weekly";
-          p_is_active: boolean;
         };
         Returns: string | null;
       };
@@ -104,6 +102,13 @@ export type Database = {
           p_user_id: string;
           p_notification_type: string;
           p_payload: Json;
+        };
+        Returns: undefined;
+      };
+      register_notification_device: {
+        Args: {
+          p_apns_token: string;
+          p_environment: "sandbox" | "production";
         };
         Returns: undefined;
       };

@@ -83,10 +83,9 @@ create table public.claims (
 create table public.notification_devices (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  apns_token text not null,
+  apns_token text not null unique,
   environment text not null check (environment in ('sandbox', 'production')),
-  last_seen_at timestamptz not null default now(),
-  unique (user_id, apns_token)
+  last_seen_at timestamptz not null default now()
 );
 
 create table private.purchase_events (
@@ -200,9 +199,7 @@ create or replace function public.apply_subscription_status(
   p_product_id text,
   p_expires_at timestamptz,
   p_revoked_at timestamptz,
-  p_signed_transaction_hash text,
-  p_plan public.plan_type,
-  p_is_active boolean
+  p_signed_transaction_hash text
 )
 returns uuid
 language plpgsql
@@ -245,7 +242,33 @@ begin
     signed_transaction_hash = excluded.signed_transaction_hash;
 
   update public.profiles
-  set plan = case when p_is_active then p_plan else 'free'::public.plan_type end
+  set plan = coalesce(
+    (
+      select case purchase_events.product_id
+        when 'com.rightful.app.yearly' then 'yearly'::public.plan_type
+        when 'com.rightful.app.weekly' then 'weekly'::public.plan_type
+      end
+      from private.purchase_events as purchase_events
+      where purchase_events.user_id = owner_id
+        and purchase_events.revoked_at is null
+        and (
+          purchase_events.expires_at is null
+          or purchase_events.expires_at > now()
+        )
+        and purchase_events.product_id in (
+          'com.rightful.app.yearly',
+          'com.rightful.app.weekly'
+        )
+      order by
+        case purchase_events.product_id
+          when 'com.rightful.app.yearly' then 0
+          else 1
+        end,
+        purchase_events.expires_at desc nulls first
+      limit 1
+    ),
+    'free'::public.plan_type
+  )
   where user_id = owner_id;
 
   return owner_id;
@@ -282,7 +305,7 @@ revoke all on function public.record_purchase_event(text, uuid, text, text, time
   from public, anon, authenticated;
 revoke all on function public.existing_notification_ids(text[])
   from public, anon, authenticated;
-revoke all on function public.apply_subscription_status(text, text, text, timestamptz, timestamptz, text, public.plan_type, boolean)
+revoke all on function public.apply_subscription_status(text, text, text, timestamptz, timestamptz, text)
   from public, anon, authenticated;
 revoke all on function public.record_notification_sent(text, uuid, text, jsonb)
   from public, anon, authenticated;
@@ -291,7 +314,7 @@ grant execute on function public.record_purchase_event(text, uuid, text, text, t
   to service_role;
 grant execute on function public.existing_notification_ids(text[])
   to service_role;
-grant execute on function public.apply_subscription_status(text, text, text, timestamptz, timestamptz, text, public.plan_type, boolean)
+grant execute on function public.apply_subscription_status(text, text, text, timestamptz, timestamptz, text)
   to service_role;
 grant execute on function public.record_notification_sent(text, uuid, text, jsonb)
   to service_role;
@@ -374,6 +397,48 @@ $$;
 
 revoke all on function public.replace_profile_brands(uuid[]) from public, anon;
 grant execute on function public.replace_profile_brands(uuid[]) to authenticated;
+
+create or replace function public.register_notification_device(
+  p_apns_token text,
+  p_environment text
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  current_user_id uuid := (select auth.uid());
+begin
+  if current_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  if p_environment not in ('sandbox', 'production') then
+    raise exception 'Invalid APNs environment';
+  end if;
+
+  insert into public.notification_devices (
+    user_id,
+    apns_token,
+    environment
+  )
+  values (
+    current_user_id,
+    p_apns_token,
+    p_environment
+  )
+  on conflict (apns_token) do update set
+    user_id = excluded.user_id,
+    environment = excluded.environment,
+    last_seen_at = now();
+end;
+$$;
+
+revoke all on function public.register_notification_device(text, text)
+  from public, anon;
+grant execute on function public.register_notification_device(text, text)
+  to authenticated;
 
 alter table public.brands enable row level security;
 alter table public.settlements enable row level security;

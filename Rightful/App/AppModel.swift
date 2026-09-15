@@ -141,6 +141,11 @@ final class AppModel {
     }
 
     func signOutAndReset() async {
+        if let userID = auth.userID, let pendingPushToken {
+            try? await repository.removeDeviceToken(pendingPushToken, userID: userID)
+        }
+        notifications.disableAll()
+        pendingPushToken = nil
         await auth.signOut()
         selectedBrandIDs = []
         claims = []
@@ -231,7 +236,6 @@ final class AppModel {
         #endif
         try await repository.syncDeviceToken(
             token,
-            userID: userID,
             environment: environment
         )
     }
@@ -245,6 +249,7 @@ final class AppModel {
         claims = []
         notificationsEnabled = false
         notifications.disableAll()
+        pendingPushToken = nil
         onboardingCompleted = false
         defaults.removeObject(forKey: Keys.selectedBrands)
         defaults.removeObject(forKey: Keys.claims)

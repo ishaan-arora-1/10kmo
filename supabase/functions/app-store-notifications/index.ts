@@ -71,8 +71,6 @@ export default {
     const revokedAt = transaction.revocationDate
       ? new Date(transaction.revocationDate).toISOString()
       : null;
-    const isActive = !revokedAt &&
-      (!expiresAt || new Date(expiresAt) > new Date());
     const hash = await sha256(signedTransaction);
 
     const { data: ownerID, error } = await context.supabaseAdmin.rpc(
@@ -84,8 +82,6 @@ export default {
         p_expires_at: expiresAt,
         p_revoked_at: revokedAt,
         p_signed_transaction_hash: hash,
-        p_plan: plan,
-        p_is_active: isActive,
       },
     );
 
