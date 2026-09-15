@@ -44,6 +44,7 @@ final class AppModel {
         subscriptions = SubscriptionStore()
         onboardingCompleted = defaults.bool(forKey: Keys.onboardingCompleted)
         notificationsEnabled = defaults.bool(forKey: Keys.notificationsEnabled)
+        pendingPushToken = defaults.string(forKey: Keys.pushToken)
 
         if let data = defaults.data(forKey: Keys.selectedBrands),
             let values = try? JSONDecoder().decode([UUID].self, from: data)
@@ -145,7 +146,7 @@ final class AppModel {
     func syncProfileIfPossible() async {
         guard auth.userID != nil else { return }
         do {
-            await hydrateRemoteDataIfPossible()
+            try await hydrateRemoteDataIfPossible()
             try await repository.syncSelectedBrands(selectedBrandIDs)
             try await syncDirtyClaims()
             if let signedTransaction = subscriptions.latestSignedTransaction {
@@ -162,7 +163,12 @@ final class AppModel {
 
     func signOutAndReset() async {
         if let userID = auth.userID, let pendingPushToken {
-            try? await repository.removeDeviceToken(pendingPushToken, userID: userID)
+            do {
+                try await repository.removeDeviceToken(pendingPushToken, userID: userID)
+            } catch {
+                dataError = "Rightful couldn’t disconnect notifications. Please try signing out again."
+                return
+            }
         }
         guard await auth.signOut() else {
             dataError = auth.errorMessage
@@ -170,6 +176,7 @@ final class AppModel {
         }
         notifications.disableAll()
         pendingPushToken = nil
+        defaults.removeObject(forKey: Keys.pushToken)
         selectedBrandIDs = []
         claims = []
         dirtyClaimIDs = []
@@ -267,6 +274,7 @@ final class AppModel {
 
     func registerPushToken(_ token: String) async {
         pendingPushToken = token
+        defaults.set(token, forKey: Keys.pushToken)
         guard let userID = auth.userID else { return }
         try? await syncPushToken(token, userID: userID)
     }
@@ -295,6 +303,7 @@ final class AppModel {
         notificationsEnabled = false
         notifications.disableAll()
         pendingPushToken = nil
+        defaults.removeObject(forKey: Keys.pushToken)
         onboardingCompleted = false
         defaults.removeObject(forKey: Keys.selectedBrands)
         defaults.removeObject(forKey: Keys.claims)
@@ -310,10 +319,12 @@ final class AppModel {
             dirtyClaimIDs = []
             notificationsEnabled = false
             onboardingCompleted = false
+            pendingPushToken = nil
             defaults.removeObject(forKey: Keys.selectedBrands)
             defaults.removeObject(forKey: Keys.claims)
             defaults.removeObject(forKey: Keys.dirtyClaims)
             defaults.removeObject(forKey: Keys.notificationsEnabled)
+            defaults.removeObject(forKey: Keys.pushToken)
             subscriptions.unlockForPreview()
         }
     #endif
@@ -324,70 +335,66 @@ final class AppModel {
         }
     }
 
-    private func hydrateRemoteDataIfPossible() async {
+    private func hydrateRemoteDataIfPossible() async throws {
         guard let userID = auth.userID else { return }
-        do {
-            let remote = try await repository.loadUserData(userID: userID)
-            selectedBrandIDs.formUnion(remote.brandIDs)
+        let remote = try await repository.loadUserData(userID: userID)
+        selectedBrandIDs.formUnion(remote.brandIDs)
 
-            let hasLocalNotificationPreference =
-                defaults.object(forKey: Keys.notificationsEnabled) != nil
-            if hasLocalNotificationPreference {
-                if notificationsEnabled != remote.notificationsEnabled {
-                    try await repository.setNotificationsEnabled(
-                        notificationsEnabled,
-                        userID: userID
-                    )
-                }
-            } else {
-                notificationsEnabled = remote.notificationsEnabled
+        let hasLocalNotificationPreference =
+            defaults.object(forKey: Keys.notificationsEnabled) != nil
+        if hasLocalNotificationPreference {
+            if notificationsEnabled != remote.notificationsEnabled {
+                try await repository.setNotificationsEnabled(
+                    notificationsEnabled,
+                    userID: userID
+                )
             }
+        } else {
+            notificationsEnabled = remote.notificationsEnabled
+        }
 
-            if notificationsEnabled, await notifications.isAuthorized() {
-                await notifications.resumeRemoteRegistrationIfAuthorized()
-            } else if notificationsEnabled {
-                notificationsEnabled = false
-                try? await repository.setNotificationsEnabled(false, userID: userID)
-            }
+        if notificationsEnabled, await notifications.isAuthorized() {
+            await notifications.resumeRemoteRegistrationIfAuthorized()
+        } else if notificationsEnabled {
+            notificationsEnabled = false
+            try? await repository.setNotificationsEnabled(false, userID: userID)
+        }
 
-            var settlementsByID = Dictionary(
-                uniqueKeysWithValues: settlements.map { ($0.id, $0) }
-            )
-            for settlement in remote.historicalSettlements {
-                settlementsByID[settlement.id] = settlement
-            }
-            settlements = Array(settlementsByID.values).sorted {
-                $0.deadline < $1.deadline
-            }
+        var settlementsByID = Dictionary(
+            uniqueKeysWithValues: settlements.map { ($0.id, $0) }
+        )
+        for settlement in remote.historicalSettlements {
+            settlementsByID[settlement.id] = settlement
+        }
+        settlements = Array(settlementsByID.values).sorted {
+            $0.deadline < $1.deadline
+        }
 
-            var mergedBySettlement = Dictionary(
-                uniqueKeysWithValues: claims.map { ($0.settlementID, $0) }
-            )
-            let remoteSettlementIDs = Set(remote.claims.map(\.settlementID))
-            for localClaim in claims where !remoteSettlementIDs.contains(localClaim.settlementID) {
+        var mergedBySettlement = Dictionary(
+            uniqueKeysWithValues: claims.map { ($0.settlementID, $0) }
+        )
+        let remoteSettlementIDs = Set(remote.claims.map(\.settlementID))
+        for localClaim in claims where !remoteSettlementIDs.contains(localClaim.settlementID) {
+            markClaimDirty(localClaim.id)
+        }
+        for claim in remote.claims {
+            guard let localClaim = mergedBySettlement[claim.settlementID] else {
+                mergedBySettlement[claim.settlementID] = claim
+                continue
+            }
+            if dirtyClaimIDs.contains(localClaim.id) {
+                continue
+            }
+            if (localClaim.modifiedAt ?? .distantPast)
+                > (claim.modifiedAt ?? .distantPast)
+            {
                 markClaimDirty(localClaim.id)
+            } else {
+                mergedBySettlement[claim.settlementID] = claim
             }
-            for claim in remote.claims {
-                guard let localClaim = mergedBySettlement[claim.settlementID] else {
-                    mergedBySettlement[claim.settlementID] = claim
-                    continue
-                }
-                if dirtyClaimIDs.contains(localClaim.id) {
-                    continue
-                }
-                if (localClaim.modifiedAt ?? .distantPast)
-                    > (claim.modifiedAt ?? .distantPast)
-                {
-                    markClaimDirty(localClaim.id)
-                } else {
-                    mergedBySettlement[claim.settlementID] = claim
-                }
-            }
-            claims = Array(mergedBySettlement.values).sorted {
-                ($0.filedAt ?? .distantPast) > ($1.filedAt ?? .distantPast)
-            }
-        } catch {
-            dataError = "Your local progress is available, but cloud data couldn’t be refreshed."
+        }
+        claims = Array(mergedBySettlement.values).sorted {
+            ($0.filedAt ?? .distantPast) > ($1.filedAt ?? .distantPast)
         }
     }
 
@@ -457,6 +464,7 @@ final class AppModel {
         static let claims = "rightful.claims"
         static let dirtyClaims = "rightful.dirty-claims"
         static let notificationsEnabled = "rightful.notifications-enabled"
+        static let pushToken = "rightful.push-token"
         static let onboardingCompleted = "rightful.onboarding-completed"
     }
 }
