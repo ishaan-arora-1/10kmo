@@ -91,6 +91,7 @@ struct Claim: Identifiable, Codable, Hashable, Sendable {
     var filedAt: Date?
     var paidAmount: Decimal?
     var paidAt: Date?
+    var modifiedAt: Date?
 }
 
 enum BrowseFilter: String, CaseIterable, Identifiable, Sendable {

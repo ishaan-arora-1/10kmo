@@ -31,6 +31,16 @@ final class AppModelTests: XCTestCase {
         let paid = try XCTUnwrap(app.claim(for: settlement))
         XCTAssertEqual(paid.status, .paid)
         XCTAssertEqual(paid.paidAmount, 42)
+
+        await app.markFiled(settlement: settlement, reference: "REOPEN")
+        let stillPaid = try XCTUnwrap(app.claim(for: settlement))
+        XCTAssertEqual(stillPaid.status, .paid)
+        XCTAssertEqual(stillPaid.paidAmount, 42)
+
+        let restored = AppModel(defaults: defaults)
+        let persisted = try XCTUnwrap(restored.claim(for: settlement))
+        XCTAssertEqual(persisted.status, .paid)
+        XCTAssertEqual(persisted.paidAmount, 42)
     }
 
     @MainActor

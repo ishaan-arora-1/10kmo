@@ -193,7 +193,7 @@ struct PaywallView: View {
 
     private var yearlyDetail: String {
         app.subscriptions.isEligibleForYearlyTrial
-            ? "3-day free trial, then \(yearlyPrice)"
+            ? "\(trialPeriod) free trial, then \(yearlyPrice)"
             : yearlyPrice
     }
 
@@ -202,7 +202,7 @@ struct PaywallView: View {
             return "Continue weekly"
         }
         return app.subscriptions.isEligibleForYearlyTrial
-            ? "Start my 3-day trial"
+            ? "Start my \(trialPeriod) trial"
             : "Continue yearly"
     }
 
@@ -213,10 +213,14 @@ struct PaywallView: View {
         }
         if app.subscriptions.isEligibleForYearlyTrial {
             return
-                "No charge today. \(yearlyPrice) is charged after the 3-day trial. Subscription renews yearly unless canceled at least 24 hours before renewal."
+                "No charge today. \(yearlyPrice) is charged after the \(trialPeriod) trial. Subscription renews yearly unless canceled at least 24 hours before renewal."
         }
         return
             "\(yearlyPrice) is charged to your Apple ID today. Subscription renews yearly unless canceled at least 24 hours before renewal."
+    }
+
+    private var trialPeriod: String {
+        app.subscriptions.yearlyTrialPeriodText ?? "introductory"
     }
 
     private func feature(_ text: String, _ icon: String) -> some View {

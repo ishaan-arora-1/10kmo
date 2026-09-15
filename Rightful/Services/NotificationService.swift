@@ -27,11 +27,18 @@ final class NotificationService {
         }
     }
 
+    func isAuthorized() async -> Bool {
+        let status = await center.notificationSettings().authorizationStatus
+        return status == .authorized || status == .provisional
+    }
+
     func scheduleDeadlineAlerts(for settlements: [Settlement]) async throws {
-        let identifiers = settlements.flatMap {
-            ["deadline-\($0.id)-7", "deadline-\($0.id)-1"]
+        let identifiers = await center.pendingNotificationRequests()
+            .map(\.identifier)
+            .filter { $0.hasPrefix("deadline-") }
+        if !identifiers.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: identifiers)
         }
-        center.removePendingNotificationRequests(withIdentifiers: identifiers)
 
         for settlement in settlements where !settlement.isSample {
             try await scheduleDeadlineAlert(for: settlement, daysBefore: 7)
@@ -77,6 +84,8 @@ final class NotificationService {
     }
 
     func scheduleWeeklyDigest(waitingAmount: Decimal, claimCount: Int) async throws {
+        center.removePendingNotificationRequests(withIdentifiers: ["weekly-digest"])
+
         let content = UNMutableNotificationContent()
         content.title = "\(waitingAmount.usd) may still be waiting"
         content.body = "Review your \(claimCount) open \(claimCount == 1 ? "claim" : "claims") this week."
@@ -93,6 +102,16 @@ final class NotificationService {
                 content: content,
                 trigger: trigger
             )
+        )
+    }
+
+    func cancelReminders(for settlement: Settlement) {
+        center.removePendingNotificationRequests(
+            withIdentifiers: [
+                "deadline-\(settlement.id)-7",
+                "deadline-\(settlement.id)-1",
+                "filing-\(settlement.id)",
+            ]
         )
     }
 

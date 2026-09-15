@@ -10,8 +10,10 @@ final class SubscriptionStore {
     private(set) var isLoading = false
     private(set) var latestSignedTransaction: String?
     private(set) var isEligibleForYearlyTrial = false
+    private(set) var yearlyTrialPeriodText: String?
     var errorMessage: String?
 
+    @ObservationIgnored
     private var updatesTask: Task<Void, Never>?
 
     init() {
@@ -32,9 +34,16 @@ final class SubscriptionStore {
             ).sorted { first, second in
                 first.id == AppConstants.yearlyProductID && second.id != AppConstants.yearlyProductID
             }
-            if let yearly = product(for: .yearly) {
-                isEligibleForYearlyTrial =
-                    await yearly.subscription?.isEligibleForIntroOffer ?? false
+            if let subscription = product(for: .yearly)?.subscription,
+                let offer = subscription.introductoryOffer,
+                offer.paymentMode == .freeTrial,
+                await subscription.isEligibleForIntroOffer
+            {
+                isEligibleForYearlyTrial = true
+                yearlyTrialPeriodText = offer.period.rightfulDescription
+            } else {
+                isEligibleForYearlyTrial = false
+                yearlyTrialPeriodText = nil
             }
             await refreshEntitlements()
         } catch {
@@ -89,11 +98,12 @@ final class SubscriptionStore {
 
     func refreshEntitlements() async {
         var activePlan = SubscriptionPlan.free
+        latestSignedTransaction = nil
 
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
                 transaction.revocationDate == nil,
-                transaction.expirationDate.map({ $0 > .now }) ?? true
+                !transaction.isUpgraded
             else {
                 continue
             }
@@ -160,4 +170,18 @@ final class SubscriptionStore {
 
 enum SubscriptionError: Error {
     case failedVerification
+}
+
+private extension Product.SubscriptionPeriod {
+    var rightfulDescription: String {
+        let unitName =
+            switch unit {
+            case .day: "day"
+            case .week: "week"
+            case .month: "month"
+            case .year: "year"
+            @unknown default: "day"
+            }
+        return "\(value)-\(unitName)"
+    }
 }

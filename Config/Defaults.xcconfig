@@ -1,5 +1,6 @@
 // Safe defaults keep the app in sample mode. Create Secrets.xcconfig to connect production.
 SUPABASE_URL =
 SUPABASE_PUBLISHABLE_KEY =
+DEVELOPMENT_TEAM =
 
 #include? "Secrets.xcconfig"

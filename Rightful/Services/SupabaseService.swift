@@ -39,6 +39,9 @@ final class AuthService {
     let client: SupabaseClient?
     private(set) var currentNonce: String?
 
+    @ObservationIgnored
+    private var authStateTask: Task<Void, Never>?
+
     init() {
         if let url = AppConfiguration.supabaseURL,
             let key = AppConfiguration.supabaseKey
@@ -51,6 +54,11 @@ final class AuthService {
         } else {
             client = nil
         }
+        authStateTask = observeAuthState()
+    }
+
+    deinit {
+        authStateTask?.cancel()
     }
 
     var isAuthenticated: Bool { client != nil && userID != nil }
@@ -133,16 +141,22 @@ final class AuthService {
         client?.auth.handle(url)
     }
 
-    func signOut() async {
+    func signOut() async -> Bool {
         guard let client else {
             userID = nil
-            return
+            return true
         }
         do {
             try await client.auth.signOut()
             userID = nil
+            return true
         } catch {
+            if client.auth.currentSession == nil {
+                userID = nil
+                return true
+            }
             errorMessage = "We couldn’t sign you out."
+            return false
         }
     }
 
@@ -168,6 +182,16 @@ final class AuthService {
             return false
         }
     }
+
+    private func observeAuthState() -> Task<Void, Never>? {
+        guard let client else { return nil }
+        return Task { [weak self] in
+            for await (_, session) in client.auth.authStateChanges {
+                guard !Task.isCancelled else { return }
+                self?.userID = session?.user.id
+            }
+        }
+    }
 }
 
 struct SupabaseRepository: Sendable {
@@ -176,6 +200,7 @@ struct SupabaseRepository: Sendable {
     struct UserData: Sendable {
         let brandIDs: Set<UUID>
         let claims: [Claim]
+        let historicalSettlements: [Settlement]
         let notificationsEnabled: Bool
     }
 
@@ -232,7 +257,12 @@ struct SupabaseRepository: Sendable {
 
     func loadUserData(userID: UUID) async throws -> UserData {
         guard let client else {
-            return UserData(brandIDs: [], claims: [], notificationsEnabled: false)
+            return UserData(
+                brandIDs: [],
+                claims: [],
+                historicalSettlements: [],
+                notificationsEnabled: false
+            )
         }
 
         async let brandRows: [ProfileBrandDownloadRow] =
@@ -265,9 +295,22 @@ struct SupabaseRepository: Sendable {
             claimRows,
             profileRows
         )
+        let settlementIDs = loadedClaims.map { $0.settlementID.uuidString }
+        let historicalRows: [SettlementRow]
+        if settlementIDs.isEmpty {
+            historicalRows = []
+        } else {
+            historicalRows = try await client
+                .from("settlements")
+                .select()
+                .in("id", values: settlementIDs)
+                .execute()
+                .value
+        }
         return UserData(
             brandIDs: Set(loadedBrands.map(\.brandID)),
             claims: loadedClaims.map(\.domain),
+            historicalSettlements: historicalRows.compactMap(\.domain),
             notificationsEnabled: loadedProfiles.first?.notificationsEnabled ?? false
         )
     }
@@ -393,7 +436,7 @@ private struct SettlementRow: Decodable, Sendable {
     }
 
     var domain: Settlement? {
-        guard let date = DateFormatter.databaseDate.date(from: deadline) else {
+        guard let date = decodeDatabaseDate(deadline) else {
             return nil
         }
         return Settlement(
@@ -472,6 +515,7 @@ private struct ClaimDownloadRow: Decodable, Sendable {
     let filedAt: String?
     let paidAmount: Decimal?
     let paidAt: String?
+    let updatedAt: String
 
     enum CodingKeys: String, CodingKey {
         case id, status
@@ -480,6 +524,7 @@ private struct ClaimDownloadRow: Decodable, Sendable {
         case filedAt = "filed_at"
         case paidAmount = "paid_amount"
         case paidAt = "paid_at"
+        case updatedAt = "updated_at"
     }
 
     var domain: Claim {
@@ -490,7 +535,8 @@ private struct ClaimDownloadRow: Decodable, Sendable {
             claimReference: claimReference,
             filedAt: decodeTimestamp(filedAt),
             paidAmount: paidAmount,
-            paidAt: decodeTimestamp(paidAt)
+            paidAt: decodeTimestamp(paidAt),
+            modifiedAt: decodeTimestamp(updatedAt)
         )
     }
 }
@@ -522,14 +568,12 @@ private enum NonceGenerator {
     }
 }
 
-private extension DateFormatter {
-    static let databaseDate: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
+private func decodeDatabaseDate(_ value: String) -> Date? {
+    let formatter = DateFormatter()
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter.date(from: value)
 }
 
 private func decodeTimestamp(_ value: String?) -> Date? {

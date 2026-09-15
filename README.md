@@ -42,7 +42,8 @@ xcodegen generate
 
 1. Create a Supabase project.
 2. Copy `Config/Secrets.xcconfig.example` to `Config/Secrets.xcconfig`.
-3. Add the project URL and **publishable** key. Never put a secret/service-role key in the app.
+3. Add the project URL, **publishable** key, and Apple Developer team ID.
+   Never put a secret/service-role key in the app.
 4. Link and deploy the database:
 
    ```bash
