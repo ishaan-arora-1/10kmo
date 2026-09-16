@@ -1,5 +1,5 @@
 /** Replaced everywhere by scripts/set-support-email.sh. */
-export const SUPPORT_EMAIL = "support@rightful.app";
+export const SUPPORT_EMAIL = "ishaana612@gmail.com";
 
 /** Display prices; they must match the plans created in Razorpay. */
 export const PRICE_LABELS = {

@@ -5,7 +5,7 @@ enum AppConstants {
     static let name = "Rightful"
     static let yearlyProductID = "com.rightful.app.yearly"
     static let weeklyProductID = "com.rightful.app.weekly"
-    static let supportEmail = "support@rightful.app"
+    static let supportEmail = "ishaana612@gmail.com"
 }
 
 enum BrandCategory: String, Codable, CaseIterable, Identifiable, Sendable {
