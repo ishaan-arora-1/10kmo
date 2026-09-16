@@ -105,7 +105,7 @@ private struct WaitingCard: View {
                         .clipShape(Capsule())
                 }
             }
-            Text(app.waitingMaximum.usd)
+            Text(app.waitingMaximum > 0 || app.matchedSettlements.isEmpty ? app.waitingMaximum.usd : "Varies")
                 .font(RightfulFont.display(44))
                 .foregroundStyle(RightfulColor.onHero)
 

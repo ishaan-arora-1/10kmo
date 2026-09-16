@@ -49,7 +49,9 @@ npm install
 npm run dev                  # http://localhost:5173 and http://localhost:5173/app
 ```
 
-Without `.env.local` the web app runs in clearly labeled sample mode. Web subscriptions use Stripe and unlock the iPhone app too; web reminders are sent by email (Resend).
+Without `.env.local` the web app runs in clearly labeled sample mode. Web sign-in is Google only. Web subscriptions use Razorpay and unlock the iPhone app too. Email reminders are built in but switched off.
+
+For production setup, follow `LAUNCH.md` step by step.
 
 ## Connect Supabase
 

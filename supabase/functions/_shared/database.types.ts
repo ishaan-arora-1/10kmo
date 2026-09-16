@@ -23,7 +23,9 @@ export type Database = {
           state_code: string | null;
           state_codes: string[];
           plan: "free" | "yearly" | "weekly";
-          plan_source: "apple" | "stripe" | null;
+          plan_source: "apple" | "razorpay" | null;
+          plan_renews: boolean | null;
+          plan_expires_at: string | null;
           email: string | null;
           email_reminders: boolean;
           notifications_enabled: boolean;
@@ -131,32 +133,27 @@ export type Database = {
         };
         Returns: undefined;
       };
-      upsert_stripe_subscription: {
+      upsert_razorpay_subscription: {
         Args: {
           p_subscription_id: string;
           p_user_id: string;
-          p_customer_id: string;
-          p_price_id: string;
+          p_plan_id: string;
           p_plan: "free" | "yearly" | "weekly";
           p_status: string;
           p_current_period_end: string | null;
-          p_cancel_at_period_end: boolean;
+          p_cancel_at_period_end: boolean | null;
         };
         Returns: "free" | "yearly" | "weekly";
       };
-      stripe_customer_for_user: {
-        Args: { p_user_id: string };
+      razorpay_subscription_owner: {
+        Args: { p_subscription_id: string };
         Returns: string | null;
       };
-      stripe_user_for_customer: {
-        Args: { p_customer_id: string };
-        Returns: string | null;
-      };
-      user_had_stripe_subscription: {
+      user_had_razorpay_subscription: {
         Args: { p_user_id: string };
         Returns: boolean;
       };
-      active_stripe_subscription_ids: {
+      active_razorpay_subscription_ids: {
         Args: { p_user_id: string };
         Returns: string[];
       };

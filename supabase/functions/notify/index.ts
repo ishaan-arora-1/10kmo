@@ -194,8 +194,9 @@ export default {
               title: `${settlement.company} closes ${
                 days === 1 ? "tomorrow" : "in 7 days"
               }`,
-              body:
-                `Estimated $${settlement.payout_min}–$${settlement.payout_max} is still waiting.`,
+              body: estimate(settlement)
+                ? `Estimated ${estimate(settlement)} is still waiting.`
+                : "Your claim is still waiting. File before it closes.",
             });
           }
 
@@ -208,8 +209,9 @@ export default {
               userID,
               type: "new_match",
               title: `New match: ${settlement.company}`,
-              body:
-                `${settlement.title}, est. $${settlement.payout_min}–$${settlement.payout_max}`,
+              body: estimate(settlement)
+                ? `${settlement.title}, est. ${estimate(settlement)}`
+                : `${settlement.title}. See if you qualify.`,
             });
           }
         }
@@ -612,6 +614,15 @@ async function sendEmail(
     console.error("email send failed", error);
     return false;
   }
+}
+
+/** payout_max = 0 means the amount varies; payout_min = 0 means "up to". */
+function estimate(settlement: Settlement): string | null {
+  const max = Number(settlement.payout_max);
+  const min = Number(settlement.payout_min);
+  if (max <= 0) return null;
+  if (min <= 0) return `up to $${max}`;
+  return min === max ? `$${max}` : `$${min}–$${max}`;
 }
 
 function matchesStates(

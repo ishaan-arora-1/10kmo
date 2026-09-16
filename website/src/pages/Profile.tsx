@@ -3,9 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { StatePicker } from "../components/StatePicker";
 import { Modal, Toggle } from "../components/ui";
-import { plural } from "../lib/models";
+import { EMAIL_REMINDERS_ENABLED, SUPPORT_EMAIL } from "../lib/config";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
+
+const longDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
 export function Profile() {
   const store = useStore();
@@ -13,26 +16,51 @@ export function Profile() {
   const [brandsOpen, setBrandsOpen] = useState(false);
   const [statesOpen, setStatesOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [working, setWorking] = useState(false);
+  const [cancelNote, setCancelNote] = useState<string | null>(null);
 
   const email = store.session?.user.email ?? null;
   const planName = store.plan === "free" ? null : store.plan === "yearly" ? "Yearly" : "Weekly";
-  const brandCount = store.selectedBrandIds.size;
 
   const upgrade = () => {
     const paywall = `/paywall?next=${encodeURIComponent("/profile")}`;
     navigate(store.session || isSampleMode ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
   };
 
+  const confirmCancel = async () => {
+    setWorking(true);
+    const accessUntil = await store.cancelSubscription();
+    setWorking(false);
+    if (accessUntil === null) return;
+    setCancelOpen(false);
+    setCancelNote(
+      accessUntil
+        ? `Canceled. You keep Premium until ${longDate(accessUntil)} and won’t be charged again.`
+        : "Canceled. Your trial ended and you won’t be charged.",
+    );
+  };
+
   const confirmDelete = async () => {
-    setDeleting(true);
+    setWorking(true);
     const deleted = await store.deleteAccount();
-    setDeleting(false);
+    setWorking(false);
     if (deleted) {
       setDeleteOpen(false);
       navigate("/start", { replace: true });
     }
   };
+
+  const membershipDetail =
+    store.planSource === "razorpay"
+      ? store.planRenews === false && store.planExpiresAt
+        ? `Ends ${longDate(store.planExpiresAt)}`
+        : store.planExpiresAt
+          ? `Renews ${longDate(store.planExpiresAt)}`
+          : "Active"
+      : store.planSource === "apple"
+        ? "Subscribed on iPhone"
+        : "Active";
 
   return (
     <div className="page">
@@ -45,7 +73,7 @@ export function Profile() {
         <Link to={`/sign-in?next=${encodeURIComponent("/profile")}`} className="find-more">
           <span>
             <b>Protect your claims</b>
-            <span className="muted">Sign in to sync with the iPhone app and other devices.</span>
+            <span className="muted">Sign in with Google to keep your claims safe across devices.</span>
           </span>
           <span aria-hidden="true">→</span>
         </Link>
@@ -55,9 +83,7 @@ export function Profile() {
         <h2 className="section-label">Your matches</h2>
         <button type="button" className="setting-row" onClick={() => setBrandsOpen(true)}>
           <span>Companies you’ve used</span>
-          <span className="muted">
-            {brandCount} {plural(brandCount, "selected", "selected")} ›
-          </span>
+          <span className="muted">{store.selectedBrandIds.size} selected ›</span>
         </button>
         <button type="button" className="setting-row" onClick={() => setStatesOpen(true)}>
           <span>States you’ve lived in</span>
@@ -72,21 +98,18 @@ export function Profile() {
         {planName ? (
           <>
             <div className="setting-row static">
-              <span>Rightful Premium</span>
-              <span className="muted">
-                {planName}
-                {store.planSource === "apple" ? " · iPhone" : store.planSource === "stripe" ? " · web" : ""}
-              </span>
+              <span>Rightful Premium · {planName}</span>
+              <span className="muted">{membershipDetail}</span>
             </div>
-            {store.planSource === "stripe" && (
-              <button type="button" className="setting-row" onClick={() => store.openBillingPortal()}>
-                <span>Manage billing</span>
-                <span className="muted">Change plan, card, or cancel ›</span>
+            {store.planSource === "razorpay" && store.planRenews !== false && (
+              <button type="button" className="setting-row" onClick={() => setCancelOpen(true)}>
+                <span>Cancel subscription</span>
+                <span className="muted">›</span>
               </button>
             )}
             {store.planSource === "apple" && (
               <p className="muted small setting-note">
-                You subscribed on iPhone. Manage it in Settings → [your name] → Subscriptions.
+                Manage your iPhone subscription in Settings → [your name] → Subscriptions.
               </p>
             )}
           </>
@@ -101,11 +124,16 @@ export function Profile() {
             <span className="money strong">Upgrade to file and track ›</span>
           </button>
         )}
+        {cancelNote && (
+          <p className="muted small setting-note" role="status">
+            {cancelNote}
+          </p>
+        )}
       </section>
 
-      <section className="settings-group">
-        <h2 className="section-label">Reminders</h2>
-        {store.session ? (
+      {EMAIL_REMINDERS_ENABLED && store.session && (
+        <section className="settings-group">
+          <h2 className="section-label">Reminders</h2>
           <Toggle
             id="email-reminders"
             checked={store.emailReminders}
@@ -113,12 +141,8 @@ export function Profile() {
             label="Email reminders"
             description={`New matches, deadlines, and payout windows, sent to ${email ?? "your email"}`}
           />
-        ) : (
-          <p className="muted small setting-note">
-            {isSampleMode ? "Email reminders are available once the app is connected." : "Sign in to get email reminders."}
-          </p>
-        )}
-      </section>
+        </section>
+      )}
 
       <section className="settings-group">
         <h2 className="section-label">About</h2>
@@ -131,21 +155,35 @@ export function Profile() {
           <span className="muted">›</span>
         </a>
         <a className="setting-row" href="/support">
-          <span>Help & support</span>
-          <span className="muted">›</span>
+          <span>Help &amp; support</span>
+          <span className="muted">{SUPPORT_EMAIL} ›</span>
         </a>
       </section>
 
       <section className="settings-group">
         <h2 className="section-label">Account</h2>
         {store.session && (
-          <button type="button" className="setting-row" onClick={async () => { await store.signOut(); navigate("/start", { replace: true }); }}>
+          <button
+            type="button"
+            className="setting-row"
+            onClick={async () => {
+              await store.signOut();
+              navigate("/start", { replace: true });
+            }}
+          >
             <span>Sign out</span>
             <span className="muted">›</span>
           </button>
         )}
         {isSampleMode ? (
-          <button type="button" className="setting-row danger" onClick={() => { store.resetSample(); navigate("/start", { replace: true }); }}>
+          <button
+            type="button"
+            className="setting-row danger"
+            onClick={() => {
+              store.resetSample();
+              navigate("/start", { replace: true });
+            }}
+          >
             <span>Reset sample experience</span>
           </button>
         ) : (
@@ -171,6 +209,21 @@ export function Profile() {
         </button>
       </Modal>
 
+      <Modal open={cancelOpen} onClose={() => setCancelOpen(false)} title="Cancel your subscription?">
+        <div className="stack">
+          <p className="muted">
+            You’ll keep Premium until the end of the period you’ve paid for, and you won’t be charged again. If
+            you’re still in your free trial, it ends now and nothing is charged.
+          </p>
+          <button type="button" className="btn block danger" onClick={confirmCancel} disabled={working}>
+            {working ? "Canceling…" : "Cancel subscription"}
+          </button>
+          <button type="button" className="btn-quiet" onClick={() => setCancelOpen(false)}>
+            Keep Premium
+          </button>
+        </div>
+      </Modal>
+
       <Modal
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -179,11 +232,11 @@ export function Profile() {
         <div className="stack">
           <p className="muted">
             {store.session
-              ? "This permanently deletes your profile, companies, and claims, and cancels any web subscription. It doesn’t cancel an App Store subscription."
+              ? "This permanently deletes your profile, companies, and claims, and cancels any web subscription."
               : "This removes your selected companies and claims from this browser."}
           </p>
-          <button type="button" className="btn block danger" onClick={confirmDelete} disabled={deleting}>
-            {deleting ? "Deleting…" : store.session ? "Delete account and all data" : "Clear data"}
+          <button type="button" className="btn block danger" onClick={confirmDelete} disabled={working}>
+            {working ? "Deleting…" : store.session ? "Delete account and all data" : "Clear data"}
           </button>
           <button type="button" className="btn-quiet" onClick={() => setDeleteOpen(false)}>
             Cancel

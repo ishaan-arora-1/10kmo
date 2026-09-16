@@ -436,12 +436,15 @@ static_files = [
 # Internal scheduler calls this function with the named "automations" secret key.
 verify_jwt = false
 
-[functions.stripe-checkout]
+[functions.razorpay-subscribe]
 verify_jwt = true
 
-[functions.stripe-portal]
+[functions.razorpay-verify]
 verify_jwt = true
 
-[functions.stripe-webhook]
-# Stripe authenticates this webhook with a signed payload.
+[functions.razorpay-cancel]
+verify_jwt = true
+
+[functions.razorpay-webhook]
+# Razorpay authenticates this webhook with an HMAC signature.
 verify_jwt = false

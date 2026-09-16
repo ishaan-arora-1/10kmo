@@ -109,7 +109,7 @@ struct MoneyCheck: View {
             HStack(alignment: .firstTextBaseline) {
                 label(amountLabel)
                 Spacer(minLength: 12)
-                Text(amount.usdCents)
+                Text(amount > 0 ? amount.usdCents : "Varies")
                     .font(RightfulFont.display(40, weight: .heavy))
                     .foregroundStyle(RightfulColor.money)
                     .lineLimit(1)

@@ -134,7 +134,9 @@ final class NotificationService {
 
         let content = UNMutableNotificationContent()
         content.title = "\(settlement.company) closes \(daysBefore == 1 ? "tomorrow" : "in \(daysBefore) days")"
-        content.body = "Your estimated \(settlement.payoutRange) claim is still waiting."
+        content.body = settlement.payoutMax > 0
+            ? "Estimated \(settlement.payoutRange) is still waiting."
+            : "Your claim is still waiting. File before it closes."
         content.sound = .default
 
         let components = Calendar.current.dateComponents(

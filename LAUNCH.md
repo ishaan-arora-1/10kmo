@@ -1,72 +1,58 @@
-# Rightful launch checklist
+# Rightful launch checklist: website
 
-Do these in order. Each step says where to click and what to copy. Keep a private note with every value marked **SAVE**. Never commit those values to git.
+This gets the **website and web app** live: the landing page, legal pages, and the full app at `/app`, with Google sign-in, real settlements, and Razorpay subscriptions.
 
-Status: all planned app code is in. `db push` also loads a ~230-company catalog and adds the `state_codes` column. If you already ran step 5 before pulling, run `npx supabase db push` again and re-run the function deploys in step 5.6.
+**Not in this checklist (on purpose):** the iPhone app (App Store, Apple sign-in, push notifications) and email reminders. The code for both is already in the repo; they'll get their own steps when you're ready.
+
+Do the steps **in order**. Whenever you see **SAVE**, copy the value into a private note. Never commit those values to git.
+
+**Accounts you'll need:** GitHub (you already have the repo), Vercel, Supabase, Google Cloud (any Gmail works), and Razorpay.
+
+**On your Mac:** Node.js 20 or newer (`node -v` to check). Nothing else.
 
 ---
 
-## 0. Decide two things first (5 min)
+## 1. Support email (10 min)
 
-- **Bundle ID:** `com.rightful.app`. If Apple says it's taken in step 1.1, pick another, for example `com.yourname.rightful`, and tell Claude, who will update the code.
-- **Domain + support email:** the app and website use `support@rightful.app`. Buy a domain (for example `rightful.app`, or a variant if it's taken) and set up that inbox. ImprovMX gives free forwarding to your Gmail. Tell Claude the final domain and email.
+The website shows a support email on every page, and Razorpay and Google both ask for one.
 
-## 1. Apple Developer ([developer.apple.com/account](https://developer.apple.com/account))
+1. Create a free Gmail just for Rightful, for example `rightful.help.yourname@gmail.com`. **SAVE** it.
+2. In Terminal, from the repo folder:
+   ```bash
+   git pull
+   scripts/set-support-email.sh YOUR_SUPPORT_GMAIL
+   git add -A
+   git commit -m "Set support email"
+   git push
+   ```
 
-1. **Identifiers → + → App IDs → App**
-   - Bundle ID (explicit): `com.rightful.app`
-   - Capabilities: **Sign in with Apple** and **Push Notifications**
-2. **Keys → +**: name it "Rightful APNs" and tick **Apple Push Notifications service (APNs)**. Download the `.p8` file (you can only download it once).
-   - **SAVE:** Key ID, `.p8` file
-3. **Membership details**: **SAVE:** Team ID
+## 2. Put the website online with Vercel (10 min)
 
-## 2. App Store Connect ([appstoreconnect.apple.com](https://appstoreconnect.apple.com))
+Do this first. It gives you the web address every later step needs.
 
-1. **Business → Agreements**: sign the **Paid Apps** agreement and add bank and tax info. Subscriptions won't load until it's **Active**.
-2. **Apps → + → New App**: iOS, name "Rightful" (if taken: "Rightful: Settlement Finder"), bundle ID from step 1.1, SKU `rightful-ios`.
-   - **SAVE:** the numeric **Apple ID** under App Information (this is `APPLE_APP_ID`)
-3. **Monetization → Subscriptions → Create group** "Rightful Premium", then add:
-   | Reference name | Product ID | Duration | Price | Intro offer |
-   |---|---|---|---|---|
-   | Rightful Yearly | `com.rightful.app.yearly` | 1 year | $39.99 | Free trial, 3 days |
-   | Rightful Weekly | `com.rightful.app.weekly` | 1 week | $4.99 | none |
-   - For each: add a localization (display name + description) and a **Review screenshot** of the paywall.
-4. **Users and Access → Sandbox → Test Accounts → +**: create a sandbox tester for purchase testing.
-5. **App Information**:
-   - Category: **Finance**
-   - Privacy Policy URL: `https://YOUR_DOMAIN/privacy`
-   - **App Store Server Notifications**, Version 2, for both Production and Sandbox: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/app-store-notifications` (fill this in after step 5)
-6. **App Privacy** (Data Types), all "linked to the user", "not used for tracking":
-   - Contact Info → Name, Email Address (App Functionality)
-   - Identifiers → User ID (App Functionality)
-   - Purchases → Purchase History (App Functionality)
-   - User Content → Other User Content (the companies picked and claim progress) (App Functionality)
-7. **Age Rating**: answer the questionnaire (no objectionable content).
-8. Version page: Support URL `https://YOUR_DOMAIN/support`, Marketing URL `https://YOUR_DOMAIN`.
+1. Go to [vercel.com](https://vercel.com) and **Sign Up → Continue with GitHub**.
+2. **Add New… → Project** → find `10kmo` → **Import**.
+3. **Project Name:** `rightful` (Vercel uses it for your address; if it's taken, pick another, like `rightful-claims`).
+4. **Root Directory:** click **Edit** and choose `website`. Vercel detects **Vite** automatically.
+5. Click **Deploy** and wait about a minute.
+6. Open **Settings → Domains** and copy the `.vercel.app` address. **SAVE** it as **YOUR_SITE**, e.g. `https://rightful.vercel.app` (no slash at the end).
+7. Check that these open: `YOUR_SITE`, `YOUR_SITE/privacy`, `YOUR_SITE/terms`, `YOUR_SITE/support`, `YOUR_SITE/app`.
+   The app runs in **sample mode** for now; that's expected until step 6.
 
-## 3. Google sign-in ([console.cloud.google.com](https://console.cloud.google.com))
+## 3. Create the database (Supabase) (15 min)
 
-1. Create project "Rightful".
-2. **APIs & Services → OAuth consent screen**: External, app name Rightful, support email, privacy URL. Publish the app when you're ready.
-3. **Credentials → Create credentials → OAuth client ID → Web application**
-   - Authorized redirect URI: `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
-   - **SAVE:** Client ID, Client secret
+1. Go to [supabase.com/dashboard](https://supabase.com/dashboard) → **New project**.
+   - Name: `rightful`
+   - Database password: click **Generate**, then **SAVE** it
+   - Region: **East US (North Virginia)**
+2. When it's ready, open **Project Settings → General**. **SAVE** the **Project ID** as **YOUR_PROJECT_REF** (a string like `abcdxyzabcdxyz`).
+3. **Project Settings → API Keys.** **SAVE** the **Project URL** (`https://YOUR_PROJECT_REF.supabase.co`) and the **Publishable key** (`sb_publishable_…`).
+4. **Authentication → URL Configuration:**
+   - **Site URL:** `YOUR_SITE`
+   - **Redirect URLs → Add URL:** `YOUR_SITE/app/**` (and optionally `http://localhost:5173/app/**` for testing on your Mac)
+   - **Save**
 
-## 4. Supabase project ([supabase.com/dashboard](https://supabase.com/dashboard))
-
-1. **New project**: name `rightful`, region **East US**, strong DB password (**SAVE**).
-2. **Project Settings → General**: **SAVE:** Project ref.
-3. **Project Settings → API Keys**: **SAVE:** Project URL and **publishable** key.
-4. **API Keys → Secret keys → New secret key** named exactly `automations`. **SAVE** it.
-5. **Authentication → Sign In / Providers**:
-   - **Apple**: enable; Client IDs = `com.rightful.app`
-   - **Google**: enable; paste Client ID and secret from step 3
-6. **Authentication → URL Configuration**: set **Site URL** to `https://YOUR_DOMAIN`, and add these **Redirect URLs**: `rightful://auth/callback`, `https://YOUR_DOMAIN/app/**`, `http://localhost:5173/app/**`
-7. **Authentication → Emails → SMTP Settings**: enable custom SMTP with Resend (host `smtp.resend.com`, port `465`, user `resend`, password = your Resend API key from step 5b) so email sign-in links arrive reliably.
-
-## 5. Database + server functions (Terminal, in the repo folder)
-
-Install and open **Docker Desktop** first (needed to deploy the Apple functions).
+Now load the tables, the 245 companies, and the real open settlements. In Terminal, from the repo folder:
 
 ```bash
 npx supabase login
@@ -74,112 +60,122 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
-`db push` creates the tables. It does **not** load the sample data, which is correct for production.
+- `login` opens your browser once.
+- `link` asks for the database password from 3.1.
+- `db push` lists the migrations and asks you to confirm; type `Y`.
 
-Set secrets. Note `APPLE_TRANSACTION_ENVIRONMENT=both`: Apple's reviewers buy with sandbox accounts, so production must accept sandbox purchases or review breaks.
+To check it worked: **Table Editor → settlements** should show 24 rows (22 settlements; the two Hyundai/Kia settlements have a row each for Hyundai and Kia), and **brands** should show 245.
 
-```bash
-npx supabase secrets set \
-  APPLE_BUNDLE_ID=com.rightful.app \
-  APPLE_APP_ID=YOUR_NUMERIC_APPLE_ID \
-  APPLE_TRANSACTION_ENVIRONMENT=both \
-  APPLE_APNS_KEY_ID=YOUR_KEY_ID \
-  APPLE_TEAM_ID=YOUR_TEAM_ID \
-  APPLE_APNS_PRIVATE_KEY="$(cat /path/to/AuthKey_YOUR_KEY_ID.p8)"
-```
+## 4. Google sign-in (15 min)
 
-Deploy (step 5.6, re-run after code updates):
+1. Go to [console.cloud.google.com](https://console.cloud.google.com), sign in with your support Gmail, and create a project named `Rightful`.
+2. **APIs & Services → OAuth consent screen → Get started:**
+   - App name: `Rightful`
+   - User support email and developer contact: your support Gmail
+   - Audience: **External**
+   - Finish, then open **Audience** and click **Publish app**. With just email and profile access, Google doesn't require a review.
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID:**
+   - Application type: **Web application**
+   - Name: `Rightful web`
+   - **Authorized redirect URIs → Add URI:** `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+   - **Create.** **SAVE** the **Client ID** and **Client secret**.
+4. Back in Supabase: **Authentication → Sign In / Providers → Google** → turn it on, paste the Client ID and Client secret → **Save**.
 
-```bash
-npx supabase functions deploy verify-purchase
-npx supabase functions deploy delete-account
-npx supabase functions deploy app-store-notifications --no-verify-jwt
-npx supabase functions deploy notify --no-verify-jwt
-npx supabase functions deploy stripe-checkout
-npx supabase functions deploy stripe-portal
-npx supabase functions deploy stripe-webhook --no-verify-jwt
-```
+## 5. Razorpay payments (30 min, plus activation time)
 
-7. **Daily notifications**: Dashboard → **Integrations → Cron → Create job**
-   - Name `daily-notify`, schedule `0 15 * * *` (11am US Eastern)
-   - Type: HTTP request, **POST** `https://YOUR_PROJECT_REF.supabase.co/functions/v1/notify`
-   - Header `apikey: <your automations secret key>`
-8. Go back to step 2.5 and paste the App Store Server Notifications URL.
+Start in **Test Mode** (the toggle at the top of the Razorpay dashboard). You can finish every step and test real flows before your account is activated.
 
-## 5b. Web payments and email reminders
+1. Sign up at [razorpay.com](https://razorpay.com) and start **account activation** (business details, bank account, documents). Live payments only work after Razorpay approves this, which can take a few days.
+2. Ask Razorpay to enable **International payments** (Account & Settings → International payments, or contact support). You need this to charge US customers in USD.
+   - *If they won't approve it:* create the plans below in **INR** instead, and in step 6 set the price labels to match (e.g. `₹3,299`).
+3. **Subscriptions → Plans → Create Plan**, twice:
+   | Plan name | Billing frequency | Amount | Currency |
+   |---|---|---|---|
+   | Rightful Yearly | Yearly, every 1 year | 39.99 | USD |
+   | Rightful Weekly | Weekly, every 1 week | 4.99 | USD |
+   **SAVE** both plan IDs (`plan_…`). The 3-day free trial for new yearly subscribers is handled by the app, not the plan.
+4. **Account & Settings → API Keys → Generate Test Key.** **SAVE** the **Key ID** (`rzp_test_…`) and **Key Secret** (shown only once).
+5. **Account & Settings → Webhooks → Add New Webhook:**
+   - Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/razorpay-webhook`
+   - Secret: make up a long random password. **SAVE** it as **WEBHOOK_SECRET**.
+   - Active events: tick every event under **subscription** (authenticated, activated, charged, pending, halted, cancelled, completed, paused, resumed, updated).
+   - **Create Webhook**
 
-The website runs the full app at `/app`. Web subscriptions are paid through **Stripe** (Apple doesn't handle web payments) and unlock the iPhone app too. Web reminders go out by **email** through Resend.
+## 6. Connect everything (15 min)
 
-**Stripe** ([dashboard.stripe.com](https://dashboard.stripe.com)). Do this in **Test mode** first, then repeat in Live mode:
-1. Activate your account (business and bank details).
-2. **Product catalog → + Add product** "Rightful Premium" with two recurring prices: **$39.99 / year** and **$4.99 / week**. **SAVE** both price IDs (`price_...`). The 3-day trial for first-time yearly subscribers is added by the app.
-3. **Settings → Billing → Customer portal**: allow customers to cancel, switch plans, and update payment methods. Save.
-4. **Developers → Webhooks → Add endpoint**: URL `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`, events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. **SAVE** the signing secret (`whsec_...`).
-5. **Developers → API keys**: **SAVE** the secret key (`sk_...`).
-
-**Resend** ([resend.com](https://resend.com)):
-1. **Domains → Add domain**, add the DNS records it shows, wait for "Verified".
-2. **API Keys → Create**. **SAVE** it.
-
-Set the web secrets:
+**6a. Server secrets.** In Terminal, from the repo folder (keep the quotes and the backslashes):
 
 ```bash
 npx supabase secrets set \
-  STRIPE_SECRET_KEY=sk_... \
-  STRIPE_WEBHOOK_SECRET=whsec_... \
-  STRIPE_PRICE_YEARLY=price_... \
-  STRIPE_PRICE_WEEKLY=price_... \
-  WEB_APP_URL=https://YOUR_DOMAIN \
-  WEB_APP_ORIGINS=https://YOUR_DOMAIN,https://www.YOUR_DOMAIN \
-  RESEND_API_KEY=re_... \
-  EMAIL_FROM="Rightful <reminders@YOUR_DOMAIN>"
+  RAZORPAY_KEY_ID=rzp_test_... \
+  RAZORPAY_KEY_SECRET=... \
+  RAZORPAY_WEBHOOK_SECRET=... \
+  RAZORPAY_PLAN_YEARLY=plan_... \
+  RAZORPAY_PLAN_WEEKLY=plan_... \
+  WEB_APP_URL=YOUR_SITE \
+  WEB_APP_ORIGINS=YOUR_SITE
 ```
 
-**Optional: Sign in with Apple on the website.** Until you do this, the website offers Google and email-link sign-in (the iPhone app keeps native Apple sign-in).
-1. Apple Developer → **Identifiers → + → Services IDs**, e.g. `com.rightful.app.web`. Enable Sign in with Apple; domain `YOUR_PROJECT_REF.supabase.co`, return URL `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`.
-2. **Keys → +** with Sign in with Apple enabled. Download the `.p8`.
-3. Supabase → **Authentication → Providers → Apple**: add the Services ID to Client IDs (keep `com.rightful.app`), and fill in the secret from the key.
-4. Set `VITE_ENABLE_APPLE_SIGN_IN=true` in Vercel (step 8).
+**6b. Deploy the server functions:**
 
-## 6. Connect the app (Xcode)
+```bash
+npx supabase functions deploy razorpay-subscribe --use-api
+npx supabase functions deploy razorpay-verify --use-api
+npx supabase functions deploy razorpay-cancel --use-api
+npx supabase functions deploy razorpay-webhook --no-verify-jwt --use-api
+npx supabase functions deploy delete-account --use-api
+```
 
-1. In the repo: `cp Config/Secrets.xcconfig.example Config/Secrets.xcconfig` (it's git-ignored), then fill in:
-   ```
-   SUPABASE_URL = https:/$()/YOUR_PROJECT_REF.supabase.co
-   SUPABASE_PUBLISHABLE_KEY = sb_publishable_...
-   DEVELOPMENT_TEAM = YOUR_TEAM_ID
-   ```
-   Keep the `https:/$()/` spelling. It stops Xcode treating `//` as a comment.
-2. Open `Rightful.xcodeproj` → target **Rightful** → **Signing & Capabilities**: choose your team and confirm **Sign in with Apple** and **Push Notifications** are listed.
-3. Run on a **real iPhone** (Settings → App Store → Sandbox Account: sign in with your tester). Check that:
-   - onboarding → matches → paywall → purchase works
-   - Restore purchases works
-   - Apple sign-in and Google sign-in both work
-   - file a claim → "Did you submit?" → Claims tab
-   - Profile → Delete account works
+**6c. Website settings.** In Vercel: your project → **Settings → Environment Variables**. Add these for **Production** (and Preview):
 
-## 7. Real settlement data (the big one)
+| Name | Value |
+|---|---|
+| `VITE_SUPABASE_URL` | your Project URL from 3.3 |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | your Publishable key from 3.3 |
+| `VITE_PRICE_YEARLY` | `$39.99` (or your INR price) |
+| `VITE_PRICE_WEEKLY` | `$4.99` (or your INR price) |
 
-The app shows only what's in the `settlements` table with `status = verified`. Before submitting:
+Then **Deployments** → the latest one → **⋯ → Redeploy**. The website only reads these when it's built, so the redeploy is required.
 
-1. Add ~40 **currently open** settlements from official administrator sites. Claude can draft these as SQL from official notices; **you** must check each one against the notice.
-2. Each needs: company brand, payout range, deadline, proof required, a plain-English "who qualifies" summary, 2 eligibility checkboxes, `claim_url` (official site), `official_notice_url`, and `source_checked_at` (the database refuses to publish without these).
-3. The company picker already has ~230 brands from the `brand_catalog` migration. Add a brand row whenever a new settlement names a company that isn't listed.
-4. If a settlement only covers certain states, fill `eligible_state_codes` (for example `{CA,IL}`). Only users who picked one of those states will match or be notified.
-5. Re-check weekly: close expired settlements and add new ones.
+## 7. Test the whole flow (15 min)
 
-## 8. Website
+Open `YOUR_SITE/app` in a private browser window:
 
-1. [vercel.com](https://vercel.com) → **Add New → Project** → import `ishaan-arora-1/10kmo` → **Root Directory: `website`**. Vercel detects Vite (build `npm run build`, output `dist`).
-2. **Environment Variables** (before the first deploy): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and optionally `VITE_ENABLE_APPLE_SIGN_IN=true`. Deploy.
-3. **Settings → Domains**: add your domain and follow the DNS instructions.
-4. Check `/privacy`, `/terms` and `/support` load (these are the App Store URLs), then test `/app`: pick companies → sign in → Stripe test checkout (card `4242 4242 4242 4242`) → Home shows Premium → file a claim → Profile → Manage billing.
-5. Sign in on the iPhone app with the same account and confirm it shows Premium too.
+1. Pick a few companies (for example **CVS**, **Kroger**, **Toyota**) → **Check open settlements**. You should see real settlements, with **no** "Sample data" labels.
+2. **Start claiming** → **Continue with Google** → you come back signed in and land on the paywall.
+3. Choose **Weekly** → pay with a Razorpay **test card**. In the Razorpay dashboard: **Docs → Test card details**. Use a card that supports recurring payments.
+4. You should land on **Home** with filing unlocked. Open a settlement, tick both boxes, and **File on official site** opens the real claim site in a new tab. Come back and **mark it as filed**; it appears in **Claims**.
+5. **Profile** should show **Rightful Premium · Weekly · Renews …** Tap **Cancel subscription**; it should change to **Ends …**
+6. In Razorpay (Test Mode) → **Subscriptions**, you should see the subscription, and under **Webhooks** the events should show as delivered.
+7. Also try **Yearly** with a different Google account; it should say the first 3 days are free.
 
-## 9. Ship
+If something fails: Supabase → **Edge Functions → (function name) → Logs** shows the exact error.
 
-1. Xcode → **Product → Archive** → **Distribute App → App Store Connect → Upload**.
-2. TestFlight: install on your phone and repeat the step 6.3 checks with production data.
-3. App Store Connect → version page: screenshots (6.9" and 6.5"), description, keywords, attach both subscriptions to the version, review notes:
-   > Rightful helps users find class-action settlements and links to official administrator claim sites. It is not a law firm and does not file claims. Sign in is optional for browsing; use Sign in with Apple to test syncing. Subscriptions can be tested with a sandbox account.
-4. **Submit for Review.**
+## 8. Go live with real payments
+
+Once Razorpay has **activated** your account (and approved international payments):
+
+1. Switch Razorpay to **Live Mode**, and redo **5.3** (plans), **5.4** (live key `rzp_live_…`) and **5.5** (webhook). Live mode has its own plans, keys and webhooks.
+2. Run **6a** again with the live values. You don't need to redeploy the functions.
+3. Buy one real weekly subscription yourself, check that it works, then cancel it in Profile.
+
+You're live. Share `YOUR_SITE` anywhere.
+
+---
+
+## Keeping settlements current
+
+The database already has **22 real settlements that were open on September 16, 2026**, with deadlines between October 2026 and April 2027. Each one was checked on its official settlement website, or, where that site blocked automated access, against news coverage and claim trackers. Settlements disappear from the app automatically after their deadline.
+
+About once a week, ask Claude: *"Draft new open settlements for Rightful."* You'll get a new migration file. Then run:
+
+```bash
+git pull
+npx supabase db push
+```
+
+## Later (not needed now)
+
+- **iPhone app:** App Store Connect, Apple sign-in, in-app purchases, and push notifications. Ask Claude to add these steps when you're ready.
+- **Email reminders:** need your own domain for sending email. The code is in place and switched off.
+- **Custom domain:** add it in Vercel → Settings → Domains, then update **Site URL** (3.4), `WEB_APP_URL`/`WEB_APP_ORIGINS` (6a), and redeploy.

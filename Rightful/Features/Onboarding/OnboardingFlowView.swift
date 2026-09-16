@@ -515,7 +515,7 @@ private struct ExampleNotification: View {
     }
 
     private var detail: String {
-        guard let settlement else { return "Filing takes about 3 minutes." }
+        guard let settlement, settlement.payoutMax > 0 else { return "Filing takes about 3 minutes." }
         return "Est. \(settlement.payoutRange). Filing takes about 3 minutes."
     }
 }

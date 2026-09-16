@@ -29,7 +29,9 @@ export function Home() {
           <span className="wc-label">Waiting for you</span>
           {store.isSampleData && <span className="wc-sample">Sample</span>}
         </div>
-        <div className="wc-amount">{usd(store.waitingMax)}</div>
+        <div className="wc-amount">
+          {store.waitingMax > 0 || store.matched.length === 0 ? usd(store.waitingMax) : "Varies"}
+        </div>
         <div className="wc-bar" aria-hidden="true">
           <i className="to-file" style={{ flexGrow: toFile.length }} />
           <i className="filed" style={{ flexGrow: filedCount }} />

@@ -1,12 +1,7 @@
-import Stripe from "npm:stripe@22.6.2";
 import { withSupabase } from "npm:@supabase/server@1.5.2";
 import type { Database } from "../_shared/database.types.ts";
 import { withCors } from "../_shared/cors.ts";
-
-const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-const stripe = stripeKey
-  ? new Stripe(stripeKey, { httpClient: Stripe.createFetchHttpClient() })
-  : null;
+import { razorpay, razorpayKeyId } from "../_shared/razorpay.ts";
 
 const handler = withSupabase<Database>(
   { auth: "user" },
@@ -20,18 +15,21 @@ const handler = withSupabase<Database>(
       return Response.json({ error: "User not found" }, { status: 401 });
     }
 
-    // Web subscriptions are billed by us through Stripe, so cancel them before
-    // the account disappears. App Store subscriptions can only be canceled by the user.
-    if (stripe) {
+    // Web subscriptions are billed through Razorpay, so stop them before the account
+    // disappears. App Store subscriptions can only be canceled by the user.
+    if (razorpayKeyId) {
       const { data: subscriptionIDs } = await context.supabaseAdmin.rpc(
-        "active_stripe_subscription_ids",
+        "active_razorpay_subscription_ids",
         { p_user_id: userID },
       );
       for (const subscriptionID of subscriptionIDs ?? []) {
         try {
-          await stripe.subscriptions.cancel(subscriptionID);
+          await razorpay(
+            `/subscriptions/${encodeURIComponent(subscriptionID)}/cancel`,
+            { method: "POST", body: { cancel_at_cycle_end: 0 } },
+          );
         } catch (error) {
-          console.error("stripe cancel failed", subscriptionID, error);
+          console.error("razorpay cancel failed", subscriptionID, error);
         }
       }
     }

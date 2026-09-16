@@ -1,5 +1,5 @@
 export type Plan = "free" | "yearly" | "weekly";
-export type PlanSource = "apple" | "stripe" | null;
+export type PlanSource = "apple" | "razorpay" | null;
 export type ClaimStatus = "To file" | "Filed" | "Approved" | "Rejected" | "Paid";
 export type SettlementStatus = "draft" | "verified" | "closed";
 
@@ -177,7 +177,13 @@ const withCents = new Intl.NumberFormat("en-US", {
 
 export const usd = (amount: number) => wholeDollars.format(amount);
 export const usdCents = (amount: number) => withCents.format(amount);
-export const payoutRange = (s: Settlement) => `${usd(s.payoutMin)}–${usd(s.payoutMax)}`;
+/** payoutMax = 0 means the amount varies (pro rata); payoutMin = 0 means "up to". */
+export const payoutRange = (s: Settlement) => {
+  if (s.payoutMax <= 0) return "Amount varies";
+  if (s.payoutMin <= 0) return `Up to ${usd(s.payoutMax)}`;
+  if (s.payoutMin === s.payoutMax) return usd(s.payoutMax);
+  return `${usd(s.payoutMin)}–${usd(s.payoutMax)}`;
+};
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 export const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);

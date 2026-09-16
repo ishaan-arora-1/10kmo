@@ -21,6 +21,7 @@ import {
   type PlanSource,
   type Settlement,
 } from "./models";
+import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
 
@@ -66,7 +67,7 @@ const timestamp = (value: string | null) => (value ? Date.parse(value) || 0 : 0)
 
 export interface CheckoutResult {
   ok: boolean;
-  redirected: boolean;
+  cancelled?: boolean;
   message?: string;
 }
 
@@ -81,6 +82,9 @@ export interface Store {
   session: Session | null;
   plan: Plan;
   planSource: PlanSource;
+  /** Web plans only: false once canceled (access continues until planExpiresAt). */
+  planRenews: boolean | null;
+  planExpiresAt: string | null;
   isPremium: boolean;
   isSampleData: boolean;
   emailReminders: boolean;
@@ -100,8 +104,9 @@ export interface Store {
   markFiled(settlement: Settlement, reference: string): Promise<void>;
   markPaid(claimId: string, amount: number): Promise<void>;
   refreshPlan(): Promise<Plan>;
-  startCheckout(plan: "yearly" | "weekly", next: string): Promise<CheckoutResult>;
-  openBillingPortal(): Promise<void>;
+  startCheckout(plan: "yearly" | "weekly"): Promise<CheckoutResult>;
+  /** Returns when access ends ("" if it ended now), or null if cancellation failed. */
+  cancelSubscription(): Promise<string | null>;
   setEmailReminders(on: boolean): Promise<void>;
   signOut(): Promise<void>;
   deleteAccount(): Promise<boolean>;
@@ -122,6 +127,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [authReady, setAuthReady] = useState(isSampleMode);
   const [plan, setPlan] = useState<Plan>("free");
   const [planSource, setPlanSource] = useState<PlanSource>(null);
+  const [planRenews, setPlanRenews] = useState<boolean | null>(null);
+  const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
   const [emailReminders, setEmailRemindersState] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
@@ -190,7 +197,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const [profileResult, picksResult, claimsResult] = await Promise.all([
         client
           .from("profiles")
-          .select("plan,plan_source,state_codes,email_reminders")
+          .select("plan,plan_source,plan_renews,plan_expires_at,state_codes,email_reminders")
           .eq("user_id", uid)
           .maybeSingle(),
         client.from("profile_brands").select("brand_id").eq("user_id", uid),
@@ -257,6 +264,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       setPlan((profileResult.data?.plan as Plan | undefined) ?? "free");
       setPlanSource((profileResult.data?.plan_source as PlanSource | undefined) ?? null);
+      setPlanRenews((profileResult.data?.plan_renews as boolean | null | undefined) ?? null);
+      setPlanExpiresAt((profileResult.data?.plan_expires_at as string | null | undefined) ?? null);
       setEmailRemindersState(Boolean(profileResult.data?.email_reminders));
     },
     [pushClaims],
@@ -266,6 +275,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!userId) {
       setPlan("free");
       setPlanSource(null);
+      setPlanRenews(null);
+      setPlanExpiresAt(null);
       setEmailRemindersState(false);
       setSyncedUserId(null);
       return;
@@ -378,53 +389,107 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!client || !userId) return "free";
     const { data } = await client
       .from("profiles")
-      .select("plan,plan_source")
+      .select("plan,plan_source,plan_renews,plan_expires_at")
       .eq("user_id", userId)
       .maybeSingle();
     const next = (data?.plan as Plan | undefined) ?? "free";
     setPlan(next);
     setPlanSource((data?.plan_source as PlanSource | undefined) ?? null);
+    setPlanRenews((data?.plan_renews as boolean | null | undefined) ?? null);
+    setPlanExpiresAt((data?.plan_expires_at as string | null | undefined) ?? null);
     return next;
   }, [userId]);
 
   const startCheckout = useCallback(
-    async (chosen: "yearly" | "weekly", next: string): Promise<CheckoutResult> => {
+    async (chosen: "yearly" | "weekly"): Promise<CheckoutResult> => {
       const client = supabase;
       if (!client) {
         setLocal((previous) => ({ ...previous, sampleUnlocked: true }));
-        return { ok: true, redirected: false };
+        return { ok: true };
       }
-      const { data, error: invokeError } = await client.functions.invoke<{ url?: string }>(
-        "stripe-checkout",
-        { body: { plan: chosen, next } },
-      );
-      if (invokeError || !data?.url) {
+
+      const { data, error: invokeError } = await client.functions.invoke<{
+        subscription_id?: string;
+        key_id?: string;
+        email?: string | null;
+        name?: string | null;
+      }>("razorpay-subscribe", { body: { plan: chosen } });
+      const subscriptionId = data?.subscription_id;
+      const keyId = data?.key_id;
+      if (invokeError || !subscriptionId || !keyId) {
         return {
           ok: false,
-          redirected: false,
-          message:
-            "Checkout couldn’t start. If you already subscribed (on the web or iPhone), refresh this page.",
+          message: "Checkout couldn’t start. If you already subscribed, refresh this page.",
         };
       }
-      window.location.assign(data.url);
-      return { ok: true, redirected: true };
+
+      try {
+        await loadRazorpay();
+      } catch {
+        return {
+          ok: false,
+          message: "The payment window couldn’t load. Check your connection or pause ad blockers, then try again.",
+        };
+      }
+
+      return new Promise<CheckoutResult>((resolve) => {
+        let settled = false;
+        let lastFailure: string | null = null;
+        const finish = (result: CheckoutResult) => {
+          if (settled) return;
+          settled = true;
+          resolve(result);
+        };
+
+        const checkout = openRazorpayCheckout({
+          key: keyId,
+          subscription_id: subscriptionId,
+          name: "Rightful",
+          description: chosen === "yearly" ? "Rightful Premium · Yearly" : "Rightful Premium · Weekly",
+          prefill: { email: data?.email ?? undefined, name: data?.name ?? undefined },
+          theme: { color: "#0E7A4B" },
+          handler: async (response) => {
+            const { data: verified, error: verifyError } = await client.functions.invoke<{
+              verified?: boolean;
+            }>("razorpay-verify", { body: response });
+            if (verifyError || !verified?.verified) {
+              finish({
+                ok: false,
+                message: "Payment received but not confirmed yet. Refresh in a minute and filing will unlock automatically.",
+              });
+              return;
+            }
+            await refreshPlan();
+            finish({ ok: true });
+          },
+          modal: {
+            ondismiss: () =>
+              finish(lastFailure ? { ok: false, message: lastFailure } : { ok: false, cancelled: true }),
+          },
+        });
+        // Razorpay keeps the window open after a failed attempt so the user can retry.
+        checkout.on("payment.failed", (failure) => {
+          lastFailure = failure.error?.description ?? "The payment didn’t go through. Please try another card.";
+        });
+      });
     },
-    [],
+    [refreshPlan],
   );
 
-  const openBillingPortal = useCallback(async () => {
+  const cancelSubscription = useCallback(async (): Promise<string | null> => {
     const client = supabase;
-    if (!client) return;
-    const { data, error: invokeError } = await client.functions.invoke<{ url?: string }>(
-      "stripe-portal",
-      { body: {} },
-    );
-    if (invokeError || !data?.url) {
-      setError("Billing couldn’t open. If you subscribed on iPhone, manage it in Settings → Subscriptions.");
-      return;
+    if (!client) return null;
+    const { data, error: invokeError } = await client.functions.invoke<{
+      cancelled?: boolean;
+      accessUntil?: string | null;
+    }>("razorpay-cancel", { body: {} });
+    if (invokeError || !data?.cancelled) {
+      setError("Your subscription couldn’t be canceled. Please try again or email support@rightful.app.");
+      return null;
     }
-    window.location.assign(data.url);
-  }, []);
+    await refreshPlan();
+    return data.accessUntil ?? "";
+  }, [refreshPlan]);
 
   const setEmailReminders = useCallback(
     async (on: boolean) => {
@@ -447,6 +512,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLocal(EMPTY_LOCAL);
     setPlan("free");
     setPlanSource(null);
+    setPlanRenews(null);
+    setPlanExpiresAt(null);
     setEmailRemindersState(false);
   }, []);
 
@@ -495,6 +562,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       session,
       plan,
       planSource,
+      planRenews,
+      planExpiresAt,
       isPremium: plan !== "free" || (isSampleMode && local.sampleUnlocked),
       isSampleData: isSampleMode || settlements.some((settlement) => settlement.isSample),
       emailReminders,
@@ -517,7 +586,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markPaid,
       refreshPlan,
       startCheckout,
-      openBillingPortal,
+      cancelSubscription,
       setEmailReminders,
       signOut,
       deleteAccount,
@@ -533,6 +602,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     session,
     plan,
     planSource,
+    planRenews,
+    planExpiresAt,
     emailReminders,
     error,
     toggleBrand,
@@ -542,7 +613,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     markPaid,
     refreshPlan,
     startCheckout,
-    openBillingPortal,
+    cancelSubscription,
     setEmailReminders,
     signOut,
     deleteAccount,

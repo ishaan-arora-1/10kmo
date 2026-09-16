@@ -86,11 +86,12 @@ interface MoneyCheckProps {
 
 /** The Rightful signature: found money shown as a check made out to you. */
 export function MoneyCheck({ number, payee, amountLabel, amount, memo, footer, stamped = false }: MoneyCheckProps) {
+  const amountText = amount > 0 ? usdCents(amount) : "Varies";
   return (
     <div
       className="money-check"
       role="img"
-      aria-label={`Check made out to ${payee}. ${amountLabel} ${usdCents(amount)}. ${memo}.${stamped ? " Paid." : ""}`}
+      aria-label={`Check made out to ${payee}. ${amountLabel} ${amountText}. ${memo}.${stamped ? " Paid." : ""}`}
     >
       <div className="mc-row">
         <span className="mc-label">Pay to the order of</span>
@@ -99,7 +100,7 @@ export function MoneyCheck({ number, payee, amountLabel, amount, memo, footer, s
       <div className="mc-payee">{payee}</div>
       <div className="mc-row mc-amount-row">
         <span className="mc-label">{amountLabel}</span>
-        <span className="mc-amount">{usdCents(amount)}</span>
+        <span className="mc-amount">{amountText}</span>
       </div>
       <div className="mc-memo">{memo}</div>
       <div className="mc-footer">{footer}</div>
@@ -198,7 +199,7 @@ export function ExampleReminder({ settlement }: { settlement: Settlement | null 
   const title = settlement
     ? `${settlement.company} settlement closes in 3 days`
     : "A settlement you match closes in 3 days";
-  const detail = settlement
+  const detail = settlement && settlement.payoutMax > 0
     ? `Est. ${payoutRange(settlement)}. Filing takes about 3 minutes.`
     : "Filing takes about 3 minutes.";
   return (

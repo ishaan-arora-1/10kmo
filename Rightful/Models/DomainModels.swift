@@ -65,8 +65,12 @@ struct Settlement: Identifiable, Codable, Hashable, Sendable {
     let status: SettlementStatus
     let isSample: Bool
 
+    /// payoutMax = 0 means the amount varies (pro rata); payoutMin = 0 means "up to".
     var payoutRange: String {
-        "\(payoutMin.usd)–\(payoutMax.usd)"
+        if payoutMax <= 0 { return "Amount varies" }
+        if payoutMin <= 0 { return "Up to \(payoutMax.usd)" }
+        if payoutMin == payoutMax { return payoutMax.usd }
+        return "\(payoutMin.usd)–\(payoutMax.usd)"
     }
 
     var daysUntilDeadline: Int {

@@ -12,5 +12,3 @@ export const supabase: SupabaseClient | null =
     : null;
 
 export const isSampleMode = supabase === null;
-
-export const appleSignInEnabled = import.meta.env.VITE_ENABLE_APPLE_SIGN_IN === "true";
