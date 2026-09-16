@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
-import { Modal, Monogram, SampleBadge, SettlementCard } from "../components/ui";
-import { daysUntil, payoutRange, plural, usd } from "../lib/models";
+import { Modal, Monogram, PayoutList, SampleBadge, SettlementCard } from "../components/ui";
+import { daysUntil, money, payoutRange, plural, usd } from "../lib/models";
 import { useStore } from "../lib/store";
 
 export function Home() {
@@ -91,6 +91,15 @@ export function Home() {
           </div>
         )}
       </section>
+
+      {store.missed.length > 0 && (
+        <section className="section">
+          <h2 className="section-label">
+            You missed up to {money(store.missed.reduce((total, payout) => total + payout.amountMax, 0))}
+          </h2>
+          <PayoutList payouts={store.missed} />
+        </section>
+      )}
 
       {needsStates ? (
         <button type="button" className="find-more" onClick={() => setStatesOpen(true)}>

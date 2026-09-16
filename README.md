@@ -115,7 +115,7 @@ Create one subscription group with:
 
 | Product | ID | Price |
 | --- | --- | --- |
-| Rightful Yearly | `com.rightful.app.yearly` | $39.99/year, 3-day free trial |
+| Rightful Yearly | `com.rightful.app.yearly` | $39.99/year, no free trial |
 | Rightful Weekly | `com.rightful.app.weekly` | $4.99/week |
 
 Before release, replace `com.rightful.app` if needed in `project.yml`, `AppConstants`, StoreKit configuration, Supabase secrets, and App Store Connect.

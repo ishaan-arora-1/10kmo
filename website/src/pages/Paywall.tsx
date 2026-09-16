@@ -55,8 +55,8 @@ export function Paywall() {
     : isSampleMode
       ? "Unlock sample"
       : plan === "yearly"
-        ? "Start my free trial"
-        : "Continue weekly";
+        ? `Subscribe for ${PRICE_LABELS.yearly}/year`
+        : `Subscribe for ${PRICE_LABELS.weekly}/week`;
 
   return (
     <div className="flow narrow">
@@ -109,7 +109,7 @@ export function Paywall() {
               <b>
                 Yearly <span className="badge">Best value</span>
               </b>
-              <span>3-day free trial for new subscribers, then {PRICE_LABELS.yearly}/year</span>
+              <span>{PRICE_LABELS.yearly}/year</span>
             </span>
           </label>
           <label className={`plan-option${plan === "weekly" ? " on" : ""}`} htmlFor="plan-weekly">
@@ -140,7 +140,7 @@ export function Paywall() {
           {isSampleMode
             ? "Sample mode: no payment is taken."
             : plan === "yearly"
-              ? `Payments are processed securely by Razorpay. First-time subscribers aren’t charged for 3 days (your bank may show a temporary authorization), then ${PRICE_LABELS.yearly} every year until you cancel in Profile.`
+              ? `Payments are processed securely by Razorpay. ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
               : `Payments are processed securely by Razorpay. ${PRICE_LABELS.weekly} is charged today and every week until you cancel in Profile.`}
         </p>
         <p className="fine-print center">

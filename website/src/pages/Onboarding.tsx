@@ -152,7 +152,12 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
           Estimates come from court filings. Final amounts depend on how many people claim.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
         </p>
-        <PayoutHistoryCard history={store.history} showCheck={store.potentialMax === 0} />
+        {store.potentialMax === 0 && (
+          <>
+            <h2 className="past-year-title">{historyHeadline(store.history)}</h2>
+            <PayoutHistoryCard history={store.history} />
+          </>
+        )}
       </div>
       <div className="sticky-cta">
         <button type="button" className="btn block" onClick={startClaiming}>
@@ -163,7 +168,7 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
   );
 }
 
-/** No match yet: offer the companies that do have open settlements, then continue to membership. */
+/** No open match: show what they missed, suggest more companies, then continue to membership. */
 function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
   const { brands, settlements, selectedBrandIds, toggleBrand, history } = useStore();
   const open = settlements.filter(isOpen);
@@ -183,20 +188,9 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
     <>
       <div className="flow-body">
         <p className="eyebrow">Scan complete</p>
-        {history.payouts.length > 0 && (
-          <>
-            <h1 className="flow-title">{historyHeadline(history)}</h1>
-            <PayoutHistoryCard history={history} showCheck />
-          </>
-        )}
-        {history.payouts.length > 0 ? (
-          <h2 className="past-year-title">Nothing is open for them today — used any of these?</h2>
-        ) : (
-          <h1 className="flow-title">Nothing open for those yet — used any of these?</h1>
-        )}
-        <p className="muted">
-          These companies have settlements open right now. Tap any you’ve bought from, owned, or used.
-        </p>
+        <h1 className="flow-title">{historyHeadline(history)}</h1>
+        <PayoutHistoryCard history={history} />
+        <h2 className="past-year-title">Add more options</h2>
         <div className="brand-grid">
           {suggestions.map((brand) => (
             <button
@@ -208,21 +202,16 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
             >
               <Monogram brand={brand} name={brand.name} size={40} />
               <span>{brand.name}</span>
-              <small className="brand-open">Open claim</small>
             </button>
           ))}
         </div>
-        <p className="muted">
-          New settlements open every week. Members see new matches for their{" "}
-          {selectedBrandIds.size} {plural(selectedBrandIds.size, "company", "companies")} as soon as we verify them.
-        </p>
       </div>
       <div className="sticky-cta">
         <button type="button" className="btn block" onClick={onContinue}>
           Continue
         </button>
         <button type="button" className="btn-quiet" onClick={onPickMore}>
-          Search more companies
+          Search all companies
         </button>
       </div>
     </>

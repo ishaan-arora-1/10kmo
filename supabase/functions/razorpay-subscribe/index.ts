@@ -9,7 +9,6 @@ import {
   type WebPlan,
 } from "../_shared/razorpay.ts";
 
-const TRIAL_DAYS = 3;
 // Razorpay requires a finite number of billing cycles; these are effectively open-ended.
 const TOTAL_COUNT: Record<WebPlan, number> = { yearly: 10, weekly: 260 };
 
@@ -48,18 +47,9 @@ const handler = withSupabase<Database>(
       return Response.json({ error: "already_subscribed" }, { status: 409 });
     }
 
-    const [{ data: hadSubscription }, { data: user }] = await Promise.all([
-      context.supabaseAdmin.rpc("user_had_razorpay_subscription", {
-        p_user_id: userID,
-      }),
-      context.supabaseAdmin.auth.admin.getUserById(userID),
-    ]);
-
-    // First-time yearly subscribers get the same 3-day trial as the App Store:
-    // the card is authorized now and first charged when the trial ends.
-    const trial = plan === "yearly" && !hadSubscription
-      ? { start_at: Math.floor(Date.now() / 1000) + TRIAL_DAYS * 86_400 }
-      : {};
+    const { data: user } = await context.supabaseAdmin.auth.admin.getUserById(
+      userID,
+    );
 
     try {
       const subscription = await razorpay<RazorpaySubscription>(
@@ -72,7 +62,6 @@ const handler = withSupabase<Database>(
             quantity: 1,
             customer_notify: 1,
             notes: { user_id: userID, plan },
-            ...trial,
           },
         },
       );
@@ -82,7 +71,6 @@ const handler = withSupabase<Database>(
         email: user.user?.email ?? null,
         name: (user.user?.user_metadata?.full_name as string | undefined) ??
           null,
-        trial: "start_at" in trial,
       });
     } catch (error) {
       console.error("razorpay subscription create failed", error);

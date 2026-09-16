@@ -53,15 +53,10 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "RIGHTFUL_YEARLY",
-          "introductoryOffer" : {
-            "displayPrice" : "0",
-            "internalID" : "RIGHTFUL_YEARLY_TRIAL",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
+          "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Three-day free trial, then $39.99 per year",
+              "description" : "$39.99 per year",
               "displayName" : "Rightful Yearly",
               "locale" : "en_US"
             }

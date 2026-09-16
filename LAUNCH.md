@@ -93,7 +93,7 @@ Start in **Test Mode** (the toggle at the top of the Razorpay dashboard). You ca
    |---|---|---|---|
    | Rightful Yearly | Yearly, every 1 year | 39.99 | USD |
    | Rightful Weekly | Weekly, every 1 week | 4.99 | USD |
-   **SAVE** both plan IDs (`plan_…`). The 3-day free trial for new yearly subscribers is handled by the app, not the plan.
+   **SAVE** both plan IDs (`plan_…`).
 4. **Account & Settings → API Keys → Generate Test Key.** **SAVE** the **Key ID** (`rzp_test_…`) and **Key Secret** (shown only once).
 5. **Account & Settings → Webhooks → Add New Webhook:**
    - Webhook URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/razorpay-webhook`

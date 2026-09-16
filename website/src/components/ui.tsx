@@ -11,6 +11,7 @@ import {
   type ClaimStatus,
   type PayoutHistory,
   type PayoutScope,
+  type RecentPayout,
   type Settlement,
 } from "../lib/models";
 import { useStore } from "../lib/store";
@@ -74,79 +75,59 @@ export function SettlementCard({ settlement, action }: { settlement: Settlement;
   );
 }
 
-const HISTORY_COPY: Record<PayoutScope, { payee: string; label: string; footer: string; heading: string; note: string }> = {
-  past_year: {
-    payee: "Users of your apps",
-    label: "Past 12 months, up to",
-    footer: "‖ LAST 12 MONTHS ‖ PER PERSON MAXIMUMS",
-    heading: "In the last 12 months, people who used your apps could get up to",
-    note: "These settlements have closed. They show what your companies paid recently, so you don’t miss the next one.",
-  },
-  recent: {
-    payee: "Users of your apps",
-    label: "Recent settlements, up to",
-    footer: "‖ RECENT SETTLEMENTS ‖ PER PERSON MAXIMUMS",
-    heading: "People who used your apps have been paid up to",
-    note: "These settlements have closed, and some were limited to certain states. They show what your companies have paid, so you don’t miss the next one.",
-  },
-  everyone: {
-    payee: "People like you",
-    label: "Paid this past year, up to",
-    footer: "‖ LAST 12 MONTHS ‖ POPULAR SETTLEMENTS",
-    heading: "This past year, everyday settlements paid people up to",
-    note: "These popular settlements have closed. Rightful watches your companies so you catch the next one.",
-  },
+const HISTORY_COPY: Record<PayoutScope, { payee: string; label: string; footer: string }> = {
+  past_year: { payee: "You", label: "Missed this past year", footer: "‖ LAST 12 MONTHS" },
+  recent: { payee: "You", label: "Missed, up to", footer: "‖ PAST SETTLEMENTS" },
+  everyone: { payee: "People like you", label: "Paid this past year", footer: "‖ LAST 12 MONTHS" },
 };
 
 export function historyHeadline(history: PayoutHistory): string {
   const amount = money(history.total);
-  if (history.scope === "past_year") return `Your apps paid people up to ${amount} this past year`;
-  if (history.scope === "recent") return `Your apps have paid people up to ${amount}`;
-  return `Settlements paid people up to ${amount} this past year`;
+  if (history.scope === "past_year") return `You could have gotten up to ${amount} this past year`;
+  if (history.scope === "recent") return `You could have gotten up to ${amount}`;
+  return `People got up to ${amount} from settlements this past year`;
 }
 
-/** Real money from closed settlements, shown so no one sees $0. */
-export function PayoutHistoryCard({ history, showCheck }: { history: PayoutHistory; showCheck: boolean }) {
+/** Past payouts: company, amount, and the date it closed. */
+export function PayoutList({ payouts }: { payouts: RecentPayout[] }) {
   const { brandById } = useStore();
+  return (
+    <div className="stack">
+      {payouts.map((payout) => (
+        <div key={payout.id} className="settlement-card past">
+          <Monogram brand={brandById(payout.brandId)} name={payout.company} />
+          <div className="sc-body">
+            <div className="sc-top">
+              <span className="sc-title">
+                {payout.company} · {payout.title}
+              </span>
+              <span className="sc-amount">{recentAmount(payout)}</span>
+            </div>
+            <div className="sc-meta">
+              <span>{recentWhen(payout)}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Real money from past settlements, shown so no one sees $0. */
+export function PayoutHistoryCard({ history }: { history: PayoutHistory }) {
   if (history.payouts.length === 0) return null;
   const copy = HISTORY_COPY[history.scope];
   return (
     <section className="past-year" aria-label="Past settlement payouts">
-      {showCheck ? (
-        <MoneyCheck
-          number="0012"
-          payee={copy.payee}
-          amountLabel={copy.label}
-          amount={history.total}
-          memo={`${history.payouts.length} ${plural(history.payouts.length, "settlement", "settlements")} · now closed`}
-          footer={copy.footer}
-        />
-      ) : (
-        <h2 className="past-year-title">
-          {copy.heading} {money(history.total)}
-        </h2>
-      )}
-      <div className="stack">
-        {history.payouts.map((payout) => (
-          <div key={payout.id} className="settlement-card past">
-            <Monogram brand={brandById(payout.brandId)} name={payout.company} />
-            <div className="sc-body">
-              <div className="sc-top">
-                <span className="sc-title">
-                  {payout.company} · {payout.title}
-                </span>
-                <span className="sc-amount">{recentAmount(payout)}</span>
-              </div>
-              <div className="sc-meta">
-                <span>{recentWhen(payout)}</span>
-                <span aria-hidden="true">·</span>
-                <span>{payout.amountNote}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <p className="fine-print">{copy.note}</p>
+      <MoneyCheck
+        number="0012"
+        payee={copy.payee}
+        amountLabel={copy.label}
+        amount={history.total}
+        memo={`${history.payouts.length} ${plural(history.payouts.length, "settlement", "settlements")}`}
+        footer={copy.footer}
+      />
+      <PayoutList payouts={history.payouts} />
     </section>
   );
 }

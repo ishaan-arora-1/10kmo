@@ -205,6 +205,11 @@ export function matchSettlements(
     .sort((a, b) => a.deadline.localeCompare(b.deadline));
 }
 
+/** Every past payout for the chosen companies, newest first. */
+export function missedPayouts(payouts: RecentPayout[], brandIds: ReadonlySet<string>): RecentPayout[] {
+  return payouts.filter((p) => brandIds.has(p.brandId)).sort((a, b) => b.eventOn.localeCompare(a.eventOn));
+}
+
 export type PayoutScope = "past_year" | "recent" | "everyone";
 
 export interface PayoutHistory {
@@ -273,7 +278,7 @@ export const money = (amount: number) => (Number.isInteger(amount) ? usd(amount)
 export const recentAmount = (p: RecentPayout) =>
   p.amountMin > 0 && p.amountMin !== p.amountMax ? `${money(p.amountMin)}–${money(p.amountMax)}` : `Up to ${money(p.amountMax)}`;
 export const recentWhen = (p: RecentPayout) =>
-  `${p.event === "paid" ? "Paid" : "Claims closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`;
+  `${p.event === "paid" ? "Paid out" : "Closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 export const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);

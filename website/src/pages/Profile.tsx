@@ -37,7 +37,7 @@ export function Profile() {
     setCancelNote(
       accessUntil
         ? `Canceled. You keep Premium until ${longDate(accessUntil)} and won’t be charged again.`
-        : "Canceled. Your trial ended and you won’t be charged.",
+        : "Canceled. You won’t be charged again.",
     );
   };
 
@@ -212,8 +212,7 @@ export function Profile() {
       <Modal open={cancelOpen} onClose={() => setCancelOpen(false)} title="Cancel your subscription?">
         <div className="stack">
           <p className="muted">
-            You’ll keep Premium until the end of the period you’ve paid for, and you won’t be charged again. If
-            you’re still in your free trial, it ends now and nothing is charged.
+            You’ll keep Premium until the end of the period you’ve paid for, and you won’t be charged again.
           </p>
           <button type="button" className="btn block danger" onClick={confirmCancel} disabled={working}>
             {working ? "Canceling…" : "Cancel subscription"}

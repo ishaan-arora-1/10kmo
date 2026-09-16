@@ -14,6 +14,7 @@ import {
   claimFromRow,
   claimToRow,
   matchSettlements,
+  missedPayouts,
   payoutHistory,
   type PayoutHistory,
   recentPayoutFromRow,
@@ -101,6 +102,8 @@ export interface Store {
   paidTotal: number;
   /** Real past payouts to show instead of $0 (see payoutHistory). */
   history: PayoutHistory;
+  /** Every past payout for the chosen companies (dashboard "You missed"). */
+  missed: RecentPayout[];
   brandById(id: string): Brand | undefined;
   settlementById(id: string): Settlement | undefined;
   claimFor(settlementId: string): Claim | undefined;
@@ -587,6 +590,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         .reduce((total, s) => total + s.payoutMax, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
       history,
+      missed: missedPayouts(recentPayouts, selectedBrandIds),
       brandById: (id) => brandMap.get(id),
       settlementById: (id) => settlementMap.get(id),
       claimFor: (settlementId) => claimBySettlement.get(settlementId),
