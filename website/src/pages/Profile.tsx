@@ -60,7 +60,9 @@ export function Profile() {
           : "Active"
       : store.planSource === "apple"
         ? "Subscribed on iPhone"
-        : "Active";
+        : store.planSource === "grant"
+          ? "Complimentary access"
+          : "Active";
 
   return (
     <div className="page">
