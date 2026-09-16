@@ -46,6 +46,20 @@ export interface Settlement {
   isSample: boolean;
 }
 
+/** A settlement that closed or paid out recently. History only, never claimable. */
+export interface RecentPayout {
+  id: string;
+  brandId: string;
+  company: string;
+  title: string;
+  amountMin: number;
+  amountMax: number;
+  amountNote: string;
+  event: "claims_closed" | "paid";
+  /** Calendar day, YYYY-MM-DD. */
+  eventOn: string;
+}
+
 export interface Claim {
   id: string;
   settlementId: string;
@@ -86,6 +100,20 @@ export function settlementFromRow(row: Row): Settlement {
     expectedPayoutDate: String(row.expected_payout_date),
     status: row.status as SettlementStatus,
     isSample: Boolean(row.is_sample),
+  };
+}
+
+export function recentPayoutFromRow(row: Row): RecentPayout {
+  return {
+    id: String(row.id),
+    brandId: String(row.brand_id),
+    company: String(row.company),
+    title: String(row.title),
+    amountMin: Number(row.amount_min),
+    amountMax: Number(row.amount_max),
+    amountNote: String(row.amount_note),
+    event: row.event as RecentPayout["event"],
+    eventOn: String(row.event_on),
   };
 }
 
@@ -177,6 +205,15 @@ export function matchSettlements(
     .sort((a, b) => a.deadline.localeCompare(b.deadline));
 }
 
+/** Recent payouts for the chosen companies from the last 12 months, biggest first. */
+export function pastYearPayouts(payouts: RecentPayout[], brandIds: ReadonlySet<string>): RecentPayout[] {
+  const cutoff = startOfToday();
+  cutoff.setFullYear(cutoff.getFullYear() - 1);
+  return payouts
+    .filter((payout) => brandIds.has(payout.brandId) && parseDay(payout.eventOn) >= cutoff)
+    .sort((a, b) => b.amountMax - a.amountMax);
+}
+
 const wholeDollars = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -199,6 +236,10 @@ export const payoutRange = (s: Settlement) => {
   if (s.payoutMin === s.payoutMax) return usd(s.payoutMax);
   return `${usd(s.payoutMin)}–${usd(s.payoutMax)}`;
 };
+export const recentAmount = (p: RecentPayout) =>
+  p.amountMin > 0 && p.amountMin !== p.amountMax ? `${usd(p.amountMin)}–${usd(p.amountMax)}` : `Up to ${usd(p.amountMax)}`;
+export const recentWhen = (p: RecentPayout) =>
+  `${p.event === "paid" ? "Paid" : "Claims closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`;
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 export const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);

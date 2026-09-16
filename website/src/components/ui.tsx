@@ -3,9 +3,12 @@ import {
   daysUntil,
   payoutRange,
   plural,
+  recentAmount,
+  recentWhen,
   usdCents,
   type Brand,
   type ClaimStatus,
+  type RecentPayout,
   type Settlement,
 } from "../lib/models";
 import { useStore } from "../lib/store";
@@ -66,6 +69,53 @@ export function SettlementCard({ settlement, action }: { settlement: Settlement;
         {action && <span className="sc-action">{action}</span>}
       </div>
     </div>
+  );
+}
+
+/** What people who used the chosen companies could get in the last 12 months. */
+export function PastYearPayouts({ payouts, total, showCheck }: { payouts: RecentPayout[]; total: number; showCheck: boolean }) {
+  const { brandById } = useStore();
+  if (payouts.length === 0) return null;
+  return (
+    <section className="past-year" aria-label="Payouts in the last 12 months">
+      {showCheck ? (
+        <MoneyCheck
+          number="0012"
+          payee="Users of your apps"
+          amountLabel="Past 12 months, up to"
+          amount={total}
+          memo={`${payouts.length} ${plural(payouts.length, "settlement", "settlements")} · now closed`}
+          footer="‖ LAST 12 MONTHS ‖ PER PERSON MAXIMUMS"
+        />
+      ) : (
+        <h2 className="past-year-title">
+          In the last 12 months, people who used your apps could get up to {usdCents(total).replace(/\.00$/, "")}
+        </h2>
+      )}
+      <div className="stack">
+        {payouts.map((payout) => (
+          <div key={payout.id} className="settlement-card past">
+            <Monogram brand={brandById(payout.brandId)} name={payout.company} />
+            <div className="sc-body">
+              <div className="sc-top">
+                <span className="sc-title">
+                  {payout.company} · {payout.title}
+                </span>
+                <span className="sc-amount">{recentAmount(payout)}</span>
+              </div>
+              <div className="sc-meta">
+                <span>{recentWhen(payout)}</span>
+                <span aria-hidden="true">·</span>
+                <span>{payout.amountNote}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="fine-print">
+        These settlements have closed. They show what these companies paid recently, so you don’t miss the next one.
+      </p>
+    </section>
   );
 }
 

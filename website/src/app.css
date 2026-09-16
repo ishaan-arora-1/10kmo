@@ -179,6 +179,9 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .sc-title { font-weight: 700; font-size: 15px; }
 .sc-amount { font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--money); white-space: nowrap; }
 .sc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.past-year { display: grid; gap: 12px; }
+.past-year-title { font-size: 18px; line-height: 1.25; margin: 8px 0 0; }
+.settlement-card.past .sc-amount { color: var(--muted); }
 .sc-action { font-weight: 700; font-size: 14px; color: var(--money); margin-top: 2px; }
 .sample-badge {
   font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;

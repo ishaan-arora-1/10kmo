@@ -72,7 +72,9 @@ export function Paywall() {
             ? `Don’t let ${usd(store.waitingMax)} expire`
             : count > 0
               ? "Turn matches into money"
-              : "Be first when your companies settle"}
+              : store.pastYearMax > 0
+                ? `Your apps paid up to ${usd(store.pastYearMax)} last year. Don’t miss the next one.`
+                : "Be first when your companies settle"}
         </h1>
         {nearest ? (
           <div className="deadline-strip">

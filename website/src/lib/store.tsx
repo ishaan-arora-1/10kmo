@@ -14,7 +14,10 @@ import {
   claimFromRow,
   claimToRow,
   matchSettlements,
+  pastYearPayouts,
+  recentPayoutFromRow,
   settlementFromRow,
+  type RecentPayout,
   type Brand,
   type Claim,
   type Plan,
@@ -95,6 +98,9 @@ export interface Store {
   potentialMax: number;
   waitingMax: number;
   paidTotal: number;
+  /** Closed or paid settlements for the chosen companies in the last 12 months. */
+  pastYear: RecentPayout[];
+  pastYearMax: number;
   brandById(id: string): Brand | undefined;
   settlementById(id: string): Settlement | undefined;
   claimFor(settlementId: string): Claim | undefined;
@@ -122,6 +128,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [settlements, setSettlements] = useState<Settlement[]>(
     isSampleMode ? SAMPLE_SETTLEMENTS : [],
   );
+  const [recentPayouts, setRecentPayouts] = useState<RecentPayout[]>([]);
   const [publicLoaded, setPublicLoaded] = useState(isSampleMode);
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(isSampleMode);
@@ -146,11 +153,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!client) return;
     let cancelled = false;
     (async () => {
-      const [brandResult, settlementResult] = await Promise.all([
+      const [brandResult, settlementResult, recentResult] = await Promise.all([
         client.from("brands").select("*").order("name"),
         client.from("settlements").select("*").eq("status", "verified").order("deadline"),
+        client.from("recent_payouts").select("*"),
       ]);
       if (cancelled) return;
+      if (!recentResult.error) setRecentPayouts(recentResult.data.map(recentPayoutFromRow));
       if (brandResult.error || settlementResult.error) {
         setBrands(SAMPLE_BRANDS);
         setSettlements(SAMPLE_SETTLEMENTS);
@@ -549,6 +558,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return !status || status === "To file" || status === "Rejected";
     });
     const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
+    const pastYear = pastYearPayouts(recentPayouts, selectedBrandIds);
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
 
     return {
@@ -576,6 +586,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         .filter((s) => claimBySettlement.get(s.id)?.status !== "Paid")
         .reduce((total, s) => total + s.payoutMax, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
+      pastYear,
+      pastYearMax: pastYear.reduce((total, payout) => total + payout.amountMax, 0),
       brandById: (id) => brandMap.get(id),
       settlementById: (id) => settlementMap.get(id),
       claimFor: (settlementId) => claimBySettlement.get(settlementId),
@@ -597,6 +609,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     local,
     brands,
     settlements,
+    recentPayouts,
     publicLoaded,
     authReady,
     session,
