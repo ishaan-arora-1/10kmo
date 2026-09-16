@@ -5,10 +5,12 @@ import {
   plural,
   recentAmount,
   recentWhen,
+  money,
   usdCents,
   type Brand,
   type ClaimStatus,
-  type RecentPayout,
+  type PayoutHistory,
+  type PayoutScope,
   type Settlement,
 } from "../lib/models";
 import { useStore } from "../lib/store";
@@ -72,28 +74,60 @@ export function SettlementCard({ settlement, action }: { settlement: Settlement;
   );
 }
 
-/** What people who used the chosen companies could get in the last 12 months. */
-export function PastYearPayouts({ payouts, total, showCheck }: { payouts: RecentPayout[]; total: number; showCheck: boolean }) {
+const HISTORY_COPY: Record<PayoutScope, { payee: string; label: string; footer: string; heading: string; note: string }> = {
+  past_year: {
+    payee: "Users of your apps",
+    label: "Past 12 months, up to",
+    footer: "‖ LAST 12 MONTHS ‖ PER PERSON MAXIMUMS",
+    heading: "In the last 12 months, people who used your apps could get up to",
+    note: "These settlements have closed. They show what your companies paid recently, so you don’t miss the next one.",
+  },
+  recent: {
+    payee: "Users of your apps",
+    label: "Recent settlements, up to",
+    footer: "‖ RECENT SETTLEMENTS ‖ PER PERSON MAXIMUMS",
+    heading: "People who used your apps have been paid up to",
+    note: "These settlements have closed, and some were limited to certain states. They show what your companies have paid, so you don’t miss the next one.",
+  },
+  everyone: {
+    payee: "People like you",
+    label: "Paid this past year, up to",
+    footer: "‖ LAST 12 MONTHS ‖ POPULAR SETTLEMENTS",
+    heading: "This past year, everyday settlements paid people up to",
+    note: "These popular settlements have closed. Rightful watches your companies so you catch the next one.",
+  },
+};
+
+export function historyHeadline(history: PayoutHistory): string {
+  const amount = money(history.total);
+  if (history.scope === "past_year") return `Your apps paid people up to ${amount} this past year`;
+  if (history.scope === "recent") return `Your apps have paid people up to ${amount}`;
+  return `Settlements paid people up to ${amount} this past year`;
+}
+
+/** Real money from closed settlements, shown so no one sees $0. */
+export function PayoutHistoryCard({ history, showCheck }: { history: PayoutHistory; showCheck: boolean }) {
   const { brandById } = useStore();
-  if (payouts.length === 0) return null;
+  if (history.payouts.length === 0) return null;
+  const copy = HISTORY_COPY[history.scope];
   return (
-    <section className="past-year" aria-label="Payouts in the last 12 months">
+    <section className="past-year" aria-label="Past settlement payouts">
       {showCheck ? (
         <MoneyCheck
           number="0012"
-          payee="Users of your apps"
-          amountLabel="Past 12 months, up to"
-          amount={total}
-          memo={`${payouts.length} ${plural(payouts.length, "settlement", "settlements")} · now closed`}
-          footer="‖ LAST 12 MONTHS ‖ PER PERSON MAXIMUMS"
+          payee={copy.payee}
+          amountLabel={copy.label}
+          amount={history.total}
+          memo={`${history.payouts.length} ${plural(history.payouts.length, "settlement", "settlements")} · now closed`}
+          footer={copy.footer}
         />
       ) : (
         <h2 className="past-year-title">
-          In the last 12 months, people who used your apps could get up to {usdCents(total).replace(/\.00$/, "")}
+          {copy.heading} {money(history.total)}
         </h2>
       )}
       <div className="stack">
-        {payouts.map((payout) => (
+        {history.payouts.map((payout) => (
           <div key={payout.id} className="settlement-card past">
             <Monogram brand={brandById(payout.brandId)} name={payout.company} />
             <div className="sc-body">
@@ -112,9 +146,7 @@ export function PastYearPayouts({ payouts, total, showCheck }: { payouts: Recent
           </div>
         ))}
       </div>
-      <p className="fine-print">
-        These settlements have closed. They show what these companies paid recently, so you don’t miss the next one.
-      </p>
+      <p className="fine-print">{copy.note}</p>
     </section>
   );
 }

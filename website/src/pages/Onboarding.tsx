@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
-import { BrandSeal, Monogram, MoneyCheck, PastYearPayouts, SampleBadge, SettlementCard } from "../components/ui";
-import { isOpen, plural, sortBrandsForPicker, usd } from "../lib/models";
+import { BrandSeal, Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard } from "../components/ui";
+import { isOpen, plural, sortBrandsForPicker } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -152,7 +152,7 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
           Estimates come from court filings. Final amounts depend on how many people claim.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
         </p>
-        <PastYearPayouts payouts={store.pastYear} total={store.pastYearMax} showCheck={store.potentialMax === 0} />
+        <PayoutHistoryCard history={store.history} showCheck={store.potentialMax === 0} />
       </div>
       <div className="sticky-cta">
         <button type="button" className="btn block" onClick={startClaiming}>
@@ -165,7 +165,7 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
 
 /** No match yet: offer the companies that do have open settlements, then continue to membership. */
 function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
-  const { brands, settlements, selectedBrandIds, toggleBrand, pastYear, pastYearMax } = useStore();
+  const { brands, settlements, selectedBrandIds, toggleBrand, history } = useStore();
   const open = settlements.filter(isOpen);
   const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
   const suggestions = sortBrandsForPicker(
@@ -183,13 +183,13 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
     <>
       <div className="flow-body">
         <p className="eyebrow">Scan complete</p>
-        {pastYear.length > 0 && (
+        {history.payouts.length > 0 && (
           <>
-            <h1 className="flow-title">Your apps paid people up to {usd(pastYearMax)} this past year</h1>
-            <PastYearPayouts payouts={pastYear} total={pastYearMax} showCheck />
+            <h1 className="flow-title">{historyHeadline(history)}</h1>
+            <PayoutHistoryCard history={history} showCheck />
           </>
         )}
-        {pastYear.length > 0 ? (
+        {history.payouts.length > 0 ? (
           <h2 className="past-year-title">Nothing is open for them today — used any of these?</h2>
         ) : (
           <h1 className="flow-title">Nothing open for those yet — used any of these?</h1>

@@ -14,7 +14,8 @@ import {
   claimFromRow,
   claimToRow,
   matchSettlements,
-  pastYearPayouts,
+  payoutHistory,
+  type PayoutHistory,
   recentPayoutFromRow,
   settlementFromRow,
   type RecentPayout,
@@ -98,9 +99,8 @@ export interface Store {
   potentialMax: number;
   waitingMax: number;
   paidTotal: number;
-  /** Closed or paid settlements for the chosen companies in the last 12 months. */
-  pastYear: RecentPayout[];
-  pastYearMax: number;
+  /** Real past payouts to show instead of $0 (see payoutHistory). */
+  history: PayoutHistory;
   brandById(id: string): Brand | undefined;
   settlementById(id: string): Settlement | undefined;
   claimFor(settlementId: string): Claim | undefined;
@@ -558,7 +558,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return !status || status === "To file" || status === "Rejected";
     });
     const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
-    const pastYear = pastYearPayouts(recentPayouts, selectedBrandIds);
+    const history = payoutHistory(recentPayouts, selectedBrandIds);
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
 
     return {
@@ -586,8 +586,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         .filter((s) => claimBySettlement.get(s.id)?.status !== "Paid")
         .reduce((total, s) => total + s.payoutMax, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
-      pastYear,
-      pastYearMax: pastYear.reduce((total, payout) => total + payout.amountMax, 0),
+      history,
       brandById: (id) => brandMap.get(id),
       settlementById: (id) => settlementMap.get(id),
       claimFor: (settlementId) => claimBySettlement.get(settlementId),

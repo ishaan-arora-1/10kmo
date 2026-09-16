@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { BrandSeal } from "../components/ui";
+import { BrandSeal, historyHeadline } from "../components/ui";
 import { PRICE_LABELS } from "../lib/config";
 import { daysUntil, deadlineLabel, plural, safeNext, usd } from "../lib/models";
 import { useStore } from "../lib/store";
@@ -72,8 +72,8 @@ export function Paywall() {
             ? `Don’t let ${usd(store.waitingMax)} expire`
             : count > 0
               ? "Turn matches into money"
-              : store.pastYearMax > 0
-                ? `Your apps paid up to ${usd(store.pastYearMax)} last year. Don’t miss the next one.`
+              : store.history.total > 0
+                ? `${historyHeadline(store.history)}. Don’t miss the next one.`
                 : "Be first when your companies settle"}
         </h1>
         {nearest ? (

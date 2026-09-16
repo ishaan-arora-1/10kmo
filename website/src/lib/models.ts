@@ -205,13 +205,45 @@ export function matchSettlements(
     .sort((a, b) => a.deadline.localeCompare(b.deadline));
 }
 
-/** Recent payouts for the chosen companies from the last 12 months, biggest first. */
-export function pastYearPayouts(payouts: RecentPayout[], brandIds: ReadonlySet<string>): RecentPayout[] {
+export type PayoutScope = "past_year" | "recent" | "everyone";
+
+export interface PayoutHistory {
+  scope: PayoutScope;
+  payouts: RecentPayout[];
+  total: number;
+}
+
+/**
+ * Real money people got from settlements, so no one sees $0:
+ * the chosen companies' payouts from the last 12 months, plus the latest older payout for any chosen
+ * company without one; if none of the chosen companies ever paid, the biggest recent payouts overall.
+ */
+export function payoutHistory(payouts: RecentPayout[], brandIds: ReadonlySet<string>): PayoutHistory {
   const cutoff = startOfToday();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
-  return payouts
-    .filter((payout) => brandIds.has(payout.brandId) && parseDay(payout.eventOn) >= cutoff)
-    .sort((a, b) => b.amountMax - a.amountMax);
+  const withinYear = (p: RecentPayout) => parseDay(p.eventOn) >= cutoff;
+  const byNewest = (a: RecentPayout, b: RecentPayout) => b.eventOn.localeCompare(a.eventOn);
+  const sum = (list: RecentPayout[]) => list.reduce((total, p) => total + p.amountMax, 0);
+
+  const chosen = payouts.filter((p) => brandIds.has(p.brandId));
+  const picked = chosen.filter(withinYear);
+  const coveredBrands = new Set(picked.map((p) => p.brandId));
+  for (const payout of [...chosen].sort(byNewest)) {
+    if (coveredBrands.has(payout.brandId)) continue;
+    picked.push(payout);
+    coveredBrands.add(payout.brandId);
+  }
+  if (picked.length > 0) {
+    picked.sort((a, b) => b.amountMax - a.amountMax);
+    return { scope: picked.every(withinYear) ? "past_year" : "recent", payouts: picked, total: sum(picked) };
+  }
+
+  // Large "documented losses" caps would overstate a typical payment, so they're left out here.
+  const everyone = payouts
+    .filter((p) => withinYear(p) && p.amountMax < 1000)
+    .sort((a, b) => b.amountMax - a.amountMax)
+    .slice(0, 4);
+  return { scope: "everyone", payouts: everyone, total: sum(everyone) };
 }
 
 const wholeDollars = new Intl.NumberFormat("en-US", {
@@ -236,8 +268,10 @@ export const payoutRange = (s: Settlement) => {
   if (s.payoutMin === s.payoutMax) return usd(s.payoutMax);
   return `${usd(s.payoutMin)}–${usd(s.payoutMax)}`;
 };
+/** Whole dollars when exact, cents otherwise, so amounts are never rounded up. */
+export const money = (amount: number) => (Number.isInteger(amount) ? usd(amount) : usdCents(amount));
 export const recentAmount = (p: RecentPayout) =>
-  p.amountMin > 0 && p.amountMin !== p.amountMax ? `${usd(p.amountMin)}–${usd(p.amountMax)}` : `Up to ${usd(p.amountMax)}`;
+  p.amountMin > 0 && p.amountMin !== p.amountMax ? `${money(p.amountMin)}–${money(p.amountMax)}` : `Up to ${money(p.amountMax)}`;
 export const recentWhen = (p: RecentPayout) =>
   `${p.event === "paid" ? "Paid" : "Claims closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`;
 export const deadlineLabel = (s: Settlement) =>
