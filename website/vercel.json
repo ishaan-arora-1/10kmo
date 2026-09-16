@@ -1,8 +1,5 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/app", "destination": "/app.html" },
-    { "source": "/app/:path*", "destination": "/app.html" }
-  ]
+  "rewrites": [{ "source": "/app/:path+", "destination": "/app" }]
 }
