@@ -161,10 +161,36 @@ const POPULAR_BRAND_NAMES = [
 ];
 const popularRank = new Map(POPULAR_BRAND_NAMES.map((name, index) => [name.toLowerCase(), index]));
 
-/** Popular brands first, then companies with an open settlement, then everything else A–Z. */
-export function sortBrandsForPicker(brands: Brand[], openBrandIds: ReadonlySet<string>): Brand[] {
-  const rank = (brand: Brand) => popularRank.get(brand.name.toLowerCase()) ?? (openBrandIds.has(brand.id) ? 1000 : 2000);
-  return [...brands].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+/** Order of the mix at the top of the picker: P = popular brand, C = company with an open claim. */
+const PICKER_PATTERN = ["P", "P", "C", "C", "P", "C"] as const;
+
+/**
+ * Popular brands mixed with open-claim companies (two popular, two claims, one popular, one claim, repeat),
+ * then everything else A–Z. Open-claim companies are ordered by their best payout.
+ */
+export function sortBrandsForPicker(
+  brands: Brand[],
+  openBrandIds: ReadonlySet<string>,
+  topPayout: (brandId: string) => number = () => 0,
+): Brand[] {
+  const byName = (a: Brand, b: Brand) => a.name.localeCompare(b.name);
+  const popular = brands
+    .filter((brand) => popularRank.has(brand.name.toLowerCase()))
+    .sort((a, b) => popularRank.get(a.name.toLowerCase())! - popularRank.get(b.name.toLowerCase())!);
+  const claims = brands
+    .filter((brand) => openBrandIds.has(brand.id) && !popularRank.has(brand.name.toLowerCase()))
+    .sort((a, b) => topPayout(b.id) - topPayout(a.id) || byName(a, b));
+  const rest = brands
+    .filter((brand) => !popularRank.has(brand.name.toLowerCase()) && !openBrandIds.has(brand.id))
+    .sort(byName);
+
+  const mixed: Brand[] = [];
+  for (let step = 0; popular.length > 0 || claims.length > 0; step += 1) {
+    const wantClaim = PICKER_PATTERN[step % PICKER_PATTERN.length] === "C";
+    const next = (wantClaim ? claims : popular).shift() ?? (wantClaim ? popular : claims).shift();
+    if (next) mixed.push(next);
+  }
+  return [...mixed, ...rest];
 }
 
 function startOfToday(): Date {

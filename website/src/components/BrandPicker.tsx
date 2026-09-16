@@ -13,7 +13,13 @@ export function BrandPicker({ idPrefix = "brands" }: { idPrefix?: string }) {
     () => new Set(settlements.filter(isOpen).map((settlement) => settlement.brandId)),
     [settlements],
   );
-  const ordered = useMemo(() => sortBrandsForPicker(brands, openBrandIds), [brands, openBrandIds]);
+  const ordered = useMemo(() => {
+    const best = new Map<string, number>();
+    for (const settlement of settlements.filter(isOpen)) {
+      best.set(settlement.brandId, Math.max(best.get(settlement.brandId) ?? 0, settlement.payoutMax));
+    }
+    return sortBrandsForPicker(brands, openBrandIds, (id) => best.get(id) ?? 0);
+  }, [brands, settlements, openBrandIds]);
 
   const visible = useMemo(
     () =>
