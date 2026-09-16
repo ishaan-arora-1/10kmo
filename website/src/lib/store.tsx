@@ -142,6 +142,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [emailReminders, setEmailRemindersState] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
+  /** The account whose plan has been loaded, so members aren't sent to onboarding before it arrives. */
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
 
   const localRef = useRef(local);
   localRef.current = local;
@@ -302,6 +304,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setError("Your picks are saved in this browser. Cloud sync will retry when you reload.");
         }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedUserId(userId);
       });
     return () => {
       cancelled = true;
@@ -565,7 +570,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
 
     return {
-      ready: publicLoaded && authReady,
+      ready: publicLoaded && authReady && (!userId || loadedUserId === userId),
       brands,
       settlements,
       selectedBrandIds,
@@ -614,6 +619,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     settlements,
     recentPayouts,
     publicLoaded,
+    loadedUserId,
+    userId,
     authReady,
     session,
     plan,

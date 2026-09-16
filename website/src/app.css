@@ -284,7 +284,7 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .section { display: grid; gap: 10px; }
 .section-label { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
-.waiting-card { display: grid; gap: 14px; padding: 22px; border-radius: 20px; background: var(--hero-card); color: var(--on-hero); }
+#root .waiting-card { display: grid; gap: 14px; padding: 24px 22px; border-radius: 20px; background: var(--hero-card); color: var(--on-hero); }
 .wc-top { display: flex; justify-content: space-between; align-items: center; }
 .wc-label { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .72; }
 .wc-sample { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--deadline); background: #fff; padding: 3px 8px; border-radius: 99px; }

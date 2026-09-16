@@ -16,6 +16,14 @@ export function Home() {
   const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
   const paidCount = store.claims.filter((claim) => claim.status === "Paid").length;
   const needsStates = store.selectedStates.size === 0;
+  const missedTotal = store.missed.reduce((total, payout) => total + payout.amountMax, 0);
+  // Never show $0: with nothing open, show what they missed, or what settlements paid people this year.
+  const hero =
+    store.waitingMax > 0 || store.matched.length > 0
+      ? { label: "Waiting for you", amount: store.waitingMax > 0 ? usd(store.waitingMax) : "Varies" }
+      : missedTotal > 0
+        ? { label: "You missed", amount: money(missedTotal) }
+        : { label: "Paid to people this year", amount: money(store.history.total) };
 
   return (
     <div className="page">
@@ -26,11 +34,11 @@ export function Home() {
 
       <section className="waiting-card" aria-label="Money waiting for you">
         <div className="wc-top">
-          <span className="wc-label">Waiting for you</span>
+          <span className="wc-label">{hero.label}</span>
           {store.isSampleData && <span className="wc-sample">Sample</span>}
         </div>
         <div className="wc-amount">
-          {store.waitingMax > 0 || store.matched.length === 0 ? usd(store.waitingMax) : "Varies"}
+          {hero.amount}
         </div>
         <div className="wc-bar" aria-hidden="true">
           <i className="to-file" style={{ flexGrow: toFile.length }} />
@@ -95,7 +103,7 @@ export function Home() {
       {store.missed.length > 0 && (
         <section className="section">
           <h2 className="section-label">
-            You missed up to {money(store.missed.reduce((total, payout) => total + payout.amountMax, 0))}
+            You missed up to {money(missedTotal)}
           </h2>
           <PayoutList payouts={store.missed} />
         </section>
