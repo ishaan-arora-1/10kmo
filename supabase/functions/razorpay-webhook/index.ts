@@ -2,6 +2,7 @@ import { withSupabase } from "npm:@supabase/server@1.5.2";
 import type { Database } from "../_shared/database.types.ts";
 import {
   hmacSHA256Hex,
+  razorpay,
   type RazorpaySubscription,
   recordSubscription,
   subscriptionUserId,
@@ -37,9 +38,24 @@ export default {
       return Response.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    const subscription = event.payload?.subscription?.entity;
-    if (!event.event?.startsWith("subscription.") || !subscription) {
+    const subscriptionID = event.payload?.subscription?.entity?.id;
+    if (!event.event?.startsWith("subscription.") || !subscriptionID) {
       return Response.json({ received: true });
+    }
+
+    // Never trust the event body for access: read the subscription's real state from Razorpay.
+    let subscription: RazorpaySubscription;
+    try {
+      subscription = await razorpay<RazorpaySubscription>(
+        `/subscriptions/${encodeURIComponent(subscriptionID)}`,
+      );
+    } catch (error) {
+      console.error("razorpay subscription lookup failed", subscriptionID, error);
+      // Unknown IDs (4xx) are ignored; outages return 500 so Razorpay retries.
+      const unknown = /Razorpay 4\d\d/.test(String(error));
+      return unknown
+        ? Response.json({ received: true })
+        : Response.json({ error: "Lookup failed" }, { status: 500 });
     }
 
     try {
