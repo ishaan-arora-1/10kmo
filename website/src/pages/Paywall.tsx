@@ -29,21 +29,14 @@ export function Paywall() {
   const nearest = store.nearest;
   const filingFeature =
     count === 0
-      ? "Step-by-step filing for every match"
+      ? `We watch your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`
       : count === 1
         ? "Step-by-step filing for your match"
         : count === 2
           ? "Step-by-step filing for both of your matches"
           : `Step-by-step filing for all ${count} of your matches`;
 
-  const close = () => {
-    if (!store.onboardingCompleted) {
-      store.completeOnboarding();
-      navigate("/", { replace: true });
-    } else {
-      navigate(next, { replace: true });
-    }
-  };
+  const close = () => navigate("/start", { replace: true });
 
   const subscribe = async () => {
     setBusy(true);
@@ -75,7 +68,11 @@ export function Paywall() {
       </header>
       <div className="flow-body">
         <h1 className="flow-title">
-          {store.waitingMax > 0 ? `Don’t let ${usd(store.waitingMax)} expire` : "Turn matches into money"}
+          {store.waitingMax > 0
+            ? `Don’t let ${usd(store.waitingMax)} expire`
+            : count > 0
+              ? "Turn matches into money"
+              : "Be first when your companies settle"}
         </h1>
         {nearest ? (
           <div className="deadline-strip">
@@ -146,6 +143,14 @@ export function Paywall() {
         </p>
         <p className="fine-print center">
           <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
+          {store.session && (
+            <>
+              {" · "}
+              <button type="button" className="link-btn" onClick={() => void store.signOut()}>
+                Sign out
+              </button>
+            </>
+          )}
         </p>
       </div>
     </div>

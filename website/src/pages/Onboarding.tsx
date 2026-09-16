@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
-import { BrandSeal, MoneyCheck, SampleBadge, SettlementCard } from "../components/ui";
-import { plural } from "../lib/models";
+import { BrandSeal, Monogram, MoneyCheck, SampleBadge, SettlementCard } from "../components/ui";
+import { isOpen, plural, sortBrandsForPicker } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -27,7 +27,7 @@ export function Onboarding() {
 }
 
 function PickStep({ onContinue }: { onContinue: () => void }) {
-  const { selectedBrandIds } = useStore();
+  const { selectedBrandIds, session } = useStore();
   const count = selectedBrandIds.size;
   return (
     <>
@@ -36,6 +36,11 @@ function PickStep({ onContinue }: { onContinue: () => void }) {
         <h1 className="flow-title">Which of these have you used?</h1>
         <p className="muted">Any account since 2015 counts. No bank or email logins, ever.</p>
         <BrandPicker idPrefix="onboarding" />
+        {!session && !isSampleMode && (
+          <p className="center muted">
+            Already a member? <Link to={`/sign-in?next=${encodeURIComponent("/paywall")}`}>Sign in</Link>
+          </p>
+        )}
       </div>
       <div className="sticky-cta">
         <span className="mono-note">
@@ -111,32 +116,8 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
     else navigate("/paywall");
   };
 
-  const continueFree = () => {
-    store.completeOnboarding();
-    navigate("/", { replace: true });
-  };
-
   if (matches.length === 0) {
-    return (
-      <>
-        <div className="flow-body">
-          <p className="eyebrow">Scan complete</p>
-          <h1 className="flow-title">No open matches yet</h1>
-          <p className="muted">
-            New settlements open every week. Add more companies you’ve used, or continue and we’ll show new
-            matches as they’re verified.
-          </p>
-        </div>
-        <div className="sticky-cta">
-          <button type="button" className="btn block" onClick={onPickMore}>
-            Pick more companies
-          </button>
-          <button type="button" className="btn-quiet" onClick={continueFree}>
-            Continue to Rightful
-          </button>
-        </div>
-      </>
-    );
+    return <NoMatches onPickMore={onPickMore} onContinue={startClaiming} />;
   }
 
   return (
@@ -175,6 +156,62 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
       <div className="sticky-cta">
         <button type="button" className="btn block" onClick={startClaiming}>
           Start claiming
+        </button>
+      </div>
+    </>
+  );
+}
+
+/** No match yet: offer the companies that do have open settlements, then continue to membership. */
+function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
+  const { brands, settlements, selectedBrandIds, toggleBrand } = useStore();
+  const open = settlements.filter(isOpen);
+  const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
+  const suggestions = sortBrandsForPicker(
+    brands.filter((brand) => openBrandIds.has(brand.id) && !selectedBrandIds.has(brand.id)),
+    openBrandIds,
+  )
+    .sort((a, b) => topPayout(b.id) - topPayout(a.id))
+    .slice(0, 12);
+
+  function topPayout(brandId: string) {
+    return Math.max(0, ...open.filter((s) => s.brandId === brandId).map((s) => s.payoutMax));
+  }
+
+  return (
+    <>
+      <div className="flow-body">
+        <p className="eyebrow">Scan complete</p>
+        <h1 className="flow-title">Nothing open for those yet — used any of these?</h1>
+        <p className="muted">
+          These companies have settlements open right now. Tap any you’ve bought from, owned, or used.
+        </p>
+        <div className="brand-grid">
+          {suggestions.map((brand) => (
+            <button
+              key={brand.id}
+              type="button"
+              className="brand-tile"
+              aria-pressed={false}
+              onClick={() => toggleBrand(brand.id)}
+            >
+              <Monogram brand={brand} name={brand.name} size={40} />
+              <span>{brand.name}</span>
+              <small className="brand-open">Open claim</small>
+            </button>
+          ))}
+        </div>
+        <p className="muted">
+          New settlements open every week. Members see new matches for their{" "}
+          {selectedBrandIds.size} {plural(selectedBrandIds.size, "company", "companies")} as soon as we verify them.
+        </p>
+      </div>
+      <div className="sticky-cta">
+        <button type="button" className="btn block" onClick={onContinue}>
+          Continue
+        </button>
+        <button type="button" className="btn-quiet" onClick={onPickMore}>
+          Search more companies
         </button>
       </div>
     </>

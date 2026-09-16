@@ -1,20 +1,26 @@
 import { useMemo, useState } from "react";
-import { brandMatchesSearch, CATEGORIES, type Category } from "../lib/models";
+import { brandMatchesSearch, CATEGORIES, isOpen, sortBrandsForPicker, type Category } from "../lib/models";
 import { useStore } from "../lib/store";
 import { SearchIcon } from "./icons";
 import { Monogram } from "./ui";
 
 export function BrandPicker({ idPrefix = "brands" }: { idPrefix?: string }) {
-  const { brands, selectedBrandIds, toggleBrand } = useStore();
+  const { brands, settlements, selectedBrandIds, toggleBrand } = useStore();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category>("All");
 
+  const openBrandIds = useMemo(
+    () => new Set(settlements.filter(isOpen).map((settlement) => settlement.brandId)),
+    [settlements],
+  );
+  const ordered = useMemo(() => sortBrandsForPicker(brands, openBrandIds), [brands, openBrandIds]);
+
   const visible = useMemo(
     () =>
-      brands.filter(
+      ordered.filter(
         (brand) => (category === "All" || brand.category === category) && brandMatchesSearch(brand, query),
       ),
-    [brands, category, query],
+    [ordered, category, query],
   );
 
   return (
@@ -49,16 +55,19 @@ export function BrandPicker({ idPrefix = "brands" }: { idPrefix?: string }) {
       <div className="brand-grid">
         {visible.map((brand) => {
           const selected = selectedBrandIds.has(brand.id);
+          const open = openBrandIds.has(brand.id);
           return (
             <button
               key={brand.id}
               type="button"
               className={`brand-tile${selected ? " on" : ""}`}
               aria-pressed={selected}
+              aria-label={open ? `${brand.name}, open settlement` : brand.name}
               onClick={() => toggleBrand(brand.id)}
             >
               <Monogram brand={brand} name={brand.name} size={40} />
               <span>{brand.name}</span>
+              {open && <small className="brand-open">Open claim</small>}
             </button>
           );
         })}

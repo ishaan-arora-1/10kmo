@@ -124,6 +124,21 @@ export function brandMatchesSearch(brand: Brand, query: string): boolean {
   );
 }
 
+/** Household names people recognize at a glance; shown first in the picker, in this order. */
+const POPULAR_BRAND_NAMES = [
+  "Instagram", "TikTok", "Facebook", "YouTube", "Snapchat", "WhatsApp", "X", "Reddit",
+  "Amazon", "Google", "Apple", "Netflix", "Spotify", "Uber", "DoorDash", "Walmart",
+  "Target", "Venmo", "Cash App", "PayPal", "T-Mobile", "Verizon", "AT&T", "Disney+",
+  "Starbucks", "McDonald's", "Microsoft", "Lyft", "Hulu", "Pinterest",
+];
+const popularRank = new Map(POPULAR_BRAND_NAMES.map((name, index) => [name.toLowerCase(), index]));
+
+/** Popular brands first, then companies with an open settlement, then everything else A–Z. */
+export function sortBrandsForPicker(brands: Brand[], openBrandIds: ReadonlySet<string>): Brand[] {
+  const rank = (brand: Brand) => popularRank.get(brand.name.toLowerCase()) ?? (openBrandIds.has(brand.id) ? 1000 : 2000);
+  return [...brands].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+}
+
 function startOfToday(): Date {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

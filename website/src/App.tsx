@@ -38,9 +38,9 @@ export function App() {
         <Route path="/welcome" element={<Welcome />} />
         <Route
           element={
-            <RequireOnboarding>
+            <RequireMembership>
               <Shell />
-            </RequireOnboarding>
+            </RequireMembership>
           }
         >
           <Route index element={<Home />} />
@@ -64,7 +64,8 @@ export function App() {
   );
 }
 
-function RequireOnboarding({ children }: { children: ReactNode }) {
-  const { onboardingCompleted } = useStore();
-  return onboardingCompleted ? children : <Navigate to="/start" replace />;
+/** The dashboard is members-only: everyone else goes through pick → results → paywall. */
+function RequireMembership({ children }: { children: ReactNode }) {
+  const { isPremium } = useStore();
+  return isPremium ? children : <Navigate to="/start" replace />;
 }
