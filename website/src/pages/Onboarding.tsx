@@ -131,7 +131,7 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
         <MoneyCheck
           number={String(matches.length).padStart(4, "0")}
           payee="You"
-          amountLabel="Est. up to"
+          amountLabel="Estimated total"
           amount={store.potentialMax}
           memo={`${matches.length} ${plural(matches.length, "settlement", "settlements")} · ${noProof} need no proof`}
           footer={`‖ ${store.settlements.length} CHECKED ‖ ${matches.length} MATCHED`}
@@ -150,7 +150,8 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
         )}
         <FeaturedSettlements onSelect={startClaiming} />
         <p className="fine-print">
-          Estimates come from court filings. Final amounts depend on how many people claim.
+          Estimates are typical payouts from court filings, and final amounts depend on how many people claim.
+          Some settlements pay more if you can document a bigger loss.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
         </p>
         {store.potentialMax === 0 && (

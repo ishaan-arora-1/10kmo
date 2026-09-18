@@ -16,6 +16,7 @@ import {
   matchSettlements,
   featuredSettlements,
   missedPayouts,
+  typicalTotal,
   payoutHistory,
   type PayoutHistory,
   recentPayoutFromRow,
@@ -100,6 +101,7 @@ export interface Store {
   featured: Settlement[];
   unfiled: Settlement[];
   nearest: Settlement | null;
+  /** Estimated total using typical payouts, not documented-loss caps. */
   potentialMax: number;
   waitingMax: number;
   paidTotal: number;
@@ -593,10 +595,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       featured: featuredSettlements(settlements, matched),
       unfiled,
       nearest: unfiled[0] ?? null,
-      potentialMax: matched.reduce((total, s) => total + s.payoutMax, 0),
-      waitingMax: matched
-        .filter((s) => claimBySettlement.get(s.id)?.status !== "Paid")
-        .reduce((total, s) => total + s.payoutMax, 0),
+      potentialMax: typicalTotal(matched),
+      waitingMax: typicalTotal(
+        matched.filter((s) => claimBySettlement.get(s.id)?.status !== "Paid"),
+      ),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
       history,
       missed: missedPayouts(recentPayouts, selectedBrandIds),

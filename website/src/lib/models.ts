@@ -35,6 +35,8 @@ export interface Settlement {
   eligibleStateCodes: string[];
   payoutMin: number;
   payoutMax: number;
+  /** What an ordinary claimant gets; payoutMax is often a documented-losses cap. */
+  payoutTypical: number | null;
   /** Calendar day, YYYY-MM-DD. */
   deadline: string;
   /** Claims can't be filed before this day; null once a settlement is open. */
@@ -96,6 +98,7 @@ export function settlementFromRow(row: Row): Settlement {
     eligibleStateCodes: (row.eligible_state_codes as string[] | null) ?? [],
     payoutMin: Number(row.payout_min),
     payoutMax: Number(row.payout_max),
+    payoutTypical: row.payout_typical == null ? null : Number(row.payout_typical),
     deadline: String(row.deadline),
     opensOn: (row.opens_on as string | null) ?? null,
     isFeatured: Boolean(row.is_featured),
@@ -324,6 +327,11 @@ export const recentAmount = (p: RecentPayout) =>
   p.amountMin > 0 && p.amountMin !== p.amountMax ? `${money(p.amountMin)}–${money(p.amountMax)}` : `Up to ${money(p.amountMax)}`;
 export const recentWhen = (p: RecentPayout) =>
   `${p.event === "paid" ? "Paid out" : "Closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+/** The realistic payout for one settlement: 0 when it only reimburses proven losses. */
+export const typicalPayout = (s: Settlement) => s.payoutTypical ?? s.payoutMax;
+export const typicalTotal = (settlements: Settlement[]) =>
+  settlements.reduce((total, settlement) => total + typicalPayout(settlement), 0);
+
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 export const opensLabel = (s: Settlement) =>

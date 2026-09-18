@@ -35,6 +35,7 @@ function sample(
     eligibleStateCodes: [],
     payoutMin,
     payoutMax,
+    payoutTypical: null,
     deadline: dayFromNow(deadlineDays),
     opensOn: null,
     isFeatured: false,
