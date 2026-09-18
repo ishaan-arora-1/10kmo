@@ -148,6 +148,7 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
             + {matches.length - 3} more {plural(matches.length - 3, "match", "matches")}
           </p>
         )}
+        <FeaturedSettlements onSelect={startClaiming} />
         <p className="fine-print">
           Estimates come from court filings. Final amounts depend on how many people claim.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
@@ -190,6 +191,7 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
         <p className="eyebrow">Scan complete</p>
         <h1 className="flow-title">{historyHeadline(history)}</h1>
         <PayoutHistoryCard history={history} />
+        <FeaturedSettlements onSelect={onContinue} />
         <h2 className="past-year-title">Add more options</h2>
         <div className="brand-grid">
           {suggestions.map((brand) => (
@@ -213,6 +215,24 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
         <button type="button" className="btn-quiet" onClick={onPickMore}>
           Search all companies
         </button>
+      </div>
+    </>
+  );
+}
+
+/** Big settlements anyone in the US may qualify for, shown whatever they picked. */
+function FeaturedSettlements({ onSelect }: { onSelect: () => void }) {
+  const { featured } = useStore();
+  if (featured.length === 0) return null;
+  return (
+    <>
+      <h2 className="past-year-title">Open to everyone in the US</h2>
+      <div className="stack">
+        {featured.map((settlement) => (
+          <button key={settlement.id} type="button" className="card-button" onClick={onSelect}>
+            <SettlementCard settlement={settlement} />
+          </button>
+        ))}
       </div>
     </>
   );

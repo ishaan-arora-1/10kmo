@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ExternalIcon, LockIcon } from "../components/icons";
 import { ClaimStatusBadge, Modal, Monogram, SampleBadge } from "../components/ui";
-import { deadlineLabel, daysUntil, payoutRange, plural } from "../lib/models";
+import { deadlineLabel, daysUntil, isUpcoming, opensLabel, payoutRange, plural } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -51,6 +51,7 @@ export function SettlementDetail() {
   const claim = store.claimFor(settlement.id);
   const eligible = checks.length > 0 && checks.every(Boolean);
   const days = daysUntil(settlement.deadline);
+  const upcoming = isUpcoming(settlement);
 
   const file = () => {
     if (!store.isPremium) {
@@ -89,6 +90,16 @@ export function SettlementDetail() {
         <div className="notice warn">
           <SampleBadge />
           <p>This is demonstration content, not a live claim. The filing button opens the FTC refunds hub.</p>
+        </div>
+      )}
+
+      {upcoming && (
+        <div className="notice">
+          <b>Claims open {opensLabel(settlement)}</b>
+          <p className="muted">
+            The court has approved this settlement, but the administrator hasn’t opened its claim site yet. We’ll
+            add the official link here as soon as it’s live, and it’s on your dashboard until then.
+          </p>
         </div>
       )}
 
@@ -146,8 +157,10 @@ export function SettlementDetail() {
         </div>
       )}
 
-      <button type="button" className="btn block" onClick={file} disabled={!eligible}>
-        {store.isPremium ? (
+      <button type="button" className="btn block" onClick={file} disabled={!eligible || upcoming}>
+        {upcoming ? (
+          <>Claims open {opensLabel(settlement)}</>
+        ) : store.isPremium ? (
           <>
             File on official site <ExternalIcon />
           </>
@@ -157,7 +170,9 @@ export function SettlementDetail() {
           </>
         )}
       </button>
-      {!eligible && <p className="fine-print center">Confirm both statements to continue.</p>}
+      {!eligible && !upcoming && (
+        <p className="fine-print center">Confirm both statements to continue.</p>
+      )}
       <p className="fine-print center">
         Verified settlement administrator link. Rightful is not a law firm and is not affiliated with this company.
       </p>

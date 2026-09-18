@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import {
   daysUntil,
+  isUpcoming,
+  opensLabel,
   payoutRange,
   plural,
   recentAmount,
@@ -64,9 +66,13 @@ export function SettlementCard({ settlement, action }: { settlement: Settlement;
             {settlement.proofRequired ? "Proof needed" : "No proof"}
           </span>
           <span aria-hidden="true">·</span>
-          <span className="deadline">
-            {days} {plural(days, "day", "days")} left
-          </span>
+          {isUpcoming(settlement) ? (
+            <span className="money">Claims open {opensLabel(settlement)}</span>
+          ) : (
+            <span className="deadline">
+              {days} {plural(days, "day", "days")} left
+            </span>
+          )}
           {settlement.isSample && <SampleBadge />}
         </div>
         {action && <span className="sc-action">{action}</span>}

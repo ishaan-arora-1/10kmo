@@ -100,6 +100,19 @@ export function Home() {
         )}
       </section>
 
+      {store.featured.length > 0 && (
+        <section className="section">
+          <h2 className="section-label">Open to everyone in the US</h2>
+          <div className="stack">
+            {store.featured.map((settlement) => (
+              <Link key={settlement.id} to={`/settlements/${settlement.id}`} className="card-link">
+                <SettlementCard settlement={settlement} action="Check if you qualify" />
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {store.missed.length > 0 && (
         <section className="section">
           <h2 className="section-label">

@@ -37,6 +37,10 @@ export interface Settlement {
   payoutMax: number;
   /** Calendar day, YYYY-MM-DD. */
   deadline: string;
+  /** Claims can't be filed before this day; null once a settlement is open. */
+  opensOn: string | null;
+  /** Shown to everyone, whatever companies they picked. */
+  isFeatured: boolean;
   proofRequired: boolean;
   qualifiesSummary: string;
   eligibilityDetails: string[];
@@ -93,6 +97,8 @@ export function settlementFromRow(row: Row): Settlement {
     payoutMin: Number(row.payout_min),
     payoutMax: Number(row.payout_max),
     deadline: String(row.deadline),
+    opensOn: (row.opens_on as string | null) ?? null,
+    isFeatured: Boolean(row.is_featured),
     proofRequired: Boolean(row.proof_required),
     qualifiesSummary: String(row.qualifies_summary),
     eligibilityDetails: (row.eligibility_details as string[] | null) ?? [],
@@ -209,6 +215,19 @@ export function daysUntil(day: string): number {
   return Math.max(0, Math.round(diff / 86_400_000));
 }
 
+/** Announced, but the administrator's claim site isn't live yet. */
+export function isUpcoming(settlement: Settlement): boolean {
+  return settlement.opensOn != null && parseDay(settlement.opensOn) > startOfToday();
+}
+
+/** Settlements everyone sees, whatever they picked, minus the ones already matched. */
+export function featuredSettlements(settlements: Settlement[], matched: Settlement[]): Settlement[] {
+  const matchedIds = new Set(matched.map((settlement) => settlement.id));
+  return settlements
+    .filter((settlement) => settlement.isFeatured && isOpen(settlement) && !matchedIds.has(settlement.id))
+    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+}
+
 export function isOpen(settlement: Settlement): boolean {
   return settlement.status !== "closed" && parseDay(settlement.deadline) >= startOfToday();
 }
@@ -307,6 +326,8 @@ export const recentWhen = (p: RecentPayout) =>
   `${p.event === "paid" ? "Paid out" : "Closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+export const opensLabel = (s: Settlement) =>
+  s.opensOn ? parseDay(s.opensOn).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
 export const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);
 
 /** Only same-site paths are allowed as redirect targets. */

@@ -36,6 +36,8 @@ function sample(
     payoutMin,
     payoutMax,
     deadline: dayFromNow(deadlineDays),
+    opensOn: null,
+    isFeatured: false,
     proofRequired,
     qualifiesSummary,
     eligibilityDetails,

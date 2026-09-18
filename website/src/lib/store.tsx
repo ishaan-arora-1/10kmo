@@ -14,6 +14,7 @@ import {
   claimFromRow,
   claimToRow,
   matchSettlements,
+  featuredSettlements,
   missedPayouts,
   payoutHistory,
   type PayoutHistory,
@@ -95,6 +96,8 @@ export interface Store {
   emailReminders: boolean;
   error: string | null;
   matched: Settlement[];
+  /** Open to everyone, whatever companies they picked. */
+  featured: Settlement[];
   unfiled: Settlement[];
   nearest: Settlement | null;
   potentialMax: number;
@@ -587,6 +590,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       emailReminders,
       error,
       matched,
+      featured: featuredSettlements(settlements, matched),
       unfiled,
       nearest: unfiled[0] ?? null,
       potentialMax: matched.reduce((total, s) => total + s.payoutMax, 0),
