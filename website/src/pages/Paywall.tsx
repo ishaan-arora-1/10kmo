@@ -133,6 +133,10 @@ export function Paywall() {
           </p>
         )}
 
+        <p className="fine-print center">
+          US settlements only. You qualify if you used these companies while living in the United States.
+        </p>
+
         <button type="button" className="btn block" onClick={subscribe} disabled={busy}>
           {buttonLabel}
         </button>

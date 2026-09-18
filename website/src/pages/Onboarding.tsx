@@ -34,7 +34,7 @@ function PickStep({ onContinue }: { onContinue: () => void }) {
       <div className="flow-body">
         <p className="eyebrow">Step 1 · 30 seconds</p>
         <h1 className="flow-title">Which of these have you used?</h1>
-        <p className="muted">Any account since 2015 counts. No bank or email logins, ever.</p>
+        <p className="muted">Any US account since 2015 counts. No bank or email logins, ever.</p>
         <BrandPicker idPrefix="onboarding" />
         {!session && !isSampleMode && (
           <p className="center muted">
