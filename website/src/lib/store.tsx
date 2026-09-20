@@ -28,6 +28,7 @@ import {
   type PlanSource,
   type Settlement,
 } from "./models";
+import { track } from "./analytics";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
@@ -430,6 +431,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return { ok: true };
       }
 
+      const userId = session?.user.id ?? null;
+      track("checkout_opened", { plan: chosen, userId });
       const { data, error: invokeError } = await client.functions.invoke<{
         subscription_id?: string;
         key_id?: string;
@@ -439,6 +442,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const subscriptionId = data?.subscription_id;
       const keyId = data?.key_id;
       if (invokeError || !subscriptionId || !keyId) {
+        track("checkout_failed", { plan: chosen, userId, detail: "subscribe_failed" });
         return {
           ok: false,
           message: "Checkout couldn’t start. If you already subscribed, refresh this page.",
@@ -448,6 +452,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       try {
         await loadRazorpay();
       } catch {
+        track("checkout_failed", { plan: chosen, userId, detail: "script_blocked" });
         return {
           ok: false,
           message: "The payment window couldn’t load. Check your connection or pause ad blockers, then try again.",
@@ -482,20 +487,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               return;
             }
             await refreshPlan();
+            track("checkout_paid", { plan: chosen, userId });
             finish({ ok: true });
           },
           modal: {
-            ondismiss: () =>
-              finish(lastFailure ? { ok: false, message: lastFailure } : { ok: false, cancelled: true }),
+            ondismiss: () => {
+              track("checkout_dismissed", { plan: chosen, userId, detail: lastFailure ?? "closed" });
+              finish(lastFailure ? { ok: false, message: lastFailure } : { ok: false, cancelled: true });
+            },
           },
         });
         // Razorpay keeps the window open after a failed attempt so the user can retry.
         checkout.on("payment.failed", (failure) => {
           lastFailure = failure.error?.description ?? "The payment didn’t go through. Please try another card.";
+          track("checkout_failed", { plan: chosen, userId, detail: lastFailure });
         });
       });
     },
-    [refreshPlan],
+    [refreshPlan, session],
   );
 
   const cancelSubscription = useCallback(async (): Promise<string | null> => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandSeal } from "../components/ui";
+import { track } from "../lib/analytics";
 import { safeNext } from "../lib/models";
 import { useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -14,6 +15,10 @@ export function SignIn() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    track("signin_seen");
+  }, []);
+
+  useEffect(() => {
     if (session) navigate(next, { replace: true });
   }, [session, next, navigate]);
 
@@ -21,6 +26,7 @@ export function SignIn() {
     if (!supabase) return;
     setBusy(true);
     setMessage(null);
+    track("signin_started");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/app/sign-in?next=${encodeURIComponent(next)}` },

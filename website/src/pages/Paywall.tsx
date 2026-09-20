@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandSeal, historyHeadline } from "../components/ui";
+import { track } from "../lib/analytics";
 import { PRICE_LABELS } from "../lib/config";
 import { daysUntil, deadlineLabel, plural, safeNext, usd } from "../lib/models";
 import { useStore } from "../lib/store";
@@ -14,6 +15,10 @@ export function Paywall() {
   const [plan, setPlan] = useState<"yearly" | "weekly">("yearly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    track("paywall_seen", { userId: store.session?.user.id ?? null });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (store.isPremium && !busy) navigate(`/welcome?next=${encodeURIComponent(next)}`, { replace: true });

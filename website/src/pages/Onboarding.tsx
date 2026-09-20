@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { track } from "../lib/analytics";
 import { Link, useNavigate } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { BrandSeal, Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard } from "../components/ui";
@@ -55,7 +56,10 @@ function PickStep({ onContinue }: { onContinue: () => void }) {
 }
 
 function ScanStep({ onDone }: { onDone: () => void }) {
-  const { settlements, matched } = useStore();
+  const { settlements, matched, selectedBrandIds } = useStore();
+  useEffect(() => {
+    track("brands_picked", { detail: `${selectedBrandIds.size} companies` });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [progress, setProgress] = useState(0.04);
 
   useEffect(() => {
@@ -106,6 +110,9 @@ function ScanStep({ onDone }: { onDone: () => void }) {
 
 function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
   const store = useStore();
+  useEffect(() => {
+    track("results_seen", { detail: `${store.matched.length} matches` });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const navigate = useNavigate();
   const matches = store.matched;
   const noProof = matches.filter((s) => !s.proofRequired).length;

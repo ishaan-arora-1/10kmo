@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { BrandSeal } from "./components/ui";
 import { Shell } from "./components/Shell";
+import { track } from "./lib/analytics";
 import { useStore } from "./lib/store";
 import { Browse } from "./pages/Browse";
 import { Claims } from "./pages/Claims";
@@ -20,6 +21,10 @@ export function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
+  useEffect(() => {
+    track("app_open");
+  }, []);
 
   if (!ready) {
     return (
