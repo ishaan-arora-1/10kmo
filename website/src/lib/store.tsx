@@ -29,6 +29,7 @@ import {
   type Settlement,
 } from "./models";
 import { track } from "./analytics";
+import { pixel } from "./pixel";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
@@ -433,6 +434,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       const userId = session?.user.id ?? null;
       track("checkout_opened", { plan: chosen, userId });
+      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: chosen === "yearly" ? 39.99 : 4.99 });
       const { data, error: invokeError } = await client.functions.invoke<{
         subscription_id?: string;
         key_id?: string;
@@ -488,6 +490,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             }
             await refreshPlan();
             track("checkout_paid", { plan: chosen, userId });
+            pixel("Purchase", { content_name: chosen, currency: "USD", value: chosen === "yearly" ? 39.99 : 4.99 });
             finish({ ok: true });
           },
           modal: {

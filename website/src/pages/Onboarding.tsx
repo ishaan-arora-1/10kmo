@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { track } from "../lib/analytics";
+import { pixel } from "../lib/pixel";
 import { Link, useNavigate } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { BrandSeal, Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard } from "../components/ui";
@@ -112,6 +113,7 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
   const store = useStore();
   useEffect(() => {
     track("results_seen", { detail: `${store.matched.length} matches` });
+    pixel("ViewContent", { content_name: "settlement matches", num_items: store.matched.length });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const navigate = useNavigate();
   const matches = store.matched;

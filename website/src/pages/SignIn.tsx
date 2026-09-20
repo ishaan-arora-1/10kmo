@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandSeal } from "../components/ui";
 import { track } from "../lib/analytics";
+import { pixel } from "../lib/pixel";
 import { safeNext } from "../lib/models";
 import { useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -19,7 +20,10 @@ export function SignIn() {
   }, []);
 
   useEffect(() => {
-    if (session) navigate(next, { replace: true });
+    if (session) {
+      pixel("CompleteRegistration", { content_name: "google sign-in" });
+      navigate(next, { replace: true });
+    }
   }, [session, next, navigate]);
 
   const signInWithGoogle = async () => {
