@@ -140,8 +140,9 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
         <MoneyCheck
           number={String(matches.length).padStart(4, "0")}
           payee="You"
-          amountLabel="Estimated total"
+          amountLabel="Up to"
           amount={store.potentialMax}
+          capped
           memo={`${matches.length} ${plural(matches.length, "settlement", "settlements")} · ${noProof} need no proof`}
           footer={`‖ ${store.settlements.length} CHECKED ‖ ${matches.length} MATCHED`}
         />
@@ -160,8 +161,8 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
         <PendingCases onSelect={startClaiming} />
         <FeaturedSettlements onSelect={startClaiming} />
         <p className="fine-print">
-          Estimates are typical payouts from court filings, and final amounts depend on how many people claim.
-          Some settlements pay more if you can document a bigger loss.
+          Amounts are the most each settlement pays, from court filings. Most people get less, and final
+          amounts depend on how many people claim and what you can document.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
         </p>
         {store.history.total > 0 && (

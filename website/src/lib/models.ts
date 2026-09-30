@@ -356,10 +356,12 @@ export const recentAmount = (p: RecentPayout) =>
   p.amountMin > 0 && p.amountMin !== p.amountMax ? `${money(p.amountMin)}–${money(p.amountMax)}` : `Up to ${money(p.amountMax)}`;
 export const recentWhen = (p: RecentPayout) =>
   `${p.event === "paid" ? "Paid out" : "Closed"} ${parseDay(p.eventOn).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-/** The realistic payout for one settlement: 0 when it only reimburses proven losses. */
-export const typicalPayout = (s: Settlement) => s.payoutTypical ?? s.payoutMax;
-export const typicalTotal = (settlements: Settlement[]) =>
-  settlements.reduce((total, settlement) => total + typicalPayout(settlement), 0);
+/** The most each settlement pays, added up. */
+export const maxTotal = (settlements: Settlement[]) =>
+  settlements.reduce((total, settlement) => total + settlement.payoutMax, 0);
+/** Summed totals above this show as "$5,000+". */
+const TOTAL_CAP = 5000;
+export const cappedTotal = (amount: number) => (amount > TOTAL_CAP ? `${usd(TOTAL_CAP)}+` : money(amount));
 
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });

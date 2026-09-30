@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRightIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
 import { Modal, Monogram, PayoutList, SampleBadge, SettlementCard } from "../components/ui";
-import { daysUntil, money, payoutRange, plural, usd } from "../lib/models";
+import { cappedTotal, daysUntil, payoutRange, plural, usd } from "../lib/models";
 import { useStore } from "../lib/store";
 
 export function Home() {
@@ -20,10 +20,10 @@ export function Home() {
   // Never show $0: with nothing open, show what they missed, or what settlements paid people this year.
   const hero =
     store.waitingMax > 0 || store.matched.length > 0
-      ? { label: "Waiting for you", amount: store.waitingMax > 0 ? usd(store.waitingMax) : "Varies" }
+      ? { label: "Waiting for you", amount: store.waitingMax > 0 ? cappedTotal(store.waitingMax) : "Varies" }
       : missedTotal > 0
-        ? { label: "You missed", amount: money(missedTotal) }
-        : { label: "Paid to people this year", amount: money(store.history.total) };
+        ? { label: "You missed", amount: cappedTotal(missedTotal) }
+        : { label: "Paid to people this year", amount: cappedTotal(store.history.total) };
 
   return (
     <div className="page">
@@ -116,7 +116,7 @@ export function Home() {
       {store.missed.length > 0 && (
         <section className="section">
           <h2 className="section-label">
-            You missed up to {money(missedTotal)}
+            You missed up to {cappedTotal(missedTotal)}
           </h2>
           <PayoutList payouts={store.missed} />
         </section>

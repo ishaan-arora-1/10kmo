@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandSeal, historyHeadline } from "../components/ui";
 import { track } from "../lib/analytics";
 import { PRICE_LABELS } from "../lib/config";
-import { daysUntil, deadlineLabel, plural, safeNext, usd } from "../lib/models";
+import { cappedTotal, daysUntil, deadlineLabel, plural, safeNext } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -74,7 +74,7 @@ export function Paywall() {
       <div className="flow-body">
         <h1 className="flow-title">
           {store.waitingMax > 0
-            ? `Don’t let ${usd(store.waitingMax)} expire`
+            ? `Don’t let ${cappedTotal(store.waitingMax)} expire`
             : count > 0
               ? "Turn matches into money"
               : store.history.total > 0

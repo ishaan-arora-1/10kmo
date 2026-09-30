@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import {
+  cappedTotal,
   daysUntil,
   isUpcoming,
   opensLabel,
@@ -7,7 +8,6 @@ import {
   plural,
   recentAmount,
   recentWhen,
-  money,
   usdCents,
   type Brand,
   type ClaimStatus,
@@ -88,7 +88,7 @@ const HISTORY_COPY: Record<PayoutScope, { payee: string; label: string; footer: 
 };
 
 export function historyHeadline(history: PayoutHistory): string {
-  const amount = money(history.total);
+  const amount = cappedTotal(history.total);
   if (history.scope === "past_year") return `You could have gotten up to ${amount} this past year`;
   if (history.scope === "recent") return `You could have gotten up to ${amount}`;
   return `People got up to ${amount} from settlements this past year`;
@@ -130,6 +130,7 @@ export function PayoutHistoryCard({ history }: { history: PayoutHistory }) {
         payee={copy.payee}
         amountLabel={copy.label}
         amount={history.total}
+        capped
         memo={`${history.payouts.length} ${plural(history.payouts.length, "settlement", "settlements")}`}
         footer={copy.footer}
       />
@@ -151,11 +152,22 @@ interface MoneyCheckProps {
   memo: string;
   footer: string;
   stamped?: boolean;
+  /** Show totals over $5,000 as "$5,000+". */
+  capped?: boolean;
 }
 
 /** The Rightful signature: found money shown as a check made out to you. */
-export function MoneyCheck({ number, payee, amountLabel, amount, memo, footer, stamped = false }: MoneyCheckProps) {
-  const amountText = amount > 0 ? usdCents(amount) : "Varies";
+export function MoneyCheck({
+  number,
+  payee,
+  amountLabel,
+  amount,
+  memo,
+  footer,
+  stamped = false,
+  capped = false,
+}: MoneyCheckProps) {
+  const amountText = amount <= 0 ? "Varies" : capped ? cappedTotal(amount) : usdCents(amount);
   return (
     <div
       className="money-check"
