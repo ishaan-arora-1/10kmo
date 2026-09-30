@@ -4,7 +4,7 @@ import { pixel } from "../lib/pixel";
 import { Link, useNavigate } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { BrandSeal, Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard } from "../components/ui";
-import { isOpen, plural, sortBrandsForPicker } from "../lib/models";
+import { isOpen, pendingCaseFor, plural, sortBrandsForPicker, type Brand, type PendingCase } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -157,13 +157,14 @@ function ResultsStep({ onPickMore }: { onPickMore: () => void }) {
             + {matches.length - 3} more {plural(matches.length - 3, "match", "matches")}
           </p>
         )}
+        <PendingCases onSelect={startClaiming} />
         <FeaturedSettlements onSelect={startClaiming} />
         <p className="fine-print">
           Estimates are typical payouts from court filings, and final amounts depend on how many people claim.
           Some settlements pay more if you can document a bigger loss.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
         </p>
-        {store.potentialMax === 0 && (
+        {store.history.total > 0 && (
           <>
             <h2 className="past-year-title">{historyHeadline(store.history)}</h2>
             <PayoutHistoryCard history={store.history} />
@@ -200,7 +201,9 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
       <div className="flow-body">
         <p className="eyebrow">Scan complete</p>
         <h1 className="flow-title">{historyHeadline(history)}</h1>
+        <p className="muted">None of the companies you picked has a settlement open right now.</p>
         <PayoutHistoryCard history={history} />
+        <PendingCases onSelect={onContinue} />
         <FeaturedSettlements onSelect={onContinue} />
         <h2 className="past-year-title">Add more options</h2>
         <div className="brand-grid">
@@ -227,6 +230,67 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
         </button>
       </div>
     </>
+  );
+}
+
+/** Picked companies with a lawsuit still in court: nothing to claim yet, members get emailed when it opens. */
+function PendingCases({ onSelect }: { onSelect: () => void }) {
+  const { brands, selectedBrandIds, matched } = useStore();
+  // Once a company's settlement is open it shows as a match instead.
+  const openBrandIds = new Set(matched.map((settlement) => settlement.brandId));
+  const pending = brands
+    .filter((brand) => selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id))
+    .flatMap((brand) => {
+      const pendingCase = pendingCaseFor(brand);
+      return pendingCase ? [{ brand, pendingCase }] : [];
+    });
+  const names = pending.map(({ brand }) => brand.name).join(",");
+  useEffect(() => {
+    if (names) track("pending_case_seen", { detail: names });
+  }, [names]);
+  if (pending.length === 0) return null;
+  return (
+    <>
+      <h2 className="past-year-title">Coming up for you</h2>
+      <div className="stack">
+        {pending.map(({ brand, pendingCase }) => (
+          <PendingCaseCard key={brand.id} brand={brand} pendingCase={pendingCase} onSelect={onSelect} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function PendingCaseCard({
+  brand,
+  pendingCase,
+  onSelect,
+}: {
+  brand: Brand;
+  pendingCase: PendingCase;
+  onSelect: () => void;
+}) {
+  const { isPremium } = useStore();
+  return (
+    <button type="button" className="card-button" onClick={onSelect}>
+      <div className="settlement-card">
+        <Monogram brand={brand} name={brand.name} />
+        <div className="sc-body">
+          <div className="sc-top">
+            <span className="sc-title">
+              {brand.name} · {pendingCase.title}
+            </span>
+            <span className="status-badge warn">Case pending</span>
+          </div>
+          <span className="sc-note">{pendingCase.summary}</span>
+          <span className="sc-action">
+            {isPremium
+              ? "As a member, you’ll get an email the day claims open."
+              : "Get a Rightful plan and we’ll email you the day claims open."}
+          </span>
+        </div>
+      </div>
+    </button>
   );
 }
 

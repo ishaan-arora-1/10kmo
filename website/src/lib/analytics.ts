@@ -5,6 +5,7 @@ export type FunnelEvent =
   | "app_open"
   | "brands_picked"
   | "results_seen"
+  | "pending_case_seen"
   | "signin_seen"
   | "signin_started"
   | "paywall_seen"

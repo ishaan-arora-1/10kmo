@@ -161,6 +161,10 @@ export function brandMatchesSearch(brand: Brand, query: string): boolean {
   );
 }
 
+/** Always the first tiles in the picker, in this order, ahead of the popular/open-claim mix. */
+const PINNED_BRAND_NAMES = ["Netflix", "PayPal", "Equifax", "Hyundai", "Kia", "Six Flags"];
+const pinnedRank = new Map(PINNED_BRAND_NAMES.map((name, index) => [name.toLowerCase(), index]));
+
 /** Household names people recognize at a glance; shown first in the picker, in this order. */
 const POPULAR_BRAND_NAMES = [
   "Instagram", "TikTok", "Facebook", "YouTube", "Snapchat", "WhatsApp", "X", "Reddit",
@@ -174,8 +178,8 @@ const popularRank = new Map(POPULAR_BRAND_NAMES.map((name, index) => [name.toLow
 const PICKER_PATTERN = ["P", "P", "C", "C", "P", "C"] as const;
 
 /**
- * Popular brands mixed with open-claim companies (two popular, two claims, one popular, one claim, repeat),
- * then everything else A–Z. Open-claim companies are ordered by their best payout.
+ * Pinned brands first, then popular brands mixed with open-claim companies (two popular, two claims,
+ * one popular, one claim, repeat), then everything else A–Z. Open-claim companies are ordered by their best payout.
  */
 export function sortBrandsForPicker(
   brands: Brand[],
@@ -183,13 +187,17 @@ export function sortBrandsForPicker(
   topPayout: (brandId: string) => number = () => 0,
 ): Brand[] {
   const byName = (a: Brand, b: Brand) => a.name.localeCompare(b.name);
-  const popular = brands
+  const pinned = brands
+    .filter((brand) => pinnedRank.has(brand.name.toLowerCase()))
+    .sort((a, b) => pinnedRank.get(a.name.toLowerCase())! - pinnedRank.get(b.name.toLowerCase())!);
+  const others = brands.filter((brand) => !pinnedRank.has(brand.name.toLowerCase()));
+  const popular = others
     .filter((brand) => popularRank.has(brand.name.toLowerCase()))
     .sort((a, b) => popularRank.get(a.name.toLowerCase())! - popularRank.get(b.name.toLowerCase())!);
-  const claims = brands
+  const claims = others
     .filter((brand) => openBrandIds.has(brand.id) && !popularRank.has(brand.name.toLowerCase()))
     .sort((a, b) => topPayout(b.id) - topPayout(a.id) || byName(a, b));
-  const rest = brands
+  const rest = others
     .filter((brand) => !popularRank.has(brand.name.toLowerCase()) && !openBrandIds.has(brand.id))
     .sort(byName);
 
@@ -199,7 +207,28 @@ export function sortBrandsForPicker(
     const next = (wantClaim ? claims : popular).shift() ?? (wantClaim ? popular : claims).shift();
     if (next) mixed.push(next);
   }
-  return [...mixed, ...rest];
+  return [...pinned, ...mixed, ...rest];
+}
+
+/** A lawsuit that hasn't settled yet: nothing to claim, but members get emailed the day claims open. */
+export interface PendingCase {
+  brandName: string;
+  title: string;
+  summary: string;
+}
+
+/** Only Netflix for now. No dollar amounts: nothing has been awarded or paid. */
+const PENDING_CASES: PendingCase[] = [
+  {
+    brandName: "Netflix",
+    title: "Video privacy case",
+    summary:
+      "Lawsuits say Netflix shared what subscribers watched without their consent, which federal video privacy law forbids. The cases are still going on and there's no settlement to claim yet.",
+  },
+];
+
+export function pendingCaseFor(brand: Brand | undefined): PendingCase | undefined {
+  return brand && PENDING_CASES.find((c) => c.brandName.toLowerCase() === brand.name.toLowerCase());
 }
 
 function startOfToday(): Date {
