@@ -229,3 +229,20 @@ footer .disclaimer { margin-top: 18px; max-width: 72ch; }
 .doc strong { color: var(--ink); }
 .contact-card { margin-top: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: grid; gap: 8px; }
 .contact-card a.mail { font-family: var(--display); font-weight: 700; font-size: 24px; color: var(--money); text-decoration: none; }
+
+/* ---------- logos ---------- */
+.hero .stat { font-size: 17px; color: var(--muted); margin-top: 14px; }
+.hero .stat b { color: var(--money); }
+.logos { margin-top: 28px; display: grid; gap: 10px; }
+.logos-label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.logo-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; max-width: 520px; }
+.logo {
+  display: grid; justify-items: center; gap: 6px; padding: 12px 4px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none;
+  font-size: 12px; font-weight: 600; transition: border-color .12s ease;
+}
+.logo span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logo:hover { border-color: var(--money); }
+.logo svg { width: 24px; height: 24px; fill: currentColor; }
+@media (max-width: 380px) { .logo { font-size: 10.5px; } .logo svg { width: 22px; height: 22px; } }
+@media (prefers-reduced-motion: reduce) { .logo { transition: none; } }

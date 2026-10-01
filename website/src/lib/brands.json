@@ -1204,10 +1204,16 @@
 "name": "Google",
 "category": "Tech",
 "aliases": [
-"Gmail",
 "Android"
 ],
 "monogramColor": "#1E2B24"
+},
+{
+"id": "981e5b69-c816-5896-b263-f5295a698021",
+"name": "Gmail",
+"category": "Tech",
+"aliases": [],
+"monogramColor": "#B91C1C"
 },
 {
 "id": "f44409c7-b728-51c2-ae1c-e088faa89df4",

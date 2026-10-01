@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { track } from "../lib/analytics";
 import { pixel } from "../lib/pixel";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { BrandSeal, Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard } from "../components/ui";
 import { isOpen, pendingCaseFor, plural, sortBrandsForPicker, type Brand, type PendingCase } from "../lib/models";
@@ -29,8 +29,19 @@ export function Onboarding() {
 }
 
 function PickStep({ onContinue }: { onContinue: () => void }) {
-  const { selectedBrandIds, session } = useStore();
+  const { brands, selectedBrandIds, session, toggleBrand } = useStore();
   const count = selectedBrandIds.size;
+
+  // Landing-page logos link here with ?brand=Netflix: start with that company picked.
+  const [params] = useSearchParams();
+  const brandParam = params.get("brand");
+  const preselected = useRef(false);
+  useEffect(() => {
+    if (preselected.current || !brandParam) return;
+    preselected.current = true;
+    const brand = brands.find((b) => b.name.toLowerCase() === brandParam.toLowerCase());
+    if (brand && !selectedBrandIds.has(brand.id)) toggleBrand(brand.id);
+  }, [brandParam, brands, selectedBrandIds, toggleBrand]);
   return (
     <>
       <div className="flow-body">

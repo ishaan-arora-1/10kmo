@@ -27,6 +27,7 @@ import {
   type Plan,
   type PlanSource,
   type Settlement,
+  withParentBrands,
 } from "./models";
 import { track } from "./analytics";
 import { pixel } from "./pixel";
@@ -576,14 +577,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Store>(() => {
     const selectedBrandIds = new Set(local.brandIds);
     const selectedStates = new Set(local.states);
-    const matched = matchSettlements(settlements, selectedBrandIds, selectedStates);
+    // A Gmail pick also matches Google's settlements and payouts.
+    const matchBrandIds = withParentBrands(selectedBrandIds, brands);
+    const matched = matchSettlements(settlements, matchBrandIds, selectedStates);
     const claimBySettlement = new Map(local.claims.map((claim) => [claim.settlementId, claim]));
     const unfiled = matched.filter((settlement) => {
       const status = claimBySettlement.get(settlement.id)?.status;
       return !status || status === "To file" || status === "Rejected";
     });
     const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
-    const history = payoutHistory(recentPayouts, selectedBrandIds);
+    const history = payoutHistory(recentPayouts, matchBrandIds);
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
 
     return {
@@ -613,7 +616,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
       history,
-      missed: missedPayouts(recentPayouts, selectedBrandIds),
+      missed: missedPayouts(recentPayouts, matchBrandIds),
       brandById: (id) => brandMap.get(id),
       settlementById: (id) => settlementMap.get(id),
       claimFor: (settlementId) => claimBySettlement.get(settlementId),

@@ -162,8 +162,11 @@ export function brandMatchesSearch(brand: Brand, query: string): boolean {
 }
 
 /** Always the first tiles in the picker, in this order, ahead of the popular/open-claim mix. */
-const PINNED_BRAND_NAMES = ["Netflix", "PayPal", "Equifax", "Hyundai", "Kia", "Six Flags"];
+const PINNED_BRAND_NAMES = ["Netflix", "PayPal", "Gmail", "Hyundai", "Kia"];
+/** Shown right after the first ten tiles, in this order. */
+const AFTER_TOP_TEN_BRAND_NAMES = ["Equifax", "Six Flags"];
 const pinnedRank = new Map(PINNED_BRAND_NAMES.map((name, index) => [name.toLowerCase(), index]));
+const afterTopTenRank = new Map(AFTER_TOP_TEN_BRAND_NAMES.map((name, index) => [name.toLowerCase(), index]));
 
 /** Household names people recognize at a glance; shown first in the picker, in this order. */
 const POPULAR_BRAND_NAMES = [
@@ -180,6 +183,7 @@ const PICKER_PATTERN = ["P", "P", "C", "C", "P", "C"] as const;
 /**
  * Pinned brands first, then popular brands mixed with open-claim companies (two popular, two claims,
  * one popular, one claim, repeat), then everything else A–Z. Open-claim companies are ordered by their best payout.
+ * AFTER_TOP_TEN_BRAND_NAMES are slotted in right after the first ten tiles.
  */
 export function sortBrandsForPicker(
   brands: Brand[],
@@ -190,7 +194,12 @@ export function sortBrandsForPicker(
   const pinned = brands
     .filter((brand) => pinnedRank.has(brand.name.toLowerCase()))
     .sort((a, b) => pinnedRank.get(a.name.toLowerCase())! - pinnedRank.get(b.name.toLowerCase())!);
-  const others = brands.filter((brand) => !pinnedRank.has(brand.name.toLowerCase()));
+  const afterTopTen = brands
+    .filter((brand) => afterTopTenRank.has(brand.name.toLowerCase()))
+    .sort((a, b) => afterTopTenRank.get(a.name.toLowerCase())! - afterTopTenRank.get(b.name.toLowerCase())!);
+  const others = brands.filter(
+    (brand) => !pinnedRank.has(brand.name.toLowerCase()) && !afterTopTenRank.has(brand.name.toLowerCase()),
+  );
   const popular = others
     .filter((brand) => popularRank.has(brand.name.toLowerCase()))
     .sort((a, b) => popularRank.get(a.name.toLowerCase())! - popularRank.get(b.name.toLowerCase())!);
@@ -207,7 +216,23 @@ export function sortBrandsForPicker(
     const next = (wantClaim ? claims : popular).shift() ?? (wantClaim ? popular : claims).shift();
     if (next) mixed.push(next);
   }
-  return [...pinned, ...mixed, ...rest];
+  const ordered = [...pinned, ...mixed, ...rest];
+  const topTen = Math.max(0, 10 - pinned.length);
+  return [...ordered.slice(0, pinned.length + topTen), ...afterTopTen, ...ordered.slice(pinned.length + topTen)];
+}
+
+/** Picking one of these also counts as picking the company behind it, for matches and past payouts. */
+const COUNTS_AS: Record<string, string> = { gmail: "google" };
+
+export function withParentBrands(brandIds: ReadonlySet<string>, brands: Brand[]): Set<string> {
+  const ids = new Set(brandIds);
+  for (const brand of brands) {
+    const parent = COUNTS_AS[brand.name.toLowerCase()];
+    if (!parent || !brandIds.has(brand.id)) continue;
+    const parentBrand = brands.find((b) => b.name.toLowerCase() === parent);
+    if (parentBrand) ids.add(parentBrand.id);
+  }
+  return ids;
 }
 
 /** A lawsuit that hasn't settled yet: nothing to claim, but members get emailed the day claims open. */
