@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandSeal } from "../components/ui";
 import { track } from "../lib/analytics";
@@ -9,6 +9,25 @@ import { supabase } from "../lib/supabase";
 
 const RESEND_WAIT_SECONDS = 60;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const METHOD_KEY = "rightful.signinMethod";
+
+/** Remembers how someone signed in: the screen reloads after Google's redirect and while the account syncs. */
+function rememberMethod(method: "email" | "google") {
+  try {
+    sessionStorage.setItem(METHOD_KEY, method);
+  } catch {
+    // Storage can be blocked; the sign-up event then just says "google".
+  }
+}
+
+function recalledMethod(): string {
+  try {
+    return sessionStorage.getItem(METHOD_KEY) ?? "google";
+  } catch {
+    return "google";
+  }
+}
 
 /** Instagram and Facebook open ad links in their own browser, where Google blocks sign-in. */
 function browserKind(): string {
@@ -29,7 +48,6 @@ export function SignIn() {
   const [code, setCode] = useState("");
   const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
-  const method = useRef<"email" | "google">("google");
 
   useEffect(() => {
     track("signin_seen", { detail: browserKind() });
@@ -37,7 +55,7 @@ export function SignIn() {
 
   useEffect(() => {
     if (session) {
-      pixel("CompleteRegistration", { content_name: `${method.current} sign-in` });
+      pixel("CompleteRegistration", { content_name: `${recalledMethod()} sign-in` });
       navigate(next, { replace: true });
     }
   }, [session, next, navigate]);
@@ -89,7 +107,7 @@ export function SignIn() {
     }
     setBusy(true);
     setMessage(null);
-    method.current = "email";
+    rememberMethod("email");
     const { error } = await supabase.auth.verifyOtp({ email: codeSentTo, token, type: "email" });
     if (error) {
       setBusy(false);
@@ -112,6 +130,7 @@ export function SignIn() {
     setBusy(true);
     setMessage(null);
     track("signin_started", { detail: browserKind() });
+    rememberMethod("google");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/app/sign-in?next=${encodeURIComponent(next)}` },
@@ -181,7 +200,7 @@ export function SignIn() {
               Sign in to subscribe securely and keep your companies, claim IDs, and payouts in sync across your
               devices.
             </p>
-            <form className="signin-form" onSubmit={submitEmail} noValidate>
+            <form className="signin-form" onSubmit={submitEmail}>
               <label className="field-label" htmlFor="signin-email">
                 Email
               </label>
