@@ -415,3 +415,39 @@ input::placeholder { color: var(--muted); opacity: .8; }
   .spinner { animation-duration: 3s; }
   .switch, .switch::after, .brand-tile { transition: none; }
 }
+
+/* ---------- onboarding questions ---------- */
+.q-progress { display: flex; gap: 6px; }
+.q-progress span { flex: 1; height: 4px; border-radius: 99px; background: var(--line); }
+.q-progress span.on { background: var(--money); }
+.q-options { display: grid; gap: 10px; }
+.q-option {
+  display: grid; gap: 6px; width: 100%; padding: 14px 16px; text-align: left; font-size: 16px; font-weight: 600;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; cursor: pointer;
+  transition: border-color .12s ease, background .12s ease;
+}
+.q-option:hover { border-color: var(--check-line); }
+.q-option.on { border-color: var(--money); box-shadow: inset 0 0 0 1px var(--money); background: var(--money-soft); }
+.q-note { font-size: 14px; font-weight: 500; color: var(--money); }
+.q-company { grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.q-company span { display: grid; gap: 2px; min-width: 0; }
+.q-company small { font-size: 13px; font-weight: 500; color: var(--muted); }
+.q-amount { font-family: var(--mono); font-size: 13px; color: var(--money); white-space: nowrap; }
+.q-feedback { min-height: 1.4em; font-weight: 700; color: var(--money); }
+
+/* ---------- reminder schedule ---------- */
+.reminder-list { list-style: none; margin: 0; padding: 0; display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.reminder-list li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: baseline; padding: 13px 16px; border-top: 1px solid var(--line); font-size: 15px; }
+.reminder-list li:first-child { border-top: 0; }
+.reminder-list small { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
+.r-date { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--money); }
+.reminder-list li.r-more { display: block; color: var(--muted); font-size: 14px; }
+.r-watched { font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { .q-option { transition: none; } }
+.flow-body > button.back-link { justify-self: start; padding: 0; background: none; border: 0; cursor: pointer; }
+
+/* ---------- paywall ---------- */
+.pw-total { font-size: 18px; color: var(--muted); }
+.pw-total b { color: var(--money); font-family: var(--display); font-size: 26px; }
+.pw-logos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pw-value { font-weight: 600; text-align: center; color: var(--money); }

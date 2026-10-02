@@ -6,6 +6,8 @@ export type FunnelEvent =
   | "brands_picked"
   | "results_seen"
   | "pending_case_seen"
+  | "question_answered"
+  | "reminders_seen"
   | "signin_seen"
   | "signin_started"
   | "signin_code_sent"
