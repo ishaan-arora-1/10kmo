@@ -13,6 +13,8 @@ export type FunnelEvent =
   | "signin_code_sent"
   | "signin_code_failed"
   | "signin_code_verified"
+  | "dashboard_seen"
+  | "file_locked_tap"
   | "paywall_seen"
   | "checkout_opened"
   | "checkout_dismissed"

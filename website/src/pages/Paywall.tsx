@@ -7,6 +7,7 @@ import {
   cappedTotal,
   daysUntil,
   deadlineLabel,
+  isUpcoming,
   pendingCaseFor,
   plural,
   reminderSchedule,
@@ -25,9 +26,14 @@ export function Paywall() {
   const [plan, setPlan] = useState<"yearly" | "weekly">("yearly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // Opened from a settlement's "File your claim" button: lead with that claim.
+  const target = store.settlementById(/^\/settlements\/([^/?#]+)/.exec(next)?.[1] ?? "") ?? null;
 
   useEffect(() => {
-    track("paywall_seen", { userId: store.session?.user.id ?? null });
+    track("paywall_seen", {
+      userId: store.session?.user.id ?? null,
+      detail: target ? target.company : next === "/" ? "dashboard" : next,
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -41,7 +47,8 @@ export function Paywall() {
   }
 
   const count = store.unfiled.length;
-  const nearest = store.nearest;
+  const nearest = target && !isUpcoming(target) ? target : store.nearest;
+  const otherClaims = store.unfiled.filter((s) => s.id !== target?.id).length;
   const filingFeature =
     count === 0
       ? `We watch your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`
@@ -51,7 +58,8 @@ export function Paywall() {
           ? "Step-by-step filing for both of your matches"
           : `Step-by-step filing for all ${count} of your matches`;
 
-  const close = () => navigate("/start", { replace: true });
+  // Accounts go back to where they were; the dashboard stays open to them.
+  const close = () => navigate(store.session || isSampleMode ? next : "/start", { replace: true });
 
   // Display only: personalizes what the plan includes. Nothing here affects checkout.
   const filingBrands = [...new Set(store.unfiled.map((s) => s.brandId))]
@@ -98,21 +106,30 @@ export function Paywall() {
       </header>
       <div className="flow-body">
         <h1 className="flow-title">
-          {count > 0
-            ? `Your ${count} ${plural(count, "claim is", "claims are")} ready`
-            : store.history.total > 0
-              ? `${historyHeadline(store.history)}. Don’t miss the next one.`
-              : "Be first when your companies settle"}
+          {target
+            ? `Unlock your ${target.company} claim`
+            : count > 0
+              ? `Your ${count} ${plural(count, "claim is", "claims are")} ready`
+              : store.history.total > 0
+                ? `${historyHeadline(store.history)}. Don’t miss the next one.`
+                : "Be first when your companies settle"}
         </h1>
-        {store.waitingMax + store.estimateMax > 0 && (
+        {target && target.payoutMax > 0 ? (
           <p className="pw-total">
-            Up to <b>{cappedTotal(store.waitingMax + store.estimateMax)}</b>{" "}
-            {store.waitingMax > 0 ? "waiting for you" : "tied to your companies"}
+            Up to <b>{usd(target.payoutMax)}</b> from this claim
+            {otherClaims > 0 && `, plus ${otherClaims} more ${plural(otherClaims, "claim", "claims")} ready to file`}
           </p>
+        ) : (
+          store.waitingMax + store.estimateMax > 0 && (
+            <p className="pw-total">
+              Up to <b>{cappedTotal(store.waitingMax + store.estimateMax)}</b>{" "}
+              {store.waitingMax > 0 ? "waiting for you" : "tied to your companies"}
+            </p>
+          )
         )}
         {nearest ? (
           <div className="deadline-strip">
-            <b>Your first deadline</b>
+            <b>{nearest === target ? "Deadline to file" : "Your first deadline"}</b>
             <span>
               {deadlineLabel(nearest)} · {daysUntil(nearest.deadline)}{" "}
               {plural(daysUntil(nearest.deadline), "day", "days")}

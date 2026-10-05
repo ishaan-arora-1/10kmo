@@ -76,10 +76,16 @@ function PickStep({ onContinue }: { onContinue: () => void }) {
         <h1 className="flow-title">Which of these have you used?</h1>
         <p className="muted">Any US account since 2015 counts. No bank or email logins, ever.</p>
         <BrandPicker idPrefix="onboarding" />
-        {!session && !isSampleMode && (
+        {session ? (
           <p className="center muted">
-            Already a member? <Link to={`/sign-in?next=${encodeURIComponent("/paywall")}`}>Sign in</Link>
+            <Link to="/">Go to my dashboard</Link>
           </p>
+        ) : (
+          !isSampleMode && (
+            <p className="center muted">
+              Already have an account? <Link to="/sign-in">Sign in</Link>
+            </p>
+          )
         )}
       </div>
       <div className="sticky-cta">
@@ -159,7 +165,7 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   const upTo = store.potentialMax + store.estimateMax;
 
   const startClaiming = () => {
-    if (store.isPremium) navigate("/welcome");
+    if (store.isPremium || store.session) navigate("/welcome");
     else onReminders();
   };
 
@@ -633,10 +639,11 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
   const scheduled = new Set([...rows.map((row) => row.settlement.company), ...pending.map((brand) => brand.name)]);
   const watched = WATCHED_BRAND_NAMES.filter((name) => !scheduled.has(name)).slice(0, 4);
 
-  const toPaywall = () => navigate("/paywall");
+  // Accounts land on their dashboard; the paywall waits until they go to file a claim.
+  const toDashboard = () => navigate("/welcome");
   const verified = () => {
     pixel("CompleteRegistration", { content_name: "email sign-in" });
-    toPaywall();
+    toDashboard();
   };
 
   return (
@@ -688,12 +695,12 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
           <p className="muted">
             Reminders go to <b>{session.user.email}</b>.
           </p>
-          <button type="button" className="btn block" onClick={toPaywall}>
+          <button type="button" className="btn block" onClick={toDashboard}>
             Continue
           </button>
         </>
       ) : isSampleMode ? (
-        <button type="button" className="btn block" onClick={toPaywall}>
+        <button type="button" className="btn block" onClick={toDashboard}>
           Continue in sample mode
         </button>
       ) : (

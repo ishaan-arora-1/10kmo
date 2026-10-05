@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ExternalIcon, LockIcon } from "../components/icons";
 import { ClaimStatusBadge, Modal, Monogram, SampleBadge } from "../components/ui";
+import { track } from "../lib/analytics";
 import { deadlineLabel, daysUntil, isUpcoming, opensLabel, payoutRange, plural } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
@@ -55,6 +56,7 @@ export function SettlementDetail() {
 
   const file = () => {
     if (!store.isPremium) {
+      track("file_locked_tap", { userId: store.session?.user.id ?? null, detail: settlement.company });
       const paywall = `/paywall?next=${encodeURIComponent(`/settlements/${settlement.id}`)}`;
       navigate(store.session || isSampleMode ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
       return;
@@ -166,7 +168,7 @@ export function SettlementDetail() {
           </>
         ) : (
           <>
-            Unlock filing guide <LockIcon />
+            File your claim <LockIcon />
           </>
         )}
       </button>
