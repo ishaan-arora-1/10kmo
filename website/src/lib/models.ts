@@ -256,6 +256,53 @@ export function pendingCaseFor(brand: Brand | undefined): PendingCase | undefine
   return brand && PENDING_CASES.find((c) => c.brandName.toLowerCase() === brand.name.toLowerCase());
 }
 
+/**
+ * An "up to" figure for a picked company with nothing open, so the total is never blank.
+ * Each one is sourced and labeled for what it is: a legal maximum or a past payout, not an open claim.
+ */
+export interface BrandEstimate {
+  brandName: string;
+  amount: number;
+  label: string;
+  note: string;
+}
+
+const BRAND_ESTIMATES: BrandEstimate[] = [
+  {
+    brandName: "Netflix",
+    amount: 2500,
+    label: "Pending case",
+    note: "Federal video privacy law sets damages at $2,500 per violation. The case is still in court.",
+  },
+  {
+    brandName: "PayPal",
+    amount: 440,
+    label: "Past settlement",
+    note: "PayPal’s account-holds settlement paid up to $440 per person. We’ll email you when the next one opens.",
+  },
+  {
+    brandName: "Google",
+    amount: 200,
+    label: "Recent settlements",
+    note: "Google settlements paid up to $200 per person this past year. We’ll email you when the next one opens.",
+  },
+];
+
+/** Estimates for picked companies (Gmail counts as Google) that have no open settlement among the matches. */
+export function brandEstimates(
+  brands: Brand[],
+  matchBrandIds: ReadonlySet<string>,
+  matched: Settlement[],
+): { brand: Brand; estimate: BrandEstimate }[] {
+  const openBrandIds = new Set(matched.map((settlement) => settlement.brandId));
+  return brands
+    .filter((brand) => matchBrandIds.has(brand.id) && !openBrandIds.has(brand.id))
+    .flatMap((brand) => {
+      const estimate = BRAND_ESTIMATES.find((e) => e.brandName.toLowerCase() === brand.name.toLowerCase());
+      return estimate ? [{ brand, estimate }] : [];
+    });
+}
+
 function startOfToday(): Date {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

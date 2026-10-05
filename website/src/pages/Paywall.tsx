@@ -104,9 +104,10 @@ export function Paywall() {
               ? `${historyHeadline(store.history)}. Don’t miss the next one.`
               : "Be first when your companies settle"}
         </h1>
-        {store.waitingMax > 0 && (
+        {store.waitingMax + store.estimateMax > 0 && (
           <p className="pw-total">
-            Up to <b>{cappedTotal(store.waitingMax)}</b> waiting for you
+            Up to <b>{cappedTotal(store.waitingMax + store.estimateMax)}</b>{" "}
+            {store.waitingMax > 0 ? "waiting for you" : "tied to your companies"}
           </p>
         )}
         {nearest ? (

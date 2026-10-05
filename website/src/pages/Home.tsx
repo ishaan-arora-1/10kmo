@@ -17,10 +17,11 @@ export function Home() {
   const paidCount = store.claims.filter((claim) => claim.status === "Paid").length;
   const needsStates = store.selectedStates.size === 0;
   const missedTotal = store.missed.reduce((total, payout) => total + payout.amountMax, 0);
-  // Never show $0: with nothing open, show what they missed, or what settlements paid people this year.
+  // Never show $0 or "Varies": add pending/past figures, else what they missed, else what settlements paid this year.
+  const upTo = store.waitingMax + store.estimateMax;
   const hero =
-    store.waitingMax > 0 || store.matched.length > 0
-      ? { label: "Waiting for you", amount: store.waitingMax > 0 ? cappedTotal(store.waitingMax) : "Varies" }
+    upTo > 0
+      ? { label: "Waiting for you", amount: cappedTotal(upTo) }
       : missedTotal > 0
         ? { label: "You missed", amount: cappedTotal(missedTotal) }
         : { label: "Paid to people this year", amount: cappedTotal(store.history.total) };
