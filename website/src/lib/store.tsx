@@ -115,6 +115,8 @@ export interface Store {
   paidTotal: number;
   /** Real past payouts to show instead of $0 (see payoutHistory). */
   history: PayoutHistory;
+  /** The biggest payouts anyone got this past year, for social proof whatever they picked. */
+  peoplePaid: PayoutHistory;
   /** Every past payout for the chosen companies (dashboard "You missed"). */
   missed: RecentPayout[];
   brandById(id: string): Brand | undefined;
@@ -570,10 +572,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         { body: {} },
       );
       if (invokeError || !data?.deleted) {
+        const status = (invokeError as { context?: { status?: number } } | null)?.context?.status;
+        track("account_delete_failed", {
+          userId,
+          detail: [invokeError?.name ?? "no_confirmation", status].filter(Boolean).join(" "),
+        });
         setError("We couldn’t delete your account. Please email ishaana612@gmail.com.");
         return false;
       }
-      await client.auth.signOut();
+      track("account_deleted");
+      // The account is already gone on the server, so only this browser's session is left to clear.
+      await client.auth.signOut({ scope: "local" });
     }
     resetAll();
     return true;
@@ -624,6 +633,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       estimateMax: estimates.reduce((total, { estimate }) => total + estimate.amount, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
       history,
+      peoplePaid: payoutHistory(recentPayouts, new Set()),
       missed: missedPayouts(recentPayouts, matchBrandIds),
       brandById: (id) => brandMap.get(id),
       settlementById: (id) => settlementMap.get(id),
