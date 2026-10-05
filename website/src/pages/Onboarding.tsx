@@ -156,6 +156,7 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   const navigate = useNavigate();
   const matches = store.matched;
   const noProof = matches.filter((s) => !s.proofRequired).length;
+  const upTo = store.potentialMax + store.estimateMax;
 
   const startClaiming = () => {
     if (store.isPremium) navigate("/welcome");
@@ -176,9 +177,10 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
         {matches.every((s) => s.isSample) && <SampleBadge />}
         <MoneyCheck
           number={String(matches.length).padStart(4, "0")}
-          payee="You"
-          amountLabel="Up to"
-          amount={store.potentialMax}
+          // Never "Varies": add pending/past figures, else show what settlements paid people this year.
+          payee={upTo > 0 ? "You" : "People like you"}
+          amountLabel={upTo > 0 ? "Up to" : "Paid this past year"}
+          amount={upTo > 0 ? upTo : store.history.total}
           capped
           memo={`${matches.length} ${plural(matches.length, "settlement", "settlements")} · ${noProof} need no proof`}
           footer={`‖ ${store.settlements.length} CHECKED ‖ ${matches.length} MATCHED`}
@@ -195,6 +197,7 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
             + {matches.length - 3} more {plural(matches.length - 3, "match", "matches")}
           </p>
         )}
+        <EstimatedPayouts onSelect={startClaiming} />
         <PendingCases onSelect={startClaiming} />
         <FeaturedSettlements onSelect={startClaiming} />
         <p className="fine-print">
@@ -220,7 +223,7 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
 
 /** No open match: show what they missed, suggest more companies, then continue to membership. */
 function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
-  const { brands, settlements, selectedBrandIds, toggleBrand, history } = useStore();
+  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax } = useStore();
   const open = settlements.filter(isOpen);
   const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
   const suggestions = sortBrandsForPicker(
@@ -238,10 +241,34 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
     <>
       <div className="flow-body">
         <p className="eyebrow">Scan complete</p>
-        <h1 className="flow-title">{historyHeadline(history)}</h1>
-        <p className="muted">None of the companies you picked has a settlement open right now.</p>
-        <PayoutHistoryCard history={history} />
-        <PendingCases onSelect={onContinue} />
+        {estimateMax > 0 ? (
+          <>
+            <h1 className="flow-title">Up to {cappedTotal(estimateMax)} tied to your companies</h1>
+            <p className="muted">
+              Nothing to claim today. We’ll email you the day {estimates.length === 1 ? "it opens" : "each one opens"}.
+            </p>
+            <MoneyCheck
+              number={String(estimates.length).padStart(4, "0")}
+              payee="You"
+              amountLabel="Up to"
+              amount={estimateMax}
+              capped
+              memo={estimates.map(({ brand, estimate }) => `${brand.name}: ${estimate.label.toLowerCase()}`).join(" · ")}
+              footer="‖ PENDING & PAST CASES"
+            />
+            <EstimatedPayouts onSelect={onContinue} />
+            <PendingCases onSelect={onContinue} />
+            <h2 className="past-year-title">{historyHeadline(history)}</h2>
+            <PayoutHistoryCard history={history} />
+          </>
+        ) : (
+          <>
+            <h1 className="flow-title">{historyHeadline(history)}</h1>
+            <p className="muted">None of the companies you picked has a settlement open right now.</p>
+            <PayoutHistoryCard history={history} />
+            <PendingCases onSelect={onContinue} />
+          </>
+        )}
         <FeaturedSettlements onSelect={onContinue} />
         <h2 className="past-year-title">Add more options</h2>
         <div className="brand-grid">
@@ -308,7 +335,8 @@ function PendingCaseCard({
   pendingCase: PendingCase;
   onSelect: () => void;
 }) {
-  const { isPremium } = useStore();
+  const { isPremium, estimates } = useStore();
+  const estimate = estimates.find((e) => e.brand.id === brand.id)?.estimate;
   return (
     <button type="button" className="card-button" onClick={onSelect}>
       <div className="settlement-card">
@@ -318,8 +346,13 @@ function PendingCaseCard({
             <span className="sc-title">
               {brand.name} · {pendingCase.title}
             </span>
-            <span className="status-badge warn">Case pending</span>
+            {estimate ? (
+              <span className="sc-amount">Up to {cappedTotal(estimate.amount)}</span>
+            ) : (
+              <span className="status-badge warn">Case pending</span>
+            )}
           </div>
+          {estimate && <span className="status-badge warn">Case pending</span>}
           <span className="sc-note">{pendingCase.summary}</span>
           <span className="sc-action">
             {isPremium
@@ -329,6 +362,41 @@ function PendingCaseCard({
         </div>
       </div>
     </button>
+  );
+}
+
+/** Picked companies with nothing open: their sourced "up to" figure. Pending cases show in PendingCases instead. */
+function EstimatedPayouts({ onSelect }: { onSelect: () => void }) {
+  const { estimates, isPremium } = useStore();
+  const shown = estimates.filter(({ brand }) => !pendingCaseFor(brand));
+  if (shown.length === 0) return null;
+  return (
+    <>
+      <h2 className="past-year-title">What your companies have paid</h2>
+      <div className="stack">
+        {shown.map(({ brand, estimate }) => (
+          <button key={brand.id} type="button" className="card-button" onClick={onSelect}>
+            <div className="settlement-card">
+              <Monogram brand={brand} name={brand.name} />
+              <div className="sc-body">
+                <div className="sc-top">
+                  <span className="sc-title">
+                    {brand.name} · {estimate.label}
+                  </span>
+                  <span className="sc-amount">Up to {cappedTotal(estimate.amount)}</span>
+                </div>
+                <span className="sc-note">{estimate.note}</span>
+                <span className="sc-action">
+                  {isPremium
+                    ? "As a member, you’ll get an email the day a new one opens."
+                    : "Get a Rightful plan and we’ll email you the day a new one opens."}
+                </span>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </>
   );
 }
 

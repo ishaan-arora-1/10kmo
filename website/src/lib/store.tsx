@@ -10,7 +10,9 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import {
+  brandEstimates,
   brandFromRow,
+  type BrandEstimate,
   claimFromRow,
   claimToRow,
   matchSettlements,
@@ -107,6 +109,9 @@ export interface Store {
   /** The most the matched settlements pay, added up. */
   potentialMax: number;
   waitingMax: number;
+  /** Picked companies with nothing open but a sourced "up to" figure (pending case or past payout). */
+  estimates: { brand: Brand; estimate: BrandEstimate }[];
+  estimateMax: number;
   paidTotal: number;
   /** Real past payouts to show instead of $0 (see payoutHistory). */
   history: PayoutHistory;
@@ -587,6 +592,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
     const history = payoutHistory(recentPayouts, matchBrandIds);
+    const estimates = brandEstimates(brands, matchBrandIds, matched);
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
 
     return {
@@ -614,6 +620,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       waitingMax: maxTotal(
         matched.filter((s) => claimBySettlement.get(s.id)?.status !== "Paid"),
       ),
+      estimates,
+      estimateMax: estimates.reduce((total, { estimate }) => total + estimate.amount, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
       history,
       missed: missedPayouts(recentPayouts, matchBrandIds),
