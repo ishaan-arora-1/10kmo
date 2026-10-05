@@ -19,7 +19,9 @@ export type FunnelEvent =
   | "checkout_opened"
   | "checkout_dismissed"
   | "checkout_failed"
-  | "checkout_paid";
+  | "checkout_paid"
+  | "account_deleted"
+  | "account_delete_failed";
 
 /**
  * Records a step anonymously: no IP, no personal data, just the step plus the browser's
