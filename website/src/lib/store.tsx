@@ -17,6 +17,7 @@ import {
   claimToRow,
   matchSettlements,
   featuredSettlements,
+  isUpcoming,
   missedPayouts,
   maxTotal,
   payoutHistory,
@@ -104,6 +105,10 @@ export interface Store {
   matched: Settlement[];
   /** Open to everyone, whatever companies they picked. */
   featured: Settlement[];
+  /** Everything they can act on: their own unfiled matches, then unfiled claims open to everyone. */
+  toFile: Settlement[];
+  /** The most the open-to-everyone claims pay, added up (unpaid ones). */
+  featuredMax: number;
   unfiled: Settlement[];
   nearest: Settlement | null;
   /** The most the matched settlements pay, added up. */
@@ -595,14 +600,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const matchBrandIds = withParentBrands(selectedBrandIds, brands);
     const matched = matchSettlements(settlements, matchBrandIds, selectedStates);
     const claimBySettlement = new Map(local.claims.map((claim) => [claim.settlementId, claim]));
-    const unfiled = matched.filter((settlement) => {
+    const notFiled = (settlement: Settlement) => {
       const status = claimBySettlement.get(settlement.id)?.status;
       return !status || status === "To file" || status === "Rejected";
-    });
+    };
+    const unfiled = matched.filter(notFiled);
     const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
     const history = payoutHistory(recentPayouts, matchBrandIds);
     const estimates = brandEstimates(brands, matchBrandIds, matched);
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
+    const featured = featuredSettlements(settlements, matched);
+    const toFile = [...unfiled, ...featured.filter(notFiled)];
 
     return {
       ready: publicLoaded && authReady && (!userId || loadedUserId === userId),
@@ -622,9 +630,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       emailReminders,
       error,
       matched,
-      featured: featuredSettlements(settlements, matched),
+      featured,
+      toFile,
+      featuredMax: maxTotal(featured.filter((s) => claimBySettlement.get(s.id)?.status !== "Paid")),
       unfiled,
-      nearest: unfiled[0] ?? null,
+      nearest:
+        toFile.filter((s) => !isUpcoming(s)).sort((a, b) => a.deadline.localeCompare(b.deadline))[0] ?? null,
       potentialMax: maxTotal(matched),
       waitingMax: maxTotal(
         matched.filter((s) => claimBySettlement.get(s.id)?.status !== "Paid"),

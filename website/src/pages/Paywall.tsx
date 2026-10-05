@@ -46,9 +46,11 @@ export function Paywall() {
     return <Navigate to={`/sign-in?next=${encodeURIComponent(back)}`} replace />;
   }
 
-  const count = store.unfiled.length;
+  const count = store.toFile.length;
+  // Same total as the results screen and dashboard.
+  const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
   const nearest = target && !isUpcoming(target) ? target : store.nearest;
-  const otherClaims = store.unfiled.filter((s) => s.id !== target?.id).length;
+  const otherClaims = store.toFile.filter((s) => s.id !== target?.id).length;
   const filingFeature =
     count === 0
       ? `We watch your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`
@@ -62,7 +64,7 @@ export function Paywall() {
   const close = () => navigate(store.session || isSampleMode ? next : "/start", { replace: true });
 
   // Display only: personalizes what the plan includes. Nothing here affects checkout.
-  const filingBrands = [...new Set(store.unfiled.map((s) => s.brandId))]
+  const filingBrands = [...new Set(store.toFile.map((s) => s.brandId))]
     .map((id) => store.brandById(id))
     .filter((brand) => brand !== undefined);
   const filingNames = filingBrands.slice(0, 3).map((brand) => brand.name);
@@ -73,7 +75,7 @@ export function Paywall() {
   const pendingNames = store.brands
     .filter((brand) => store.selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand))
     .map((brand) => brand.name);
-  const biggestClaim = Math.max(0, ...store.unfiled.map((s) => s.payoutMax));
+  const biggestClaim = Math.max(0, ...store.toFile.map((s) => s.payoutMax));
   const yearlyPrice = Number(PRICE_LABELS.yearly.replace(/[^0-9.]/g, ""));
 
   const subscribe = async () => {
@@ -120,10 +122,10 @@ export function Paywall() {
             {otherClaims > 0 && `, plus ${otherClaims} more ${plural(otherClaims, "claim", "claims")} ready to file`}
           </p>
         ) : (
-          store.waitingMax + store.estimateMax > 0 && (
+          upTo > 0 && (
             <p className="pw-total">
-              Up to <b>{cappedTotal(store.waitingMax + store.estimateMax)}</b>{" "}
-              {store.waitingMax > 0 ? "waiting for you" : "tied to your companies"}
+              Up to <b>{cappedTotal(upTo)}</b>{" "}
+              {store.waitingMax + store.featuredMax > 0 ? "waiting for you" : "tied to your companies"}
             </p>
           )
         )}
