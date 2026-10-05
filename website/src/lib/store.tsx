@@ -531,7 +531,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       accessUntil?: string | null;
     }>("razorpay-cancel", { body: {} });
     if (invokeError || !data?.cancelled) {
-      setError("Your subscription couldn’t be canceled. Please try again or email ishaana612@gmail.com.");
+      setError("Your subscription couldn’t be canceled. Please try again or email support@claimrightful.com.");
       return null;
     }
     await refreshPlan();
@@ -582,7 +582,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           userId,
           detail: [invokeError?.name ?? "no_confirmation", status].filter(Boolean).join(" "),
         });
-        setError("We couldn’t delete your account. Please email ishaana612@gmail.com.");
+        setError("We couldn’t delete your account. Please email support@claimrightful.com.");
         return false;
       }
       track("account_deleted");
