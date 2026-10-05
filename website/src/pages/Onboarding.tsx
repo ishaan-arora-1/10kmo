@@ -161,8 +161,10 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const navigate = useNavigate();
   const matches = store.matched;
-  const noProof = matches.filter((s) => !s.proofRequired).length;
-  const upTo = store.potentialMax + store.estimateMax;
+  // Their matches plus the claims open to everyone: the same claims and total as the dashboard.
+  const claimable = [...matches, ...store.featured];
+  const noProof = claimable.filter((s) => !s.proofRequired).length;
+  const upTo = store.potentialMax + store.estimateMax + store.featuredMax;
 
   const startClaiming = () => {
     if (store.isPremium || store.session) navigate("/welcome");
@@ -178,18 +180,18 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
       <div className="flow-body">
         <p className="eyebrow">Good news</p>
         <h1 className="flow-title">
-          You may qualify for {matches.length} {plural(matches.length, "settlement", "settlements")}
+          You may qualify for {claimable.length} {plural(claimable.length, "settlement", "settlements")}
         </h1>
         {matches.every((s) => s.isSample) && <SampleBadge />}
         <MoneyCheck
-          number={String(matches.length).padStart(4, "0")}
+          number={String(claimable.length).padStart(4, "0")}
           // Never "Varies": add pending/past figures, else show what settlements paid people this year.
           payee={upTo > 0 ? "You" : "People like you"}
           amountLabel={upTo > 0 ? "Up to" : "Paid this past year"}
           amount={upTo > 0 ? upTo : store.history.total}
           capped
-          memo={`${matches.length} ${plural(matches.length, "settlement", "settlements")} · ${noProof} need no proof`}
-          footer={`‖ ${store.settlements.length} CHECKED ‖ ${matches.length} MATCHED`}
+          memo={`${claimable.length} ${plural(claimable.length, "settlement", "settlements")} · ${noProof} need no proof`}
+          footer={`‖ ${store.settlements.length} CHECKED ‖ ${claimable.length} MATCHED`}
         />
         <div className="stack">
           {matches.slice(0, 3).map((settlement) => (
@@ -229,7 +231,9 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
 
 /** No open match: show what they missed, suggest more companies, then continue to membership. */
 function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
-  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax } = useStore();
+  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax, featured, featuredMax } =
+    useStore();
+  const upTo = estimateMax + featuredMax;
   const open = settlements.filter(isOpen);
   const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
   const suggestions = sortBrandsForPicker(
@@ -247,25 +251,39 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
     <>
       <div className="flow-body">
         <p className="eyebrow">Scan complete</p>
-        {estimateMax > 0 ? (
+        {upTo > 0 ? (
           <>
-            <h1 className="flow-title">Up to {cappedTotal(estimateMax)} tied to your companies</h1>
+            <h1 className="flow-title">You may qualify for up to {cappedTotal(upTo)}</h1>
             <p className="muted">
-              Nothing to claim today. We’ll email you the day {estimates.length === 1 ? "it opens" : "each one opens"}.
+              {featured.length > 0
+                ? `${featured.length} ${plural(featured.length, "claim", "claims")} most people qualify for ${plural(featured.length, "is", "are")} open now.`
+                : "Nothing to claim today."}
+              {estimates.length > 0 &&
+                ` We’ll email you the day ${estimates.length === 1 ? "yours opens" : "each of yours opens"}.`}
             </p>
             <MoneyCheck
-              number={String(estimates.length).padStart(4, "0")}
+              number={String(estimates.length + featured.length).padStart(4, "0")}
               payee="You"
               amountLabel="Up to"
-              amount={estimateMax}
+              amount={upTo}
               capped
-              memo={estimates.map(({ brand, estimate }) => `${brand.name}: ${estimate.label.toLowerCase()}`).join(" · ")}
-              footer="‖ PENDING & PAST CASES"
+              memo={[
+                ...estimates.map(({ brand, estimate }) => `${brand.name}: ${estimate.label.toLowerCase()}`),
+                featured.length > 0 && `${featured.length} open to most people`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              footer={`‖ ${settlements.length} CHECKED ‖ ${estimates.length + featured.length} FOR YOU`}
             />
+            <FeaturedSettlements onSelect={onContinue} />
             <EstimatedPayouts onSelect={onContinue} />
             <PendingCases onSelect={onContinue} />
-            <h2 className="past-year-title">{historyHeadline(history)}</h2>
-            <PayoutHistoryCard history={history} />
+            {history.total > 0 && (
+              <>
+                <h2 className="past-year-title">{historyHeadline(history)}</h2>
+                <PayoutHistoryCard history={history} />
+              </>
+            )}
           </>
         ) : (
           <>
@@ -273,9 +291,9 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
             <p className="muted">None of the companies you picked has a settlement open right now.</p>
             <PayoutHistoryCard history={history} />
             <PendingCases onSelect={onContinue} />
+            <FeaturedSettlements onSelect={onContinue} />
           </>
         )}
-        <FeaturedSettlements onSelect={onContinue} />
         <h2 className="past-year-title">Add more options</h2>
         <div className="brand-grid">
           {suggestions.map((brand) => (

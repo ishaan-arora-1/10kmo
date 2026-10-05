@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon, LockIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
-import { Modal, MoneyCheck, Monogram, PayoutList, SampleBadge, SettlementCard } from "../components/ui";
+import { Modal, MoneyCheck, Monogram, PayoutList, SampleBadge } from "../components/ui";
 import { track } from "../lib/analytics";
 import {
   cappedTotal,
@@ -24,27 +24,32 @@ export function Home() {
     track("dashboard_seen", { userId: store.session?.user.id ?? null, detail: store.isPremium ? "member" : "free" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Open claims first, soonest deadline first; ones whose claim site hasn't opened yet go last.
-  const toFile = store.matched
-    .filter((settlement) => !store.claimFor(settlement.id))
-    .sort((a, b) => Number(isUpcoming(a)) - Number(isUpcoming(b)) || a.deadline.localeCompare(b.deadline));
+  // Their own matches first, then claims open to everyone; within each, soonest deadline first,
+  // with claims whose site hasn't opened yet last.
+  const featuredIds = new Set(store.featured.map((settlement) => settlement.id));
+  const toFile = [...store.toFile].sort(
+    (a, b) =>
+      Number(featuredIds.has(a.id)) - Number(featuredIds.has(b.id)) ||
+      Number(isUpcoming(a)) - Number(isUpcoming(b)) ||
+      a.deadline.localeCompare(b.deadline),
+  );
   const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
   const noProof = toFile.filter((settlement) => !settlement.proofRequired).length;
   const firstOpen = toFile.find((settlement) => !isUpcoming(settlement));
+  const soonest = toFile
+    .filter((settlement) => !isUpcoming(settlement))
+    .reduce<Settlement | undefined>((best, s) => (!best || s.deadline < best.deadline ? s : best), undefined);
   const needsStates = store.selectedStates.size === 0;
   const missedTotal = store.missed.reduce((total, payout) => total + payout.amountMax, 0);
   const watching = store.estimates.filter(({ brand }) => !toFile.some((s) => s.brandId === brand.id));
 
-  // Never show $0 or "Varies": add pending/past figures, else what they missed, else what settlements paid this year.
-  const upTo = store.waitingMax + store.estimateMax;
+  // Never show $0 or "Varies": their matches, pending/past figures and claims open to everyone,
+  // else what they missed, else what settlements paid this year. Same total as the results screen.
+  const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
   const hero =
     upTo > 0
       ? {
-          headline:
-            // "Could claim" only when every dollar is open now; past and pending figures aren't claimable yet.
-            toFile.length > 0 && store.estimateMax === 0
-              ? `You could claim up to ${cappedTotal(upTo)}`
-              : `Up to ${cappedTotal(upTo)} tied to your companies`,
+          headline: `You may qualify for up to ${cappedTotal(upTo)}`,
           payee: "You",
           label: "Up to",
           amount: upTo,
@@ -63,13 +68,20 @@ export function Home() {
       ? [
           `${toFile.length} ${plural(toFile.length, "claim", "claims")} ready to file`,
           noProof > 0 && `${noProof} need no proof`,
-          firstOpen && `first closes in ${dayCount(daysUntil(firstOpen.deadline))}`,
+          soonest && `first closes in ${dayCount(daysUntil(soonest.deadline))}`,
         ]
           .filter(Boolean)
           .join(" · ")
       : `We’re watching your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`;
 
-  const payees = [...new Set([...toFile.map((s) => s.company), ...watching.map(({ brand }) => brand.name)])];
+  // Their own companies first, then the claims open to everyone.
+  const payees = [
+    ...new Set([
+      ...toFile.filter((s) => !featuredIds.has(s.id)).map((s) => s.company),
+      ...watching.map(({ brand }) => brand.name),
+      ...toFile.filter((s) => featuredIds.has(s.id)).map((s) => s.company),
+    ]),
+  ];
   const memo =
     payees.length > 0
       ? `${payees.slice(0, 3).join(", ")}${payees.length > 3 ? ` + ${payees.length - 3} more` : ""}`
@@ -104,7 +116,9 @@ export function Home() {
             <span>
               {toFile.length > 0
                 ? `Unlock filing for your ${toFile.length} ${plural(toFile.length, "claim", "claims")}${
-                    store.waitingMax > 0 ? ` (up to ${cappedTotal(store.waitingMax)})` : ""
+                    store.waitingMax + store.featuredMax > 0
+                      ? ` (up to ${cappedTotal(store.waitingMax + store.featuredMax)})`
+                      : ""
                   }`
                 : "Get emailed the day your companies settle"}
             </span>
@@ -129,6 +143,7 @@ export function Home() {
                 key={settlement.id}
                 settlement={settlement}
                 urgent={index === 0 && settlement === firstOpen && daysUntil(settlement.deadline) <= 30}
+                openToAll={featuredIds.has(settlement.id)}
                 locked={!store.isPremium}
               />
             ))}
@@ -153,19 +168,6 @@ export function Home() {
                   <span className="sc-note">{estimate.note}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {store.featured.length > 0 && (
-        <section className="section">
-          <h2 className="section-label">Open to everyone in the US</h2>
-          <div className="stack">
-            {store.featured.map((settlement) => (
-              <Link key={settlement.id} to={`/settlements/${settlement.id}`} className="card-link">
-                <SettlementCard settlement={settlement} action="Check if you qualify" />
-              </Link>
             ))}
           </div>
         </section>
@@ -222,7 +224,17 @@ export function Home() {
 }
 
 /** One claim to file: what it pays, how long is left, and whether proof is needed. */
-function ClaimTile({ settlement, urgent, locked }: { settlement: Settlement; urgent: boolean; locked: boolean }) {
+function ClaimTile({
+  settlement,
+  urgent,
+  openToAll,
+  locked,
+}: {
+  settlement: Settlement;
+  urgent: boolean;
+  openToAll: boolean;
+  locked: boolean;
+}) {
   const { brandById } = useStore();
   const upcoming = isUpcoming(settlement);
   const days = daysUntil(settlement.deadline);
@@ -240,6 +252,7 @@ function ClaimTile({ settlement, urgent, locked }: { settlement: Settlement; urg
             <span className={`ct-tag${days <= 14 ? " hot" : ""}`}>{closesIn(days)}</span>
           )}
           {!settlement.proofRequired && <span className="ct-tag money">No proof needed</span>}
+          {openToAll && <span className="ct-tag">Open to most people</span>}
           {settlement.isSample && <SampleBadge />}
         </span>
       </span>

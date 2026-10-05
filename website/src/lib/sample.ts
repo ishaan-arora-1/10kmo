@@ -49,8 +49,10 @@ function sample(
   };
 }
 
-/** Clearly labeled demonstration records. Never shown as live claims. */
-export const SAMPLE_SETTLEMENTS: Settlement[] = [
+// Like the live catalog, a couple of claims are open to everyone whatever they picked.
+const OPEN_TO_EVERYONE = new Set(["T-Mobile", "TikTok"]);
+
+const SAMPLE_LIST: Settlement[] = [
   sample(1, "Privacy settlement", "Facebook", 1, 20, 85, 18, false,
     "US users who had an account at any point during the covered years.",
     ["I had an account during the covered years", "I haven’t already filed this claim"], "Early 2027"),
@@ -76,3 +78,9 @@ export const SAMPLE_SETTLEMENTS: Settlement[] = [
     "US users who used the app during the covered dates.",
     ["I used the app during the covered dates", "I have not filed another claim"], "Late 2027"),
 ];
+
+/** Clearly labeled demonstration records. Never shown as live claims. */
+export const SAMPLE_SETTLEMENTS: Settlement[] = SAMPLE_LIST.map((settlement) => ({
+  ...settlement,
+  isFeatured: OPEN_TO_EVERYONE.has(settlement.company),
+}));
