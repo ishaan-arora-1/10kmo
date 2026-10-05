@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRightIcon } from "../components/icons";
+import { ArrowRightIcon, LockIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
 import { Modal, Monogram, PayoutList, SampleBadge, SettlementCard } from "../components/ui";
+import { track } from "../lib/analytics";
 import { cappedTotal, daysUntil, payoutRange, plural, usd } from "../lib/models";
 import { useStore } from "../lib/store";
 
 export function Home() {
   const store = useStore();
   const [statesOpen, setStatesOpen] = useState(false);
+
+  useEffect(() => {
+    track("dashboard_seen", { userId: store.session?.user.id ?? null, detail: store.isPremium ? "member" : "free" });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toFile = store.matched.filter((settlement) => !store.claimFor(settlement.id));
   const urgent = toFile[0];
@@ -25,6 +30,8 @@ export function Home() {
       : missedTotal > 0
         ? { label: "You missed", amount: cappedTotal(missedTotal) }
         : { label: "Paid to people this year", amount: cappedTotal(store.history.total) };
+  // Free accounts see everything; filing is what the plan unlocks.
+  const unlock = `/paywall?next=${encodeURIComponent("/")}`;
 
   return (
     <div className="page">
@@ -59,6 +66,23 @@ export function Home() {
         </div>
       </section>
 
+      {!store.isPremium && (
+        <Link to={unlock} className="unlock-strip">
+          <LockIcon />
+          <span>
+            <b>Free plan</b>
+            <span>
+              {toFile.length > 0
+                ? `Unlock filing for your ${toFile.length} ${plural(toFile.length, "claim", "claims")}${
+                    store.waitingMax > 0 ? ` (up to ${cappedTotal(store.waitingMax)})` : ""
+                  }`
+                : "Get emailed the day your companies settle"}
+            </span>
+          </span>
+          <ArrowRightIcon />
+        </Link>
+      )}
+
       {urgent && (
         <section className="section">
           <h2 className="section-label">Most urgent</h2>
@@ -75,7 +99,10 @@ export function Home() {
             </span>
             <span className="uc-side">
               <span className="sc-amount">{payoutRange(urgent)}</span>
-              <span className="pill-dark">File</span>
+              <span className="pill-dark">
+                File
+                {!store.isPremium && <LockIcon />}
+              </span>
             </span>
           </Link>
         </section>

@@ -13,6 +13,7 @@ import { Profile } from "./pages/Profile";
 import { SettlementDetail } from "./pages/SettlementDetail";
 import { SignIn } from "./pages/SignIn";
 import { Welcome } from "./pages/Welcome";
+import { isSampleMode } from "./lib/supabase";
 
 export function App() {
   const { ready, error, dismissError } = useStore();
@@ -43,9 +44,9 @@ export function App() {
         <Route path="/welcome" element={<Welcome />} />
         <Route
           element={
-            <RequireMembership>
+            <RequireAccount>
               <Shell />
-            </RequireMembership>
+            </RequireAccount>
           }
         >
           <Route index element={<Home />} />
@@ -69,8 +70,8 @@ export function App() {
   );
 }
 
-/** The dashboard is members-only: everyone else goes through pick → results → paywall. */
-function RequireMembership({ children }: { children: ReactNode }) {
-  const { isPremium } = useStore();
-  return isPremium ? children : <Navigate to="/start" replace />;
+/** The dashboard needs an account, not a membership: filing is what's locked behind the paywall. */
+function RequireAccount({ children }: { children: ReactNode }) {
+  const { isPremium, session } = useStore();
+  return isPremium || session || isSampleMode ? children : <Navigate to="/start" replace />;
 }
