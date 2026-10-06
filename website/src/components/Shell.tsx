@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { ClaimsIcon, HomeIcon, ProfileIcon, SearchIcon } from "./icons";
-import { BrandSeal, SampleBadge } from "./ui";
+import { SampleBadge, Wordmark } from "./ui";
 
 const TABS: { to: string; label: string; icon: () => ReactNode }[] = [
   { to: "/", label: "Home", icon: HomeIcon },
@@ -16,10 +16,7 @@ export function Shell() {
   return (
     <div className="shell">
       <header className="app-top">
-        <a className="brand" href="/">
-          <BrandSeal />
-          Rightful
-        </a>
+        <Wordmark />
         <nav className="app-nav" aria-label="Main">
           {TABS.map((tab) => (
             <NavLink key={tab.to} to={tab.to} end={tab.to === "/"} className="app-nav-link">

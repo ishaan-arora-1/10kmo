@@ -26,6 +26,15 @@ export function BrandSeal({ size = 32 }: { size?: number }) {
   );
 }
 
+/** The ClaimRightful wordmark, styled by .brand / .brand-accent in styles.css. */
+export function Wordmark() {
+  return (
+    <a className="brand" href="/" aria-label="ClaimRightful home">
+      Claim<span className="brand-accent">Rightful</span>
+    </a>
+  );
+}
+
 export function SampleBadge() {
   return <span className="sample-badge">Sample data</span>;
 }
