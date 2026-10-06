@@ -10,7 +10,7 @@ import {
 } from "../_shared/razorpay.ts";
 
 // Razorpay requires a finite number of billing cycles; these are effectively open-ended.
-const TOTAL_COUNT: Record<WebPlan, number> = { yearly: 10, weekly: 260 };
+const TOTAL_COUNT: Record<WebPlan, number> = { yearly: 10, monthly: 120, weekly: 260 };
 
 const handler = withSupabase<Database>(
   { auth: "user" },
@@ -25,9 +25,12 @@ const handler = withSupabase<Database>(
     }
 
     const body = await request.json().catch(() => ({})) as { plan?: string };
-    const plan: WebPlan | null = body.plan === "yearly" || body.plan === "weekly"
-      ? body.plan
-      : null;
+    // The website sells yearly and monthly. Weekly stays accepted so a page loaded before
+    // weekly was hidden can still check out.
+    const plan: WebPlan | null =
+      body.plan === "yearly" || body.plan === "monthly" || body.plan === "weekly"
+        ? body.plan
+        : null;
     if (!plan) {
       return Response.json({ error: "Unknown plan" }, { status: 400 });
     }

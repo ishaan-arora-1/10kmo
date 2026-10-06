@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandSeal, historyHeadline, Monogram } from "../components/ui";
 import { track } from "../lib/analytics";
-import { PRICE_LABELS } from "../lib/config";
+import { PRICE_LABELS, PRICE_VALUES, type WebPlan } from "../lib/config";
 import {
   cappedTotal,
   daysUntil,
@@ -14,6 +14,7 @@ import {
   safeNext,
   shortDay,
   usd,
+  usdCents,
 } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
@@ -23,7 +24,7 @@ export function Paywall() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = safeNext(params.get("next"));
-  const [plan, setPlan] = useState<"yearly" | "weekly">("yearly");
+  const [plan, setPlan] = useState<WebPlan>("yearly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   // Opened from a settlement's "File your claim" button: lead with that claim.
@@ -76,7 +77,10 @@ export function Paywall() {
     .filter((brand) => store.selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand))
     .map((brand) => brand.name);
   const biggestClaim = Math.max(0, ...store.toFile.map((s) => s.payoutMax));
-  const yearlyPrice = Number(PRICE_LABELS.yearly.replace(/[^0-9.]/g, ""));
+  const yearlyPrice = PRICE_VALUES.yearly;
+  // Yearly shown per month, and what it saves against paying monthly for a year.
+  const yearlyPerMonth = usdCents(Math.floor((PRICE_VALUES.yearly / 12) * 100) / 100);
+  const yearlySaving = Math.floor((1 - PRICE_VALUES.yearly / (PRICE_VALUES.monthly * 12)) * 100);
 
   const subscribe = async () => {
     setBusy(true);
@@ -96,7 +100,7 @@ export function Paywall() {
       ? "Unlock sample"
       : plan === "yearly"
         ? `Subscribe for ${PRICE_LABELS.yearly}/year`
-        : `Subscribe for ${PRICE_LABELS.weekly}/week`;
+        : `Subscribe for ${PRICE_LABELS.monthly}/month`;
 
   return (
     <div className="flow narrow">
@@ -191,22 +195,25 @@ export function Paywall() {
             />
             <span className="plan-text">
               <b>
-                Yearly <span className="badge">Best value</span>
+                Yearly{" "}
+                <span className="badge">{yearlySaving > 0 ? `Best value · save ${yearlySaving}%` : "Best value"}</span>
               </b>
-              <span>{PRICE_LABELS.yearly}/year</span>
+              <span>
+                {yearlyPerMonth}/month, billed {PRICE_LABELS.yearly}/year
+              </span>
             </span>
           </label>
-          <label className={`plan-option${plan === "weekly" ? " on" : ""}`} htmlFor="plan-weekly">
+          <label className={`plan-option${plan === "monthly" ? " on" : ""}`} htmlFor="plan-monthly">
             <input
-              id="plan-weekly"
+              id="plan-monthly"
               type="radio"
               name="plan"
-              checked={plan === "weekly"}
-              onChange={() => setPlan("weekly")}
+              checked={plan === "monthly"}
+              onChange={() => setPlan("monthly")}
             />
             <span className="plan-text">
-              <b>Weekly</b>
-              <span>{PRICE_LABELS.weekly}/week</span>
+              <b>Monthly</b>
+              <span>{PRICE_LABELS.monthly}/month · cancel anytime</span>
             </span>
           </label>
         </fieldset>
@@ -229,7 +236,7 @@ export function Paywall() {
             ? "Sample mode: no payment is taken."
             : plan === "yearly"
               ? `Payments are processed securely by Razorpay. ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
-              : `Payments are processed securely by Razorpay. ${PRICE_LABELS.weekly} is charged today and every week until you cancel in Profile.`}
+              : `Payments are processed securely by Razorpay. ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
         </p>
         <p className="fine-print center">
           <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>

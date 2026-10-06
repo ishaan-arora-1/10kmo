@@ -115,6 +115,9 @@ enum BrowseFilter: String, CaseIterable, Identifiable, Sendable {
 enum SubscriptionPlan: String, Codable, Sendable {
     case free
     case yearly
+    /// Website-only (Razorpay); there's no App Store product for it. Decoded from the profile
+    /// so a web monthly subscriber is recognized as premium on iPhone.
+    case monthly
     case weekly
 
     var isPremium: Bool { self != .free }

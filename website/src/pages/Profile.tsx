@@ -21,7 +21,7 @@ export function Profile() {
   const [cancelNote, setCancelNote] = useState<string | null>(null);
 
   const email = store.session?.user.email ?? null;
-  const planName = store.plan === "free" ? null : store.plan === "yearly" ? "Yearly" : "Weekly";
+  const planName = store.plan === "free" ? null : { yearly: "Yearly", monthly: "Monthly", weekly: "Weekly" }[store.plan];
 
   const upgrade = () => {
     const paywall = `/paywall?next=${encodeURIComponent("/profile")}`;

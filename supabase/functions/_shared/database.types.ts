@@ -22,7 +22,7 @@ export type Database = {
           display_name: string | null;
           state_code: string | null;
           state_codes: string[];
-          plan: "free" | "yearly" | "weekly";
+          plan: "free" | "yearly" | "monthly" | "weekly";
           plan_source: "apple" | "razorpay" | null;
           plan_renews: boolean | null;
           plan_expires_at: string | null;
@@ -138,12 +138,12 @@ export type Database = {
           p_subscription_id: string;
           p_user_id: string;
           p_plan_id: string;
-          p_plan: "free" | "yearly" | "weekly";
+          p_plan: "free" | "yearly" | "monthly" | "weekly";
           p_status: string;
           p_current_period_end: string | null;
           p_cancel_at_period_end: boolean | null;
         };
-        Returns: "free" | "yearly" | "weekly";
+        Returns: "free" | "yearly" | "monthly" | "weekly";
       };
       razorpay_subscription_owner: {
         Args: { p_subscription_id: string };
@@ -168,7 +168,7 @@ export type Database = {
     Enums: {
       settlement_status: "draft" | "verified" | "closed";
       claim_status: "To file" | "Filed" | "Approved" | "Rejected" | "Paid";
-      plan_type: "free" | "yearly" | "weekly";
+      plan_type: "free" | "yearly" | "monthly" | "weekly";
     };
     CompositeTypes: Record<string, never>;
   };

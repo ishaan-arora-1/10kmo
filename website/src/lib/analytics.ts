@@ -1,3 +1,4 @@
+import type { WebPlan } from "./config";
 import { supabase } from "./supabase";
 
 /** Steps we watch, from landing on the app to paying. */
@@ -29,7 +30,7 @@ export type FunnelEvent =
  */
 export function track(
   name: FunnelEvent,
-  options: { plan?: "yearly" | "weekly"; detail?: string; userId?: string | null } = {},
+  options: { plan?: WebPlan; detail?: string; userId?: string | null } = {},
 ): void {
   const client = supabase;
   if (!client) return;
