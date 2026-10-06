@@ -4,7 +4,7 @@ import { pixel } from "../lib/pixel";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { browserKind, EmailCodeForm } from "../components/EmailCodeForm";
-import { BrandSeal, Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard } from "../components/ui";
+import { Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard, Wordmark } from "../components/ui";
 import {
   ALSO_USED_COMPANIES,
   cappedTotal,
@@ -39,10 +39,7 @@ export function Onboarding() {
   return (
     <div className="flow">
       <header className="flow-top">
-        <a className="brand" href="/">
-          <BrandSeal />
-          Rightful
-        </a>
+        <Wordmark />
       </header>
       {stage === "brands" && <PickStep onContinue={() => setStage("scanning")} />}
       {stage === "scanning" && <ScanStep onDone={() => setStage("questions")} />}
