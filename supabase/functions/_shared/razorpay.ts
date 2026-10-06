@@ -6,10 +6,12 @@ const keySecret = Deno.env.get("RAZORPAY_KEY_SECRET") ?? "";
 export const razorpayKeyId = keyId;
 export const razorpayKeySecret = keySecret;
 
-export type WebPlan = "yearly" | "weekly";
+// Weekly is no longer sold, but existing weekly subscriptions still renew and must be recognized.
+export type WebPlan = "yearly" | "monthly" | "weekly";
 
 export const planIds: Record<WebPlan, string | undefined> = {
   yearly: Deno.env.get("RAZORPAY_PLAN_YEARLY"),
+  monthly: Deno.env.get("RAZORPAY_PLAN_MONTHLY"),
   weekly: Deno.env.get("RAZORPAY_PLAN_WEEKLY"),
 };
 
@@ -73,6 +75,7 @@ export function timingSafeEqual(a: string, b: string): boolean {
 
 export function planForId(planId: string): WebPlan | null {
   if (planId && planId === planIds.yearly) return "yearly";
+  if (planId && planId === planIds.monthly) return "monthly";
   if (planId && planId === planIds.weekly) return "weekly";
   return null;
 }

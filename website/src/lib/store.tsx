@@ -33,6 +33,7 @@ import {
   withParentBrands,
 } from "./models";
 import { track } from "./analytics";
+import { PRICE_VALUES, type WebPlan } from "./config";
 import { pixel } from "./pixel";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
@@ -133,7 +134,7 @@ export interface Store {
   markFiled(settlement: Settlement, reference: string): Promise<void>;
   markPaid(claimId: string, amount: number): Promise<void>;
   refreshPlan(): Promise<Plan>;
-  startCheckout(plan: "yearly" | "weekly"): Promise<CheckoutResult>;
+  startCheckout(plan: WebPlan): Promise<CheckoutResult>;
   /** Returns when access ends ("" if it ended now), or null if cancellation failed. */
   cancelSubscription(): Promise<string | null>;
   setEmailReminders(on: boolean): Promise<void>;
@@ -438,7 +439,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [userId]);
 
   const startCheckout = useCallback(
-    async (chosen: "yearly" | "weekly"): Promise<CheckoutResult> => {
+    async (chosen: WebPlan): Promise<CheckoutResult> => {
       const client = supabase;
       if (!client) {
         setLocal((previous) => ({ ...previous, sampleUnlocked: true }));
@@ -447,7 +448,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       const userId = session?.user.id ?? null;
       track("checkout_opened", { plan: chosen, userId });
-      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: chosen === "yearly" ? 39.99 : 4.99 });
+      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
       const { data, error: invokeError } = await client.functions.invoke<{
         subscription_id?: string;
         key_id?: string;
@@ -487,7 +488,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           key: keyId,
           subscription_id: subscriptionId,
           name: "Rightful",
-          description: chosen === "yearly" ? "Rightful Premium · Yearly" : "Rightful Premium · Weekly",
+          description: chosen === "yearly" ? "Rightful Premium · Yearly" : "Rightful Premium · Monthly",
           prefill: { email: data?.email ?? undefined, name: data?.name ?? undefined },
           theme: { color: "#0E7A4B" },
           handler: async (response) => {
@@ -503,7 +504,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             }
             await refreshPlan();
             track("checkout_paid", { plan: chosen, userId });
-            pixel("Purchase", { content_name: chosen, currency: "USD", value: chosen === "yearly" ? 39.99 : 4.99 });
+            pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
             finish({ ok: true });
           },
           modal: {
