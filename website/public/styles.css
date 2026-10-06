@@ -59,7 +59,7 @@ p { margin: 0; }
 
 /* ---------- nav ---------- */
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--mono); font-size: 15px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -.02em; }
 .seal {
   width: 32px; height: 32px; border-radius: 50%;
   border: 1.5px dashed var(--money); color: var(--money);
