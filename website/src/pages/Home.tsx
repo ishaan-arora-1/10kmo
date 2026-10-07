@@ -25,11 +25,12 @@ export function Home() {
     track("dashboard_seen", { userId: store.session?.user.id ?? null, detail: store.isPremium ? "member" : "free" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Their own matches first, then claims open to everyone; within each, soonest deadline first,
-  // with claims whose site hasn't opened yet last.
+  // The spotlight claim first, then their own matches, then claims open to everyone; within each,
+  // soonest deadline first, with claims whose site hasn't opened yet last.
   const featuredIds = new Set(store.featured.map((settlement) => settlement.id));
   const toFile = [...store.toFile].sort(
     (a, b) =>
+      Number(b.isSpotlight) - Number(a.isSpotlight) ||
       Number(featuredIds.has(a.id)) - Number(featuredIds.has(b.id)) ||
       Number(isUpcoming(a)) - Number(isUpcoming(b)) ||
       a.deadline.localeCompare(b.deadline),
@@ -37,6 +38,16 @@ export function Home() {
   const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
   const noProof = toFile.filter((settlement) => !settlement.proofRequired).length;
   const firstOpen = toFile.find((settlement) => !isUpcoming(settlement));
+  // Highlight the spotlight claim; without one, the most urgent claim.
+  const spotlight = toFile.find((settlement) => settlement.isSpotlight && !isUpcoming(settlement));
+  const flagFor = (settlement: Settlement, index: number): string | null =>
+    spotlight
+      ? settlement === spotlight
+        ? "Top pick"
+        : null
+      : index === 0 && settlement === firstOpen && daysUntil(settlement.deadline) <= 30
+        ? "Most urgent"
+        : null;
   const soonest = toFile
     .filter((settlement) => !isUpcoming(settlement))
     .reduce<Settlement | undefined>((best, s) => (!best || s.deadline < best.deadline ? s : best), undefined);
@@ -156,7 +167,7 @@ export function Home() {
               <ClaimTile
                 key={settlement.id}
                 settlement={settlement}
-                urgent={index === 0 && settlement === firstOpen && daysUntil(settlement.deadline) <= 30}
+                flag={flagFor(settlement, index)}
                 openToAll={featuredIds.has(settlement.id)}
                 locked={!store.canFile(settlement)}
                 free={store.freeClaimAvailable}
@@ -241,13 +252,13 @@ export function Home() {
 /** One claim to file: what it pays, how long is left, and whether proof is needed. */
 function ClaimTile({
   settlement,
-  urgent,
+  flag,
   openToAll,
   locked,
   free,
 }: {
   settlement: Settlement;
-  urgent: boolean;
+  flag: string | null;
   openToAll: boolean;
   locked: boolean;
   free: boolean;
@@ -256,10 +267,10 @@ function ClaimTile({
   const upcoming = isUpcoming(settlement);
   const days = daysUntil(settlement.deadline);
   return (
-    <Link to={`/settlements/${settlement.id}`} className={`claim-tile${urgent ? " urgent" : ""}`}>
+    <Link to={`/settlements/${settlement.id}`} className={`claim-tile${flag ? " urgent" : ""}`}>
       <Monogram brand={brandById(settlement.brandId)} name={settlement.company} size={44} />
       <span className="ct-body">
-        {urgent && <span className="ct-flag">Most urgent</span>}
+        {flag && <span className="ct-flag">{flag}</span>}
         <b className="ct-title">{settlement.company}</b>
         <span className="ct-sub">{settlement.title}</span>
         <span className="ct-tags">
