@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import {
   cappedTotal,
   daysUntil,
@@ -17,6 +18,7 @@ import {
   type Settlement,
 } from "../lib/models";
 import { useStore } from "../lib/store";
+import { isSampleMode } from "../lib/supabase";
 
 export function BrandSeal({ size = 32 }: { size?: number }) {
   return (
@@ -26,11 +28,24 @@ export function BrandSeal({ size = 32 }: { size?: number }) {
   );
 }
 
-/** The ClaimRightful wordmark, styled by .brand / .brand-accent in styles.css. */
+/**
+ * The ClaimRightful wordmark, styled by .brand / .brand-accent in styles.css.
+ * Goes to the dashboard for accounts, the landing page for everyone else.
+ */
 export function Wordmark() {
-  return (
-    <a className="brand" href="/" aria-label="ClaimRightful home">
+  const { isPremium, session } = useStore();
+  const text = (
+    <>
       Claim<span className="brand-accent">Rightful</span>
+    </>
+  );
+  return isPremium || session || isSampleMode ? (
+    <Link className="brand" to="/" aria-label="ClaimRightful dashboard">
+      {text}
+    </Link>
+  ) : (
+    <a className="brand" href="/" aria-label="ClaimRightful home">
+      {text}
     </a>
   );
 }
