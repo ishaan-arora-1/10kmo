@@ -43,6 +43,8 @@ export interface Settlement {
   opensOn: string | null;
   /** Shown to everyone, whatever companies they picked. */
   isFeatured: boolean;
+  /** Listed first and highlighted on the dashboard. */
+  isSpotlight: boolean;
   proofRequired: boolean;
   qualifiesSummary: string;
   eligibilityDetails: string[];
@@ -102,6 +104,7 @@ export function settlementFromRow(row: Row): Settlement {
     deadline: String(row.deadline),
     opensOn: (row.opens_on as string | null) ?? null,
     isFeatured: Boolean(row.is_featured),
+    isSpotlight: Boolean(row.is_spotlight),
     proofRequired: Boolean(row.proof_required),
     qualifiesSummary: String(row.qualifies_summary),
     eligibilityDetails: (row.eligibility_details as string[] | null) ?? [],
@@ -458,7 +461,7 @@ export function featuredSettlements(settlements: Settlement[], matched: Settleme
   const matchedIds = new Set(matched.map((settlement) => settlement.id));
   return settlements
     .filter((settlement) => settlement.isFeatured && isOpen(settlement) && !matchedIds.has(settlement.id))
-    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+    .sort((a, b) => Number(b.isSpotlight) - Number(a.isSpotlight) || a.deadline.localeCompare(b.deadline));
 }
 
 export function isOpen(settlement: Settlement): boolean {

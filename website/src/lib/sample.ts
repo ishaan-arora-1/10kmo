@@ -39,6 +39,7 @@ function sample(
     deadline: dayFromNow(deadlineDays),
     opensOn: null,
     isFeatured: false,
+    isSpotlight: false,
     proofRequired,
     qualifiesSummary,
     eligibilityDetails,
@@ -83,4 +84,5 @@ const SAMPLE_LIST: Settlement[] = [
 export const SAMPLE_SETTLEMENTS: Settlement[] = SAMPLE_LIST.map((settlement) => ({
   ...settlement,
   isFeatured: OPEN_TO_EVERYONE.has(settlement.company),
+  isSpotlight: settlement.company === "TikTok",
 }));
