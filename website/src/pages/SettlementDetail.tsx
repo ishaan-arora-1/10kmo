@@ -53,16 +53,23 @@ export function SettlementDetail() {
   const eligible = checks.length > 0 && checks.every(Boolean);
   const days = daysUntil(settlement.deadline);
   const upcoming = isUpcoming(settlement);
+  const unlocked = store.canFile(settlement);
+  const isFreeClaim = !store.isPremium && unlocked;
 
   const file = () => {
-    if (!store.isPremium) {
+    if (!unlocked) {
       track("file_locked_tap", { userId: store.session?.user.id ?? null, detail: settlement.company });
       const paywall = `/paywall?next=${encodeURIComponent(`/settlements/${settlement.id}`)}`;
       navigate(store.session || isSampleMode ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
       return;
     }
+    // Open the tab first: browsers block pop-ups that come after an await.
     window.open(settlement.claimUrl, "_blank", "noopener,noreferrer");
     setAwaitingReturn(true);
+    if (store.freeClaimAvailable) {
+      track("free_claim_started", { userId: store.session?.user.id ?? null, detail: settlement.company });
+      void store.startFreeClaim(settlement);
+    }
   };
 
   const confirmFiled = async (event: FormEvent) => {
@@ -70,7 +77,13 @@ export function SettlementDetail() {
     await store.markFiled(settlement, reference);
     setConfirmOpen(false);
     setAwaitingReturn(false);
-    navigate("/claims");
+    if (store.isPremium) {
+      navigate("/claims");
+      return;
+    }
+    // Their free claim is in: the moment to offer the rest.
+    track("free_claim_filed", { userId: store.session?.user.id ?? null, detail: settlement.company });
+    navigate(`/paywall?from=free_claim&next=${encodeURIComponent("/claims")}`);
   };
 
   return (
@@ -162,7 +175,11 @@ export function SettlementDetail() {
       <button type="button" className="btn block" onClick={file} disabled={!eligible || upcoming}>
         {upcoming ? (
           <>Claims open {opensLabel(settlement)}</>
-        ) : store.isPremium ? (
+        ) : store.freeClaimAvailable ? (
+          <>
+            File free <ExternalIcon />
+          </>
+        ) : unlocked ? (
           <>
             File on official site <ExternalIcon />
           </>
@@ -174,6 +191,12 @@ export function SettlementDetail() {
       </button>
       {!eligible && !upcoming && (
         <p className="fine-print center">Confirm both statements to continue.</p>
+      )}
+      {store.freeClaimAvailable && !upcoming && (
+        <p className="fine-print center money">Your first claim is on us. Premium unlocks the rest.</p>
+      )}
+      {isFreeClaim && !store.freeClaimAvailable && !upcoming && (
+        <p className="fine-print center money">This is your free claim.</p>
       )}
       <p className="fine-print center">
         Verified settlement administrator link. Rightful is not a law firm and is not affiliated with this company.

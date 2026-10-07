@@ -323,6 +323,9 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .unlock-strip > span { display: grid; gap: 2px; font-size: 15px; }
 .unlock-strip > span b { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--money); }
 .unlock-strip svg { color: var(--money); flex: none; }
+.unlock-strip.free { grid-template-columns: auto 1fr; }
+.pill-dark.free { background: var(--money); color: var(--on-money); }
+.fine-print.money { color: var(--money); font-weight: 600; }
 .find-more {
   display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%;
   padding: 16px 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface);
@@ -459,6 +462,10 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .flow-body > button.back-link { justify-self: start; padding: 0; background: none; border: 0; cursor: pointer; }
 
 /* ---------- paywall ---------- */
+.pw-done {
+  justify-self: start; font-weight: 700; font-size: 14px; color: var(--money);
+  background: var(--money-soft); padding: 6px 12px; border-radius: 99px;
+}
 .pw-total { font-size: 18px; color: var(--muted); }
 .pw-total b { color: var(--money); font-family: var(--display); font-size: 26px; }
 .pw-logos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

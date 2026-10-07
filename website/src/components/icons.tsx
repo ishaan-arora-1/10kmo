@@ -62,3 +62,10 @@ export const LockIcon = () => (
     <path d="M8 11V8a4 4 0 0 1 8 0v3" />
   </Icon>
 );
+
+export const GiftIcon = () => (
+  <Icon width="18" height="18">
+    <rect x="4" y="9" width="16" height="11" rx="1" />
+    <path d="M3 9h18M12 9v11M12 9c-1.5-3-5-3.5-5-1.25S10 9 12 9c2 0 5 .5 5-1.25S13.5 6 12 9" />
+  </Icon>
+);
