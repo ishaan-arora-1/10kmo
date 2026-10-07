@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRightIcon, LockIcon } from "../components/icons";
+import { ArrowRightIcon, GiftIcon, LockIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
 import { Modal, MoneyCheck, Monogram, PayoutList, SampleBadge } from "../components/ui";
 import { track } from "../lib/analytics";
@@ -8,6 +8,7 @@ import {
   cappedTotal,
   daysUntil,
   isUpcoming,
+  maxTotal,
   opensLabel,
   payoutRange,
   plural,
@@ -87,8 +88,10 @@ export function Home() {
       ? `${payees.slice(0, 3).join(", ")}${payees.length > 3 ? ` + ${payees.length - 3} more` : ""}`
       : "Settlements you could have claimed";
 
-  // Free accounts see everything; filing is what the plan unlocks.
+  // Free accounts see everything and file one claim free; the plan unlocks the rest.
   const unlock = `/paywall?next=${encodeURIComponent("/")}`;
+  const locked = toFile.filter((settlement) => !store.canFile(settlement));
+  const lockedMax = maxTotal(locked);
 
   return (
     <div className="page">
@@ -108,24 +111,35 @@ export function Home() {
         footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED ‖ ${usd(store.paidTotal)} PAID`}
       />
 
-      {!store.isPremium && (
-        <Link to={unlock} className="unlock-strip">
-          <LockIcon />
-          <span>
-            <b>Free plan</b>
+      {!store.isPremium &&
+        (store.freeClaimAvailable && toFile.some((settlement) => !isUpcoming(settlement)) ? (
+          <div className="unlock-strip free">
+            <GiftIcon />
             <span>
-              {toFile.length > 0
-                ? `Unlock filing for your ${toFile.length} ${plural(toFile.length, "claim", "claims")}${
-                    store.waitingMax + store.featuredMax > 0
-                      ? ` (up to ${cappedTotal(store.waitingMax + store.featuredMax)})`
-                      : ""
-                  }`
-                : "Get emailed the day your companies settle"}
+              <b>Your first claim is free</b>
+              <span>Pick any claim below and file it now.</span>
             </span>
-          </span>
-          <ArrowRightIcon />
-        </Link>
-      )}
+          </div>
+        ) : (
+          <Link to={unlock} className="unlock-strip">
+            <LockIcon />
+            <span>
+              <b>{store.freeClaimAvailable ? "Free plan" : "Free claim used"}</b>
+              <span>
+                {locked.length > 0
+                  ? `Unlock your ${
+                      store.freeClaimAvailable
+                        ? `${locked.length} ${plural(locked.length, "claim", "claims")}`
+                        : locked.length === 1
+                          ? "other claim"
+                          : `other ${locked.length} claims`
+                    }${lockedMax > 0 ? ` (up to ${cappedTotal(lockedMax)})` : ""}`
+                  : "Get emailed the day your companies settle"}
+              </span>
+            </span>
+            <ArrowRightIcon />
+          </Link>
+        ))}
 
       <section className="section">
         <h2 className="section-label">
@@ -144,7 +158,8 @@ export function Home() {
                 settlement={settlement}
                 urgent={index === 0 && settlement === firstOpen && daysUntil(settlement.deadline) <= 30}
                 openToAll={featuredIds.has(settlement.id)}
-                locked={!store.isPremium}
+                locked={!store.canFile(settlement)}
+                free={store.freeClaimAvailable}
               />
             ))}
           </div>
@@ -229,11 +244,13 @@ function ClaimTile({
   urgent,
   openToAll,
   locked,
+  free,
 }: {
   settlement: Settlement;
   urgent: boolean;
   openToAll: boolean;
   locked: boolean;
+  free: boolean;
 }) {
   const { brandById } = useStore();
   const upcoming = isUpcoming(settlement);
@@ -258,8 +275,8 @@ function ClaimTile({
       </span>
       <span className="ct-side">
         <span className="ct-amount">{payoutRange(settlement)}</span>
-        <span className="pill-dark">
-          {upcoming ? "Details" : "File"}
+        <span className={`pill-dark${free && !upcoming ? " free" : ""}`}>
+          {upcoming ? "Details" : free ? "File free" : "File"}
           {locked && !upcoming && <LockIcon />}
         </span>
       </span>

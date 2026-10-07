@@ -119,6 +119,10 @@ export interface Store {
   estimates: { brand: Brand; estimate: BrandEstimate }[];
   estimateMax: number;
   paidTotal: number;
+  /** Free accounts get one claim to file without paying; true until they start it. */
+  freeClaimAvailable: boolean;
+  /** Members file anything; free accounts their free claim (any claim they've started or filed). */
+  canFile(settlement: Settlement): boolean;
   /** Real past payouts to show instead of $0 (see payoutHistory). */
   history: PayoutHistory;
   /** The biggest payouts anyone got this past year, for social proof whatever they picked. */
@@ -132,6 +136,8 @@ export interface Store {
   toggleState(code: string): void;
   completeOnboarding(): void;
   markFiled(settlement: Settlement, reference: string): Promise<void>;
+  /** Uses the free claim on this settlement: saves it as "To file" so it stays unlocked. */
+  startFreeClaim(settlement: Settlement): Promise<void>;
   markPaid(claimId: string, amount: number): Promise<void>;
   refreshPlan(): Promise<Plan>;
   startCheckout(plan: WebPlan): Promise<CheckoutResult>;
@@ -412,6 +418,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [saveClaim],
   );
 
+  const startFreeClaim = useCallback(
+    async (settlement: Settlement) => {
+      if (localRef.current.claims.some((c) => c.settlementId === settlement.id)) return;
+      await saveClaim({
+        id: crypto.randomUUID(),
+        settlementId: settlement.id,
+        status: "To file",
+        claimRef: null,
+        filedAt: null,
+        paidAmount: null,
+        paidAt: null,
+        modifiedAt: new Date().toISOString(),
+      });
+    },
+    [saveClaim],
+  );
+
   const markPaid = useCallback(
     async (claimId: string, amount: number) => {
       const claim = localRef.current.claims.find((c) => c.id === claimId);
@@ -612,6 +635,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
     const featured = featuredSettlements(settlements, matched);
     const toFile = [...unfiled, ...featured.filter(notFiled)];
+    const isPremium = plan !== "free" || (isSampleMode && local.sampleUnlocked);
 
     return {
       ready: publicLoaded && authReady && (!userId || loadedUserId === userId),
@@ -626,7 +650,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       planSource,
       planRenews,
       planExpiresAt,
-      isPremium: plan !== "free" || (isSampleMode && local.sampleUnlocked),
+      isPremium,
       isSampleData: isSampleMode || settlements.some((settlement) => settlement.isSample),
       emailReminders,
       error,
@@ -644,6 +668,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       estimates,
       estimateMax: estimates.reduce((total, { estimate }) => total + estimate.amount, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
+      freeClaimAvailable: !isPremium && local.claims.length === 0,
+      canFile: (settlement) => isPremium || local.claims.length === 0 || claimBySettlement.has(settlement.id),
       history,
       peoplePaid: payoutHistory(recentPayouts, new Set()),
       missed: missedPayouts(recentPayouts, matchBrandIds),
@@ -654,6 +680,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleState,
       completeOnboarding,
       markFiled,
+      startFreeClaim,
       markPaid,
       refreshPlan,
       startCheckout,
@@ -684,6 +711,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     toggleState,
     completeOnboarding,
     markFiled,
+    startFreeClaim,
     markPaid,
     refreshPlan,
     startCheckout,

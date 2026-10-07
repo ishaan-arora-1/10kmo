@@ -8,6 +8,7 @@ import {
   daysUntil,
   deadlineLabel,
   isUpcoming,
+  maxTotal,
   pendingCaseFor,
   plural,
   reminderSchedule,
@@ -24,6 +25,8 @@ export function Paywall() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = safeNext(params.get("next"));
+  // Shown right after they file their free claim.
+  const afterFreeClaim = params.get("from") === "free_claim";
   const [plan, setPlan] = useState<WebPlan>("yearly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -33,7 +36,7 @@ export function Paywall() {
   useEffect(() => {
     track("paywall_seen", {
       userId: store.session?.user.id ?? null,
-      detail: target ? target.company : next === "/" ? "dashboard" : next,
+      detail: afterFreeClaim ? "after_free_claim" : target ? target.company : next === "/" ? "dashboard" : next,
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -52,6 +55,7 @@ export function Paywall() {
   const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
   const nearest = target && !isUpcoming(target) ? target : store.nearest;
   const otherClaims = store.toFile.filter((s) => s.id !== target?.id).length;
+  const restMax = maxTotal(store.toFile);
   const filingFeature =
     count === 0
       ? `We watch your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`
@@ -111,8 +115,15 @@ export function Paywall() {
         </button>
       </header>
       <div className="flow-body">
+        {afterFreeClaim && <p className="pw-done">✓ Claim filed. Nice work.</p>}
         <h1 className="flow-title">
-          {target
+          {afterFreeClaim
+            ? count > 0
+              ? count === 1
+                ? "Now file your other claim"
+                : `Now file your other ${count} claims`
+              : "Be first when your companies settle"
+            : target
             ? `Unlock your ${target.company} claim`
             : count > 0
               ? `Your ${count} ${plural(count, "claim is", "claims are")} ready`
@@ -120,7 +131,14 @@ export function Paywall() {
                 ? `${historyHeadline(store.history)}. Don’t miss the next one.`
                 : "Be first when your companies settle"}
         </h1>
-        {target && target.payoutMax > 0 ? (
+        {afterFreeClaim ? (
+          count > 0 &&
+          restMax > 0 && (
+            <p className="pw-total">
+              Up to <b>{cappedTotal(restMax)}</b> more waiting for you. Unlock {count === 1 ? "it" : "them all"} for {yearlyPerMonth}/month.
+            </p>
+          )
+        ) : target && target.payoutMax > 0 ? (
           <p className="pw-total">
             Up to <b>{usd(target.payoutMax)}</b> from this claim
             {otherClaims > 0 && `, plus ${otherClaims} more ${plural(otherClaims, "claim", "claims")} ready to file`}
@@ -239,6 +257,14 @@ export function Paywall() {
               : `Payments are processed securely by Razorpay. ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
         </p>
         <p className="fine-print center">
+          {afterFreeClaim && (
+            <>
+              <button type="button" className="link-btn" onClick={close}>
+                Maybe later
+              </button>
+              {" · "}
+            </>
+          )}
           <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
           {store.session && (
             <>
