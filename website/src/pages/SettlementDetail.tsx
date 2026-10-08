@@ -163,7 +163,8 @@ export function SettlementDetail() {
         </div>
       </section>
 
-      {awaitingReturn && !confirmOpen && (
+      {/* Right after the official site, or any time later for a claim they started. */}
+      {(awaitingReturn || claim?.status === "To file") && !confirmOpen && (
         <div className="notice">
           <b>Finished on the official site?</b>
           <button type="button" className="btn-quiet strong" onClick={() => setConfirmOpen(true)}>
