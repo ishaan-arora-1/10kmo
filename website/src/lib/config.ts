@@ -1,4 +1,10 @@
 /** Replaced everywhere by scripts/set-support-email.sh. */
+/**
+ * "First claim free": free accounts could file one claim without paying (2026-10-07 to 10-09).
+ * Off: filing is locked until they subscribe. Claims they already started stay unlocked.
+ */
+export const FIRST_CLAIM_FREE = false;
+
 export const SUPPORT_EMAIL = "support@claimrightful.com";
 
 /** The plans the website sells. Existing weekly subscriptions still renew, but weekly isn't offered. */
