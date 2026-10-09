@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { BrandSeal, historyHeadline, Monogram } from "../components/ui";
+import { ActivityToast } from "../components/ActivityToast";
+import { BrandSeal, historyHeadline } from "../components/ui";
 import { track } from "../lib/analytics";
 import { PRICE_LABELS, PRICE_VALUES, type WebPlan } from "../lib/config";
 import {
@@ -9,16 +10,18 @@ import {
   deadlineLabel,
   isUpcoming,
   maxTotal,
+  payoutRange,
   pendingCaseFor,
   plural,
-  reminderSchedule,
   safeNext,
-  shortDay,
   usd,
-  usdCents,
+  type Settlement,
 } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
+
+/** Above this, a payout is a documented-loss cap most people won't get. */
+const BIG_CLAIM = 1000;
 
 export function Paywall() {
   const store = useStore();
@@ -54,36 +57,36 @@ export function Paywall() {
   // Same total as the results screen and dashboard.
   const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
   const nearest = target && !isUpcoming(target) ? target : store.nearest;
-  const otherClaims = store.toFile.filter((s) => s.id !== target?.id).length;
   const restMax = maxTotal(store.toFile);
-  const filingFeature =
-    count === 0
-      ? `We watch your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`
-      : count === 1
-        ? "Step-by-step filing for your match"
-        : count === 2
-          ? "Step-by-step filing for both of your matches"
-          : `Step-by-step filing for all ${count} of your matches`;
+
+  // The bill: claims they can file now, the one they came from first, then biggest first.
+  // Caps over $1,000 (documented losses, e.g. car theft) count at their typical payout.
+  const fileable = store.toFile
+    .filter((s) => !isUpcoming(s))
+    .sort(
+      (a, b) =>
+        Number(b.id === target?.id) - Number(a.id === target?.id) ||
+        Number(b.payoutMax > 0) - Number(a.payoutMax > 0) ||
+        b.payoutMax - a.payoutMax,
+    );
+  const counted = (s: Settlement) => (s.payoutMax <= BIG_CLAIM ? s.payoutMax : (s.payoutTypical ?? 0));
+  const billTotal = fileable.reduce((total, s) => total + counted(s), 0);
+  const shown = fileable.slice(0, 5);
+  const rest = fileable.slice(5);
+  const anyBig = fileable.some((s) => s.payoutMax > BIG_CLAIM);
+  const price = PRICE_VALUES[plan];
+  // Whole dollars, rounded down, so it never overstates.
+  const keep = Math.floor(billTotal - price);
+  const closingSoon = fileable.filter((s) => daysUntil(s.deadline) <= 30).length;
+  const showBill = billTotal > 0;
 
   // Accounts go back to where they were; the dashboard stays open to them.
   const close = () => navigate(store.session || isSampleMode ? next : "/start", { replace: true });
 
-  // Display only: personalizes what the plan includes. Nothing here affects checkout.
-  const filingBrands = [...new Set(store.toFile.map((s) => s.brandId))]
-    .map((id) => store.brandById(id))
-    .filter((brand) => brand !== undefined);
-  const filingNames = filingBrands.slice(0, 3).map((brand) => brand.name);
-  const reminderDays = [...new Set(reminderSchedule([...store.matched, ...store.featured]).map((r) => r.sendOn))]
-    .slice(0, 3)
-    .map(shortDay);
   const openBrandIds = new Set(store.matched.map((s) => s.brandId));
   const pendingNames = store.brands
     .filter((brand) => store.selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand))
     .map((brand) => brand.name);
-  const biggestClaim = Math.max(0, ...store.toFile.map((s) => s.payoutMax));
-  const yearlyPrice = PRICE_VALUES.yearly;
-  // Yearly shown per month, and what it saves against paying monthly for a year.
-  const yearlyPerMonth = usdCents(Math.floor((PRICE_VALUES.yearly / 12) * 100) / 100);
   const yearlySaving = Math.floor((1 - PRICE_VALUES.yearly / (PRICE_VALUES.monthly * 12)) * 100);
 
   const subscribe = async () => {
@@ -98,13 +101,16 @@ export function Paywall() {
     }
   };
 
+  const priceLabel = PRICE_LABELS[plan];
   const buttonLabel = busy
     ? "Opening secure checkout…"
     : isSampleMode
       ? "Unlock sample"
-      : plan === "yearly"
-        ? `Subscribe for ${PRICE_LABELS.yearly}/year`
-        : `Subscribe for ${PRICE_LABELS.monthly}/month`;
+      : showBill
+        ? `Claim my ${usd(billTotal)} for ${priceLabel}`
+        : plan === "yearly"
+          ? `Subscribe for ${PRICE_LABELS.yearly}/year`
+          : `Subscribe for ${PRICE_LABELS.monthly}/month`;
 
   return (
     <div className="flow narrow">
@@ -117,124 +123,83 @@ export function Paywall() {
       <div className="flow-body">
         {afterFreeClaim && <p className="pw-done">✓ Claim filed. Nice work.</p>}
         <h1 className="flow-title">
-          {afterFreeClaim
-            ? count > 0
-              ? count === 1
-                ? "Now file your other claim"
-                : `Now file your other ${count} claims`
-              : "Be first when your companies settle"
-            : target
-            ? `Unlock your ${target.company} claim`
-            : count > 0
-              ? `Your ${count} ${plural(count, "claim is", "claims are")} ready`
-              : store.history.total > 0
-                ? `${historyHeadline(store.history)}. Don’t miss the next one.`
-                : "Be first when your companies settle"}
+          {showBill
+            ? `Pay ${priceLabel}. Claim up to ${usd(billTotal)}.`
+            : afterFreeClaim
+              ? "Be first when your companies settle"
+              : count > 0
+                ? `Your ${count} ${plural(count, "claim is", "claims are")} ready`
+                : store.history.total > 0
+                  ? `${historyHeadline(store.history)}. Don’t miss the next one.`
+                  : "Be first when your companies settle"}
         </h1>
-        {afterFreeClaim ? (
-          count > 0 &&
-          restMax > 0 && (
-            <p className="pw-total">
-              Up to <b>{cappedTotal(restMax)}</b> more waiting for you. Unlock {count === 1 ? "it" : "them all"} for {PRICE_LABELS.monthly}/month.
-            </p>
-          )
-        ) : target && target.payoutMax > 0 ? (
-          <p className="pw-total">
-            Up to <b>{usd(target.payoutMax)}</b> from this claim
-            {otherClaims > 0 && `, plus ${otherClaims} more ${plural(otherClaims, "claim", "claims")} ready to file`}
-          </p>
-        ) : (
-          upTo > 0 && (
-            <p className="pw-total">
-              Up to <b>{cappedTotal(upTo)}</b>{" "}
-              {store.waitingMax + store.featuredMax > 0 ? "waiting for you" : "tied to your companies"}
-            </p>
-          )
-        )}
-        {nearest ? (
-          <div className="deadline-strip">
-            <b>{nearest === target ? "Deadline to file" : "Your first deadline"}</b>
-            <span>
-              {deadlineLabel(nearest)} · {daysUntil(nearest.deadline)}{" "}
-              {plural(daysUntil(nearest.deadline), "day", "days")}
-            </span>
-          </div>
-        ) : (
-          <p className="muted">Rightful guides every filing and keeps each claim on track until you’re paid.</p>
-        )}
 
-        <h2 className="past-year-title">What you get with Rightful</h2>
-        <ul className="features">
-          <li>
-            <span>
-              {count > 0 && filingNames.length > 0 ? (
-                <>
-                  Step-by-step filing guides for {filingNames.join(", ")}
-                  {filingBrands.length > filingNames.length && ` (+${filingBrands.length - filingNames.length} more)`}
-                  <span className="pw-logos" aria-hidden="true">
-                    {filingBrands.slice(0, 6).map((brand) => (
-                      <Monogram key={brand.id} brand={brand} name={brand.name} size={26} />
-                    ))}
+        {showBill ? (
+          <>
+            {target && !isUpcoming(target) && (
+              <p className="pw-total">Starting with your {target.company} claim.</p>
+            )}
+            <div className="bill" aria-label="Your claims compared with the price of Rightful">
+              <p className="bill-label">Your claims</p>
+              {shown.map((s) => (
+                <div key={s.id} className={`bill-row${s.id === target?.id ? " target" : ""}`}>
+                  <span>
+                    {s.company} · {s.title}
                   </span>
-                </>
-              ) : (
-                filingFeature
+                  <span className="bill-amt">
+                    {s.payoutMax > 0 ? payoutRange(s) : "Varies"}
+                    {s.payoutMax > BIG_CLAIM && "*"}
+                  </span>
+                </div>
+              ))}
+              {rest.length > 0 && (
+                <div className="bill-row">
+                  <span>
+                    + {rest.length} more {plural(rest.length, "claim", "claims")}
+                  </span>
+                  <span className="bill-amt">
+                    {rest.reduce((t, s) => t + counted(s), 0) > 0
+                      ? `up to ${usd(rest.reduce((t, s) => t + counted(s), 0))}`
+                      : "Varies"}
+                  </span>
+                </div>
               )}
-            </span>
-          </li>
-          <li>Verified official claim links, so you never land on a fake site</li>
-          <li>
-            {reminderDays.length > 0
-              ? `Email reminders before your deadlines: ${reminderDays.join(" · ")}`
-              : "Email reminders before every deadline"}
-          </li>
-          <li>
-            {pendingNames.length > 0
-              ? `First to know when the ${pendingNames.join(" and ")} case opens for claims`
-              : "First to know when your companies settle"}
-          </li>
-          <li>A tracker for every claim until you’re paid</li>
-        </ul>
-        {count > 0 && yearlyPrice > 0 && biggestClaim >= yearlyPrice && (
-          <p className="pw-value">
-            Just one of your claims (up to {usd(biggestClaim)}) could cover a whole year of Rightful.
-          </p>
+              <div className="bill-row sum">
+                <span>You could claim</span>
+                <span className="bill-amt">up to {usd(billTotal)}</span>
+              </div>
+              <div className="bill-row">
+                <span>Rightful, {plan === "yearly" ? "1 year" : "1 month"}</span>
+                <span className="bill-amt minus">−{priceLabel}</span>
+              </div>
+              {keep > 0 && (
+                <div className="bill-row keep">
+                  <span>You could keep</span>
+                  <span className="bill-amt">up to {usd(keep)}</span>
+                </div>
+              )}
+              {anyBig && (
+                <p className="bill-note">
+                  * Counted at its typical payout in your total. The maximum needs proof of loss.
+                </p>
+              )}
+            </div>
+            <p className="pw-lines">
+              {plan === "monthly" ? "File them all this month, cancel anytime." : "File them all, and every new claim this year."}
+              <br />
+              {closingSoon > 0
+                ? `${closingSoon === fileable.length && closingSoon === 1 ? "Your claim closes" : `${closingSoon} of your claims close`} in the next 30 days.`
+                : nearest && `Your first claim closes ${deadlineLabel(nearest)}.`}
+            </p>
+          </>
+        ) : (
+          upTo > 0 &&
+          !afterFreeClaim && (
+            <p className="pw-total">
+              Up to <b>{cappedTotal(upTo)}</b> {restMax > 0 ? "waiting for you" : "tied to your companies"}
+            </p>
+          )
         )}
-
-        <fieldset className="plans">
-          <legend className="visually-hidden">Choose a plan</legend>
-          <label className={`plan-option${plan === "monthly" ? " on" : ""}`} htmlFor="plan-monthly">
-            <input
-              id="plan-monthly"
-              type="radio"
-              name="plan"
-              checked={plan === "monthly"}
-              onChange={() => setPlan("monthly")}
-            />
-            <span className="plan-text">
-              <b>Monthly</b>
-              <span>{PRICE_LABELS.monthly}/month · cancel anytime</span>
-            </span>
-          </label>
-          <label className={`plan-option${plan === "yearly" ? " on" : ""}`} htmlFor="plan-yearly">
-            <input
-              id="plan-yearly"
-              type="radio"
-              name="plan"
-              checked={plan === "yearly"}
-              onChange={() => setPlan("yearly")}
-            />
-            <span className="plan-text">
-              <b>
-                Yearly{" "}
-                <span className="badge">{yearlySaving > 0 ? `Best value · save ${yearlySaving}%` : "Best value"}</span>
-              </b>
-              <span>
-                {yearlyPerMonth}/month, billed {PRICE_LABELS.yearly}/year
-              </span>
-            </span>
-          </label>
-        </fieldset>
 
         {message && (
           <p className="error-text" role="alert">
@@ -242,13 +207,37 @@ export function Paywall() {
           </p>
         )}
 
-        <p className="fine-print center">
-          US settlements only. You qualify if you used these companies while living in the United States.
-        </p>
-
         <button type="button" className="btn block" onClick={subscribe} disabled={busy}>
           {buttonLabel}
         </button>
+        <p className="pw-plan">
+          {plan === "monthly" ? `${PRICE_LABELS.monthly}/month · cancel anytime` : `${PRICE_LABELS.yearly} billed yearly · cancel anytime`}
+          <br />
+          <button type="button" className="link-btn" onClick={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
+            {plan === "monthly"
+              ? `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
+              : `or ${PRICE_LABELS.monthly}/month`}
+          </button>
+        </p>
+
+        <ul className="features compact">
+          <li>
+            {count > 0
+              ? `Step-by-step filing for ${count === 1 ? "your claim" : count === 2 ? "both of your claims" : `all ${count} of your claims`}`
+              : `We watch your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`}
+          </li>
+          <li>Verified official claim links, so you never land on a fake site</li>
+          <li>
+            {pendingNames.length > 0
+              ? `First to know when the ${pendingNames.join(" and ")} case opens for claims`
+              : "A tracker for every claim until you’re paid"}
+          </li>
+        </ul>
+
+        <p className="fine-print center">
+          US settlements only. Amounts are the most each settlement pays, from court filings; most people get less.
+          Payouts come from each settlement’s administrator, usually months after its deadline.
+        </p>
         <p className="fine-print center">
           {isSampleMode
             ? "Sample mode: no payment is taken."
@@ -276,6 +265,7 @@ export function Paywall() {
           )}
         </p>
       </div>
+      <ActivityToast />
     </div>
   );
 }
