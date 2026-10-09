@@ -57,7 +57,7 @@ npx expo start
 ```
 
 - **Expo Go** (scan the QR code) runs everything except App Store purchases; StoreKit isn't part of Expo Go.
-- **Purchases** need a development build on a real iPhone: `npx eas-cli@latest build --profile development --platform ios`. Sign in on the iPhone with a Sandbox Apple ID (Settings → App Store → Sandbox Account).
+- **Purchases** need a real build. The simplest is TestFlight (see "Build and submit" below): TestFlight purchases are free test purchases with your own Apple ID. For a development build that reloads code live instead: `npx eas-cli@latest device:create`, then `npx eas-cli@latest build --profile development --platform ios`, and sign in on the iPhone with a Sandbox Apple ID (Settings → Developer → Sandbox Apple Account).
 
 Without `.env.local` the app runs in clearly labeled sample mode, like the website. Never ship a store build without the Supabase values.
 
@@ -137,7 +137,9 @@ npx eas-cli@latest build --platform ios --profile production
 npx eas-cli@latest submit --platform ios
 ```
 
-Test on TestFlight with a Sandbox Apple ID before submitting for review:
+`submit` uploads the build to TestFlight. It does not send the app for review. Once Apple finishes processing (about 10–30 minutes), add yourself under TestFlight → Internal Testing and install the TestFlight app on your iPhone. In-app purchases in TestFlight are free test purchases, and subscriptions renew every few minutes.
+
+Test on TestFlight before submitting for review:
 
 - buy monthly
 - Restore Purchases on a reinstall
