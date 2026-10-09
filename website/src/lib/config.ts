@@ -7,7 +7,7 @@ export type WebPlan = "yearly" | "monthly";
 /** Display prices; they must match the plans created in Razorpay. */
 export const PRICE_LABELS: Record<WebPlan, string> = {
   yearly: import.meta.env.VITE_PRICE_YEARLY || "$39.99",
-  monthly: import.meta.env.VITE_PRICE_MONTHLY || "$9.99",
+  monthly: import.meta.env.VITE_PRICE_MONTHLY || "$4.99",
 };
 
 /** The same prices as numbers, for per-month math and ad-conversion values. */
