@@ -53,6 +53,16 @@ Without `.env.local` the web app runs in clearly labeled sample mode. Web sign-i
 
 For production setup, follow `LAUNCH.md` step by step.
 
+## Run the mobile app
+
+The `mobile/` folder is the ClaimRightful app for iPhone and Android (Expo / React Native). It mirrors the web app's design and flows and uses the same Supabase backend and Razorpay plans. See `mobile/README.md`.
+
+```bash
+cd mobile
+npm install
+npx expo start
+```
+
 ## Connect Supabase
 
 1. Create a Supabase project.

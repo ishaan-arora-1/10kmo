@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "ClaimRightful",
+    "slug": "claimrightful",
+    "scheme": "claimrightful",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#F1F5F0",
+    "ios": {
+      "bundleIdentifier": "com.claimrightful.app",
+      "supportsTablet": false,
+      "config": { "usesNonExemptEncryption": false },
+      "infoPlist": {
+        "CFBundleDisplayName": "ClaimRightful"
+      }
+    },
+    "android": {
+      "package": "com.claimrightful.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F1F5F0",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#F1F5F0",
+          "dark": { "image": "./assets/splash-icon-dark.png", "backgroundColor": "#0B120F" }
+        }
+      ],
+      "expo-sqlite",
+      "expo-font",
+      "expo-web-browser",
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
