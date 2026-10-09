@@ -103,6 +103,8 @@ export function Home() {
   const unlock = `/paywall?next=${encodeURIComponent("/")}`;
   const locked = toFile.filter((settlement) => !store.canFile(settlement));
   const lockedMax = maxTotal(locked);
+  // Accounts that used a free claim while it was offered keep that one claim unlocked.
+  const usedFreeClaim = store.claims.length > 0;
 
   return (
     <div className="page">
@@ -135,11 +137,11 @@ export function Home() {
           <Link to={unlock} className="unlock-strip">
             <LockIcon />
             <span>
-              <b>{store.freeClaimAvailable ? "Free plan" : "Free claim used"}</b>
+              <b>{usedFreeClaim ? "Free claim used" : "Free plan"}</b>
               <span>
                 {locked.length > 0
                   ? `Unlock your ${
-                      store.freeClaimAvailable
+                      !usedFreeClaim
                         ? `${locked.length} ${plural(locked.length, "claim", "claims")}`
                         : locked.length === 1
                           ? "other claim"
