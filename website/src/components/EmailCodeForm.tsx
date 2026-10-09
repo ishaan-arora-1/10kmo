@@ -4,6 +4,34 @@ import { supabase } from "../lib/supabase";
 
 const RESEND_WAIT_SECONDS = 60;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SENT_KEY = "rightful.codeSentAt";
+
+/**
+ * When we last sent a code to each address. Supabase refuses a new code to the same address
+ * within 60 seconds, so this survives "Use a different email" and page reloads in this tab.
+ */
+function lastSent(address: string): number {
+  try {
+    const map = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "{}") as Record<string, number>;
+    return map[address] ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+function rememberSent(address: string): void {
+  try {
+    const map = JSON.parse(sessionStorage.getItem(SENT_KEY) ?? "{}") as Record<string, number>;
+    map[address] = Date.now();
+    sessionStorage.setItem(SENT_KEY, JSON.stringify(map));
+  } catch {
+    // Storage blocked: the in-page countdown still works.
+  }
+}
+
+function secondsUntilResend(address: string): number {
+  return Math.max(0, Math.ceil(RESEND_WAIT_SECONDS - (Date.now() - lastSent(address)) / 1000));
+}
 
 /** Instagram and Facebook open ad links in their own browser; recorded so we can compare sign-in rates. */
 export function browserKind(): string {
@@ -39,26 +67,40 @@ export function EmailCodeForm({
     return () => window.clearTimeout(timer);
   }, [resendIn]);
 
+  const showCodeStep = (address: string) => {
+    setCodeSentTo(address);
+    onCodeSent?.(address);
+    setCode("");
+    setResendIn(secondsUntilResend(address));
+  };
+
   const sendCode = async (address: string) => {
-    if (!supabase) return;
+    if (!supabase || busy) return;
+    // A code went to this address under a minute ago: reuse it instead of asking Supabase again.
+    if (secondsUntilResend(address) > 0) {
+      setMessage(null);
+      showCodeStep(address);
+      return;
+    }
     setBusy(true);
     setMessage(null);
     const { error } = await supabase.auth.signInWithOtp({ email: address, options: { shouldCreateUser: true } });
     setBusy(false);
     if (error) {
       track("signin_code_failed", { detail: `send: ${error.status ?? "error"}` });
-      setMessage(
-        error.status === 429
-          ? "Too many codes requested. Wait a minute and try again."
-          : "We couldn’t send a code to that email. Check it and try again.",
-      );
+      if (error.status === 429) {
+        // Supabase is still holding a recent code for this address: wait it out on the code screen.
+        rememberSent(address);
+        showCodeStep(address);
+        setMessage("A code was sent to this email moments ago. Check your inbox (and spam), or resend when the timer ends.");
+      } else {
+        setMessage("We couldn’t send a code to that email. Check it and try again.");
+      }
       return;
     }
     track("signin_code_sent", { detail: browserKind() });
-    setCodeSentTo(address);
-    onCodeSent?.(address);
-    setCode("");
-    setResendIn(RESEND_WAIT_SECONDS);
+    rememberSent(address);
+    showCodeStep(address);
   };
 
   const submitEmail = (event: FormEvent) => {
@@ -85,7 +127,7 @@ export function EmailCodeForm({
     if (error) {
       setBusy(false);
       track("signin_code_failed", { detail: `verify: ${error.status ?? "error"}` });
-      setMessage("That code didn’t work. It may be mistyped or expired. Try again or send a new code.");
+      setMessage("That code didn’t work. Check for a typo, and use the code from the newest email.");
       return;
     }
     track("signin_code_verified");
@@ -104,7 +146,8 @@ export function EmailCodeForm({
       {codeSentTo ? (
         <>
           <p className="muted">
-            We sent a 6-digit code to <b>{codeSentTo}</b>. It can take a minute, and it may land in spam.
+            We sent a 6-digit code to <b>{codeSentTo}</b>. It can take a minute, and it may land in spam. If
+            you asked for more than one, use the code in the newest email.
           </p>
           <form className="signin-form" onSubmit={submitCode}>
             <label className="field-label" htmlFor="signin-code">
@@ -132,7 +175,9 @@ export function EmailCodeForm({
               disabled={busy || resendIn > 0}
               onClick={() => void sendCode(codeSentTo)}
             >
-              {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
+              {resendIn > 0
+                ? `Didn’t get it? Resend in ${Math.floor(resendIn / 60)}:${String(resendIn % 60).padStart(2, "0")}`
+                : "Resend code"}
             </button>
             <button type="button" className="btn-quiet" onClick={changeEmail}>
               Use a different email
