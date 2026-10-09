@@ -27,7 +27,7 @@ export function Paywall() {
   const next = safeNext(params.get("next"));
   // Shown right after they file their free claim.
   const afterFreeClaim = params.get("from") === "free_claim";
-  const [plan, setPlan] = useState<WebPlan>("yearly");
+  const [plan, setPlan] = useState<WebPlan>("monthly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   // Opened from a settlement's "File your claim" button: lead with that claim.
@@ -135,7 +135,7 @@ export function Paywall() {
           count > 0 &&
           restMax > 0 && (
             <p className="pw-total">
-              Up to <b>{cappedTotal(restMax)}</b> more waiting for you. Unlock {count === 1 ? "it" : "them all"} for {yearlyPerMonth}/month.
+              Up to <b>{cappedTotal(restMax)}</b> more waiting for you. Unlock {count === 1 ? "it" : "them all"} for {PRICE_LABELS.monthly}/month.
             </p>
           )
         ) : target && target.payoutMax > 0 ? (
@@ -203,6 +203,19 @@ export function Paywall() {
 
         <fieldset className="plans">
           <legend className="visually-hidden">Choose a plan</legend>
+          <label className={`plan-option${plan === "monthly" ? " on" : ""}`} htmlFor="plan-monthly">
+            <input
+              id="plan-monthly"
+              type="radio"
+              name="plan"
+              checked={plan === "monthly"}
+              onChange={() => setPlan("monthly")}
+            />
+            <span className="plan-text">
+              <b>Monthly</b>
+              <span>{PRICE_LABELS.monthly}/month · cancel anytime</span>
+            </span>
+          </label>
           <label className={`plan-option${plan === "yearly" ? " on" : ""}`} htmlFor="plan-yearly">
             <input
               id="plan-yearly"
@@ -219,19 +232,6 @@ export function Paywall() {
               <span>
                 {yearlyPerMonth}/month, billed {PRICE_LABELS.yearly}/year
               </span>
-            </span>
-          </label>
-          <label className={`plan-option${plan === "monthly" ? " on" : ""}`} htmlFor="plan-monthly">
-            <input
-              id="plan-monthly"
-              type="radio"
-              name="plan"
-              checked={plan === "monthly"}
-              onChange={() => setPlan("monthly")}
-            />
-            <span className="plan-text">
-              <b>Monthly</b>
-              <span>{PRICE_LABELS.monthly}/month · cancel anytime</span>
             </span>
           </label>
         </fieldset>

@@ -73,9 +73,12 @@ export function timingSafeEqual(a: string, b: string): boolean {
   return difference === 0;
 }
 
+// Earlier prices whose subscriptions still renew: the $9.99 monthly plan (replaced by $4.99 on 2026-10-09).
+const legacyMonthlyPlanIds = new Set(["plan_TkXVXvmIPoljps"]);
+
 export function planForId(planId: string): WebPlan | null {
   if (planId && planId === planIds.yearly) return "yearly";
-  if (planId && planId === planIds.monthly) return "monthly";
+  if (planId && (planId === planIds.monthly || legacyMonthlyPlanIds.has(planId))) return "monthly";
   if (planId && planId === planIds.weekly) return "weekly";
   return null;
 }
