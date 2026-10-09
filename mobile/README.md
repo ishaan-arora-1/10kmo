@@ -102,7 +102,7 @@ npx supabase functions deploy verify-purchase
 npx supabase functions deploy app-store-notifications --no-verify-jwt
 ```
 
-`APPLE_APP_ID` is the numeric Apple ID shown in App Store Connect → App Information. Keep `APPLE_TRANSACTION_ENVIRONMENT=both`: App Review buys with Sandbox accounts. Both functions bundle Apple's root certificates, so deploy them with Docker running (not `--use-api`).
+`APPLE_APP_ID` is the numeric Apple ID shown in App Store Connect → App Information. Keep `APPLE_TRANSACTION_ENVIRONMENT=both`: App Review buys with Sandbox accounts.
 
 ### 2. App Store Connect
 

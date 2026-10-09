@@ -4,6 +4,7 @@ import {
   SignedDataVerifier,
 } from "npm:@apple/app-store-server-library@3.1.0";
 import { withSupabase } from "npm:@supabase/server@1.5.2";
+import { appleRootCertificates } from "../_shared/apple-root-certificates.ts";
 import type { Database } from "../_shared/database.types.ts";
 
 const bundleID = Deno.env.get("APPLE_BUNDLE_ID") ?? "com.claimrightful.app";
@@ -17,10 +18,7 @@ const validProducts: ReadonlyMap<string, "yearly" | "monthly" | "weekly"> =
     ["com.rightful.app.weekly", "weekly"],
   ]);
 
-const roots = await Promise.all([
-  Deno.readFile(new URL("../_shared/AppleRootCA-G2.cer", import.meta.url)),
-  Deno.readFile(new URL("../_shared/AppleRootCA-G3.cer", import.meta.url)),
-]);
+const roots = appleRootCertificates;
 
 type RequestBody = {
   signedTransaction?: string;
