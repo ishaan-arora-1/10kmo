@@ -11,7 +11,7 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { randomUUID } from "expo-crypto";
-import { AppState } from "react-native";
+import { AppState, Linking } from "react-native";
 import {
   brandEstimates,
   brandFromRow,
@@ -37,7 +37,9 @@ import {
 } from "./models";
 import { track } from "./analytics";
 import { useCheckout } from "./checkout";
-import { SUPPORT_EMAIL, type WebPlan } from "./config";
+import { PRICE_LABELS, PRICE_VALUES, SUPPORT_EMAIL, type WebPlan } from "./config";
+import * as AppStore from "./iap";
+import type { AppleEntitlement, StorePrice, TransactionHandler } from "./iap-types";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
 
@@ -175,6 +177,18 @@ export interface Store {
   markPaid(claimId: string, amount: number): Promise<void>;
   refreshPlan(): Promise<Plan>;
   startCheckout(plan: WebPlan): Promise<CheckoutResult>;
+  /** Plan prices: the App Store's localized prices on iPhone, the website's labels elsewhere. */
+  prices: Record<WebPlan, StorePrice>;
+  /** iPhone: the App Store returned both subscriptions, so they can be bought. */
+  storeProductsLoaded: boolean;
+  /** iPhone: an active App Store subscription on this device's Apple ID. */
+  appleEntitlement: AppleEntitlement | null;
+  /** The website sells to accounts only; the App Store lets people subscribe before signing up. */
+  purchaseNeedsAccount: boolean;
+  /** Restore Purchases (App Store), or re-check the account's plan elsewhere. */
+  restorePurchases(): Promise<"restored" | "none" | "failed">;
+  /** Opens the App Store's subscription management. */
+  manageAppleSubscription(): Promise<void>;
   /** Returns when access ends ("" if it ended now), or null if cancellation failed. */
   cancelSubscription(): Promise<string | null>;
   setEmailReminders(on: boolean): Promise<void>;
@@ -202,6 +216,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
   /** The account whose plan has been loaded, so members aren't sent to onboarding before it arrives. */
   const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
+  const [appleEntitlement, setAppleEntitlement] = useState<AppleEntitlement | null>(null);
+  const [storePrices, setStorePrices] = useState<Partial<Record<WebPlan, StorePrice>>>({});
+  /** Whether the App Store has been asked about an existing subscription (or there's no App Store). */
+  const [appleChecked, setAppleChecked] = useState(!AppStore.IAP_AVAILABLE || isSampleMode);
 
   const localRef = useRef(local);
   const settlementsRef = useRef(settlements);
@@ -260,6 +278,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // A plan only counts for the account it was loaded for, so signing out drops it at once.
   const { plan, source: planSource, renews: planRenews, expiresAt: planExpiresAt, emailReminders } =
     userId && planState.userId === userId ? planState : NO_PLAN;
+  const userIdRef = useRef(userId);
+  useLayoutEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
 
   const pushClaims = useCallback(async (claims: Claim[], uid: string) => {
     const client = supabase;
@@ -489,6 +511,87 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return next.plan;
   }, [userId]);
 
+  // App Store subscriptions are verified by the verify-purchase function and stored on the account,
+  // so they unlock the website too. Each signed transaction is sent once per account.
+  const linkedRef = useRef(new Set<string>());
+  const linkApplePurchase = useCallback(
+    async (entitlement: AppleEntitlement, uid: string) => {
+      const client = supabase;
+      if (!client || !entitlement.signedTransaction) return;
+      const key = `${uid}:${entitlement.signedTransaction}`;
+      if (linkedRef.current.has(key)) return;
+      linkedRef.current.add(key);
+      const { data, error: invokeError } = await client.functions.invoke<{ verified?: boolean }>("verify-purchase", {
+        body: { signedTransaction: entitlement.signedTransaction },
+      });
+      if (invokeError || !data?.verified) {
+        const status = (invokeError as { context?: { status?: number } } | null)?.context?.status;
+        if (status === 409) {
+          setError("This App Store subscription is linked to a different ClaimRightful account. It still works on this iPhone.");
+        } else {
+          linkedRef.current.delete(key); // Try again next time.
+        }
+        return;
+      }
+      if (userIdRef.current === uid) await refreshPlan();
+    },
+    [refreshPlan],
+  );
+
+  // Every App Store transaction (a purchase, a renewal, or one replayed at launch) unlocks this
+  // device and, when signed in, is saved to the account.
+  const onTransactionRef = useRef<TransactionHandler>(async () => undefined);
+  useLayoutEffect(() => {
+    onTransactionRef.current = async (entitlement) => {
+      setAppleEntitlement(entitlement);
+      const uid = userIdRef.current;
+      if (uid) await linkApplePurchase(entitlement, uid);
+    };
+  });
+
+  useEffect(() => {
+    if (!AppStore.IAP_AVAILABLE || isSampleMode) return;
+    let cancelled = false;
+    let disconnect: (() => void) | null = null;
+    // Never hold the app on the App Store: carry on without it after a few seconds.
+    const giveUp = setTimeout(() => setAppleChecked(true), 4000);
+    void (async () => {
+      const stop = await AppStore.connectStore((entitlement) => onTransactionRef.current(entitlement));
+      if (cancelled) {
+        stop();
+        return;
+      }
+      disconnect = stop;
+      const [entitlement, prices] = await Promise.all([
+        AppStore.currentEntitlement().catch(() => null),
+        AppStore.loadPrices().catch(() => ({})),
+      ]);
+      if (cancelled) return;
+      setAppleEntitlement(entitlement);
+      setStorePrices(prices);
+      setAppleChecked(true);
+      clearTimeout(giveUp);
+    })();
+    const foreground = AppState.addEventListener("change", (state) => {
+      // Renewals, cancellations, and refunds show up when the app comes back.
+      if (state === "active") void AppStore.currentEntitlement().then(setAppleEntitlement, () => undefined);
+    });
+    return () => {
+      cancelled = true;
+      clearTimeout(giveUp);
+      foreground.remove();
+      disconnect?.();
+    };
+  }, []);
+
+  // Subscribed before signing in (or on another account's device): save it to the account once synced.
+  useEffect(() => {
+    if (!appleEntitlement || !userId || syncedUserId !== userId || plan !== "free") return;
+    // A network request: its state updates happen after the server answers, not during the effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void linkApplePurchase(appleEntitlement, userId);
+  }, [appleEntitlement, userId, syncedUserId, plan, linkApplePurchase]);
+
   const startCheckout = useCallback(
     async (chosen: WebPlan): Promise<CheckoutResult> => {
       const client = supabase;
@@ -498,6 +601,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
 
       const userId = session?.user.id ?? null;
+
+      // iPhone: the App Store sells the subscription (StoreKit in-app purchase).
+      if (AppStore.IAP_AVAILABLE) {
+        track("checkout_opened", { plan: chosen, userId, detail: "app_store" });
+        const outcome = await AppStore.buy(chosen, userId);
+        if (outcome.type === "purchased") {
+          track("checkout_paid", { plan: chosen, userId, detail: "app_store" });
+          return { ok: true };
+        }
+        if (outcome.type === "cancelled") {
+          track("checkout_dismissed", { plan: chosen, userId, detail: "app_store" });
+          return { ok: false, cancelled: true };
+        }
+        if (outcome.type === "pending") {
+          return {
+            ok: false,
+            message: "Your purchase is waiting for approval. Filing unlocks as soon as it’s approved.",
+          };
+        }
+        track("checkout_failed", { plan: chosen, userId, detail: `app_store: ${outcome.message}` });
+        return { ok: false, message: outcome.message };
+      }
+
       track("checkout_opened", { plan: chosen, userId });
       const { data, error: invokeError } = await client.functions.invoke<{
         subscription_id?: string;
@@ -566,6 +692,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     return () => subscription.remove();
   }, [userId, refreshPlan]);
+
+  const restorePurchases = useCallback(async (): Promise<"restored" | "none" | "failed"> => {
+    if (!AppStore.IAP_AVAILABLE || isSampleMode) {
+      return userId && (await refreshPlan()) !== "free" ? "restored" : "none";
+    }
+    try {
+      const entitlement = await AppStore.restore();
+      setAppleEntitlement(entitlement);
+      if (entitlement) {
+        if (userId) await linkApplePurchase(entitlement, userId);
+        return "restored";
+      }
+      return userId && (await refreshPlan()) !== "free" ? "restored" : "none";
+    } catch {
+      return "failed";
+    }
+  }, [userId, refreshPlan, linkApplePurchase]);
+
+  const manageAppleSubscription = useCallback(async () => {
+    try {
+      await AppStore.manageSubscriptions();
+    } catch {
+      await Linking.openURL("https://apps.apple.com/account/subscriptions").catch(() => undefined);
+    }
+  }, []);
 
   const cancelSubscription = useCallback(async (): Promise<string | null> => {
     const client = supabase;
@@ -653,10 +804,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const settlementMap = new Map(settlements.map((settlement) => [settlement.id, settlement]));
     const featured = featuredSettlements(settlements, matched);
     const toFile = [...unfiled, ...featured.filter(notFiled)];
-    const isPremium = plan !== "free" || (isSampleMode && local.sampleUnlocked);
+    const isPremium = plan !== "free" || appleEntitlement !== null || (isSampleMode && local.sampleUnlocked);
 
     return {
-      ready: publicLoaded && authReady && (!userId || loadedUserId === userId),
+      ready: publicLoaded && authReady && appleChecked && (!userId || loadedUserId === userId),
       brands,
       settlements,
       selectedBrandIds,
@@ -702,6 +853,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markPaid,
       refreshPlan,
       startCheckout,
+      prices: {
+        monthly: storePrices.monthly ?? { label: PRICE_LABELS.monthly, value: PRICE_VALUES.monthly },
+        yearly: storePrices.yearly ?? { label: PRICE_LABELS.yearly, value: PRICE_VALUES.yearly },
+      },
+      storeProductsLoaded: Boolean(storePrices.monthly && storePrices.yearly),
+      appleEntitlement,
+      purchaseNeedsAccount: !AppStore.IAP_AVAILABLE && !isSampleMode,
+      restorePurchases,
+      manageAppleSubscription,
       cancelSubscription,
       setEmailReminders,
       signOut,
@@ -733,6 +893,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     markPaid,
     refreshPlan,
     startCheckout,
+    storePrices,
+    appleEntitlement,
+    appleChecked,
+    restorePurchases,
+    manageAppleSubscription,
     cancelSubscription,
     setEmailReminders,
     signOut,

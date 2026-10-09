@@ -7,6 +7,7 @@ import { Button, FinePrint, PageTitle, QuietButton, SectionLabel, Sheet, Toggle,
 import { PageScreen } from "@/components/screens";
 import { StatePicker } from "@/components/StatePicker";
 import { APP_VERSION, EMAIL_REMINDERS_ENABLED, SUPPORT_EMAIL } from "@/lib/config";
+import { IAP_AVAILABLE } from "@/lib/iap";
 import { goTo, openWebsite } from "@/lib/nav";
 import { useStore } from "@/lib/store";
 import { isSampleMode } from "@/lib/supabase";
@@ -25,13 +26,31 @@ export default function Profile() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [working, setWorking] = useState(false);
   const [cancelNote, setCancelNote] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
 
   const email = store.session?.user.email ?? null;
-  const planName = store.plan === "free" ? null : { yearly: "Yearly", monthly: "Monthly", weekly: "Weekly" }[store.plan];
+  const apple = store.appleEntitlement;
+  // The account's plan, or an App Store subscription on this iPhone that isn't saved to an account yet.
+  const activePlan = store.plan !== "free" ? store.plan : apple?.plan ?? null;
+  const planName = activePlan ? { yearly: "Yearly", monthly: "Monthly", weekly: "Weekly" }[activePlan] : null;
+  const billedByApple = store.planSource === "apple" || (store.plan === "free" && apple !== null);
 
   const upgrade = () => {
     const paywall = `/paywall?next=${encodeURIComponent("/profile")}`;
-    router.push(store.session || isSampleMode ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
+    router.push(store.session || !store.purchaseNeedsAccount ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
+  };
+
+  const restore = async () => {
+    setRestoring(true);
+    const result = await store.restorePurchases();
+    setRestoring(false);
+    setCancelNote(
+      result === "restored"
+        ? "Your subscription is restored."
+        : result === "none"
+          ? "No active subscription was found for this Apple ID."
+          : "Purchases couldn’t be restored. Check your connection and try again.",
+    );
   };
 
   const confirmCancel = async () => {
@@ -53,7 +72,7 @@ export default function Profile() {
     setWorking(false);
     if (deleted) {
       setDeleteOpen(false);
-      goTo("/start");
+      goTo("/intro");
     }
   };
 
@@ -64,8 +83,10 @@ export default function Profile() {
         : store.planExpiresAt
           ? `Renews ${longDate(store.planExpiresAt)}`
           : "Active"
-      : store.planSource === "apple"
-        ? "Subscribed on iPhone"
+      : billedByApple
+        ? apple?.expiresAt
+          ? `${apple.willRenew === false ? "Ends" : "Renews"} ${longDate(apple.expiresAt)}`
+          : "Subscribed on iPhone"
         : store.planSource === "grant"
           ? "Complimentary access"
           : "Active";
@@ -109,22 +130,30 @@ export default function Profile() {
             {store.planSource === "razorpay" && store.planRenews !== false && (
               <Row label="Cancel subscription" detail="›" onPress={() => setCancelOpen(true)} />
             )}
-            {store.planSource === "apple" && (
-              <Note>Manage your iPhone subscription in Settings → [your name] → Subscriptions.</Note>
-            )}
+            {billedByApple &&
+              (IAP_AVAILABLE ? (
+                <Row label="Manage subscription" detail="›" onPress={() => void store.manageAppleSubscription()} />
+              ) : (
+                <Note>Manage your iPhone subscription in Settings → [your name] → Subscriptions.</Note>
+              ))}
           </>
         ) : store.isPremium ? (
           <Row label="Sample premium" detail="No payment taken" />
         ) : (
-          <Row
-            label="Free plan"
-            detail={
-              <Txt w={700} size={14} color="money">
-                Upgrade to file and track ›
-              </Txt>
-            }
-            onPress={upgrade}
-          />
+          <>
+            <Row
+              label="Free plan"
+              detail={
+                <Txt w={700} size={14} color="money">
+                  Upgrade to file and track ›
+                </Txt>
+              }
+              onPress={upgrade}
+            />
+            {IAP_AVAILABLE && !isSampleMode && (
+              <Row label="Restore purchases" detail={restoring ? "Restoring…" : "›"} onPress={() => void restore()} />
+            )}
+          </>
         )}
         {cancelNote && <Note>{cancelNote}</Note>}
       </Group>
@@ -154,7 +183,7 @@ export default function Profile() {
             detail="›"
             onPress={async () => {
               await store.signOut();
-              goTo("/start");
+              goTo("/intro");
             }}
           />
         )}
@@ -164,7 +193,7 @@ export default function Profile() {
             danger
             onPress={() => {
               store.resetSample();
-              goTo("/start");
+              goTo("/intro");
             }}
           />
         ) : (
@@ -208,6 +237,17 @@ export default function Profile() {
             ? "This permanently deletes your profile, companies, and claims, and cancels any web subscription."
             : "This removes your selected companies and claims from this device."}
         </Txt>
+        {billedByApple && IAP_AVAILABLE && (
+          <>
+            <Txt color="muted">
+              Your App Store subscription is billed by Apple and isn’t canceled when you delete your account. Cancel it
+              in your App Store subscriptions so you aren’t charged again.
+            </Txt>
+            <Button kind="secondary" onPress={() => void store.manageAppleSubscription()}>
+              Manage subscription
+            </Button>
+          </>
+        )}
         <Button kind="danger" onPress={() => void confirmDelete()} disabled={working}>
           {working ? "Deleting…" : store.session ? "Delete account and all data" : "Clear data"}
         </Button>

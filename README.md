@@ -55,7 +55,7 @@ For production setup, follow `LAUNCH.md` step by step.
 
 ## Run the mobile app
 
-The `mobile/` folder is the ClaimRightful app for iPhone and Android (Expo / React Native). It mirrors the web app's design and flows and uses the same Supabase backend and Razorpay plans. See `mobile/README.md`.
+The `mobile/` folder is the ClaimRightful app for iPhone and Android (Expo / React Native). It mirrors the web app's design and flows and uses the same Supabase backend. On iPhone, subscriptions are App Store in-app purchases; Android uses the website's Razorpay plans. See `mobile/README.md`.
 
 ```bash
 cd mobile
@@ -92,7 +92,7 @@ Set the production secrets:
 
 ```bash
 npx supabase secrets set \
-  APPLE_BUNDLE_ID=com.rightful.app \
+  APPLE_BUNDLE_ID=com.claimrightful.app \
   APPLE_APP_ID=YOUR_NUMERIC_APP_ID \
   APPLE_TRANSACTION_ENVIRONMENT=both \
   APPLE_APNS_KEY_ID=YOUR_APNS_KEY_ID \
@@ -121,14 +121,14 @@ In App Store Connect, set the Version 2 App Store Server Notifications URL to th
 
 ## App Store Connect
 
-Create one subscription group with:
+The App Store app is `mobile/` (bundle ID `com.claimrightful.app`). Create one subscription group with:
 
 | Product | ID | Price |
 | --- | --- | --- |
-| Rightful Yearly | `com.rightful.app.yearly` | $39.99/year, no free trial |
-| Rightful Weekly | `com.rightful.app.weekly` | $4.99/week |
+| Monthly | `com.claimrightful.app.monthly` | $4.99/month |
+| Yearly | `com.claimrightful.app.yearly` | $39.99/year |
 
-Before release, replace `com.rightful.app` if needed in `project.yml`, `AppConstants`, StoreKit configuration, Supabase secrets, and App Store Connect.
+The server still recognizes the older SwiftUI app's `com.rightful.app.yearly` / `.weekly`. Full submission steps are in `mobile/README.md`.
 
 ## Settlement publishing workflow
 

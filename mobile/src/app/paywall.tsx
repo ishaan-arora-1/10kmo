@@ -16,7 +16,8 @@ import {
 import { FlowScreen } from "@/components/screens";
 import { BrandSeal, historyHeadline, Monogram } from "@/components/ui";
 import { track } from "@/lib/analytics";
-import { PRICE_LABELS, PRICE_VALUES, type WebPlan } from "@/lib/config";
+import { type WebPlan } from "@/lib/config";
+import { IAP_AVAILABLE } from "@/lib/iap";
 import {
   cappedTotal,
   daysUntil,
@@ -47,6 +48,7 @@ export default function Paywall() {
   const [plan, setPlan] = useState<WebPlan>("monthly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
   // Opened from a settlement's "File your claim" button: lead with that claim.
   const target = store.settlementById(/^\/settlements\/([^/?#]+)/.exec(next)?.[1] ?? "") ?? null;
 
@@ -61,8 +63,9 @@ export default function Paywall() {
     if (store.isPremium && !busy) router.replace(`/welcome?next=${encodeURIComponent(next)}`);
   }, [store.isPremium, busy, next, router]);
 
-  // Subscriptions belong to an account, so sign-in comes first, like on the website.
-  if (!isSampleMode && !store.session) {
+  // Website subscriptions belong to an account, so sign-in comes first there (and on Android).
+  // The App Store lets people subscribe without an account (App Review Guideline 5.1.1).
+  if (store.purchaseNeedsAccount && !store.session) {
     const back = `/paywall?next=${encodeURIComponent(next)}`;
     return <Redirect href={`/sign-in?next=${encodeURIComponent(back)}`} />;
   }
@@ -85,7 +88,7 @@ export default function Paywall() {
   // Accounts go back to where they were; the dashboard stays open to them.
   const close = () => {
     if (router.canGoBack()) router.back();
-    else goTo(store.session || isSampleMode ? next : "/start");
+    else goTo(store.session || isSampleMode || store.onboardingCompleted ? next : "/start");
   };
 
   // Display only: personalizes what the plan includes. Nothing here affects checkout.
@@ -101,10 +104,13 @@ export default function Paywall() {
     .filter((brand) => store.selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand))
     .map((brand) => brand.name);
   const biggestClaim = Math.max(0, ...store.toFile.map((s) => s.payoutMax));
-  const yearlyPrice = PRICE_VALUES.yearly;
-  // Yearly shown per month, and what it saves against paying monthly for a year.
-  const yearlyPerMonth = usdCents(Math.floor((PRICE_VALUES.yearly / 12) * 100) / 100);
-  const yearlySaving = Math.floor((1 - PRICE_VALUES.yearly / (PRICE_VALUES.monthly * 12)) * 100);
+  const { monthly, yearly } = store.prices;
+  const yearlyPrice = yearly.value;
+  // Yearly shown per month (always smaller than the billed price), and what it saves against monthly.
+  const yearlyPerMonth =
+    yearly.value > 0 ? perMonth(yearly.label, Math.floor((yearly.value / 12) * 100) / 100) : null;
+  const yearlySaving =
+    monthly.value > 0 ? Math.floor((1 - yearly.value / (monthly.value * 12)) * 100) : 0;
 
   const subscribe = async () => {
     setBusy(true);
@@ -118,13 +124,34 @@ export default function Paywall() {
     }
   };
 
+  const restore = async () => {
+    setRestoring(true);
+    setMessage(null);
+    const result = await store.restorePurchases();
+    setRestoring(false);
+    // A restored plan makes isPremium true, and the effect above moves on to the dashboard.
+    if (result === "none") setMessage("No active subscription was found for this Apple ID.");
+    if (result === "failed") setMessage("Purchases couldn’t be restored. Check your connection and try again.");
+  };
+
   const buttonLabel = busy
-    ? "Opening secure checkout…"
+    ? IAP_AVAILABLE
+      ? "Connecting to the App Store…"
+      : "Opening secure checkout…"
     : isSampleMode
       ? "Unlock sample"
       : plan === "yearly"
-        ? `Subscribe for ${PRICE_LABELS.yearly}/year`
-        : `Subscribe for ${PRICE_LABELS.monthly}/month`;
+        ? `Subscribe for ${yearly.label}/year`
+        : `Subscribe for ${monthly.label}/month`;
+
+  const chosen = plan === "yearly" ? `${yearly.label} per year` : `${monthly.label} per month`;
+  const terms = isSampleMode
+    ? "Sample mode: no payment is taken."
+    : IAP_AVAILABLE
+      ? `Payment is charged to your Apple ID at confirmation of purchase. Your subscription renews automatically at ${chosen} unless you cancel at least 24 hours before the end of the current period. Manage or cancel it anytime in your App Store account settings.`
+      : plan === "yearly"
+        ? `Payments are processed securely by Razorpay. ${yearly.label} is charged today and every year until you cancel in Profile.`
+        : `Payments are processed securely by Razorpay. ${monthly.label} is charged today and every month until you cancel in Profile.`;
 
   const title = afterFreeClaim
     ? count > 0
@@ -199,7 +226,7 @@ export default function Paywall() {
             <Txt f="display" w={700} size={26} color="money">
               {cappedTotal(restMax)}
             </Txt>{" "}
-            more waiting for you. Unlock {count === 1 ? "it" : "them all"} for {PRICE_LABELS.monthly}/month.
+            more waiting for you. Unlock {count === 1 ? "it" : "them all"} for {monthly.label}/month.
           </Txt>
         )
       ) : target && target.payoutMax > 0 ? (
@@ -240,17 +267,22 @@ export default function Paywall() {
       )}
 
       <View style={{ gap: 10 }} accessibilityRole="radiogroup" accessibilityLabel="Choose a plan">
-        <PlanOption on={plan === "monthly"} onPress={() => setPlan("monthly")} title="Monthly">
-          {PRICE_LABELS.monthly}/month · cancel anytime
-        </PlanOption>
+        {/* The billed amount is the most prominent price (App Review Guideline 3.1.2). */}
+        <PlanOption
+          on={plan === "monthly"}
+          onPress={() => setPlan("monthly")}
+          title="Monthly"
+          price={`${monthly.label}/month`}
+          detail="Billed monthly · cancel anytime"
+        />
         <PlanOption
           on={plan === "yearly"}
           onPress={() => setPlan("yearly")}
           title="Yearly"
           badge={yearlySaving > 0 ? `Best value · save ${yearlySaving}%` : "Best value"}
-        >
-          {yearlyPerMonth}/month, billed {PRICE_LABELS.yearly}/year
-        </PlanOption>
+          price={`${yearly.label}/year`}
+          detail={`Billed yearly${yearlyPerMonth ? ` · just ${yearlyPerMonth}/month` : ""} · cancel anytime`}
+        />
       </View>
 
       {message && (
@@ -261,16 +293,10 @@ export default function Paywall() {
 
       <FinePrint center>US settlements only. You qualify if you used these companies while living in the United States.</FinePrint>
 
-      <Button onPress={() => void subscribe()} disabled={busy}>
+      <Button onPress={() => void subscribe()} disabled={busy || restoring}>
         {buttonLabel}
       </Button>
-      <FinePrint center>
-        {isSampleMode
-          ? "Sample mode: no payment is taken."
-          : plan === "yearly"
-            ? `Payments are processed securely by Razorpay. ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
-            : `Payments are processed securely by Razorpay. ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
-      </FinePrint>
+      <FinePrint center>{terms}</FinePrint>
       <FinePrint center>
         {afterFreeClaim && (
           <>
@@ -278,9 +304,15 @@ export default function Paywall() {
             {" · "}
           </>
         )}
-        <LinkText onPress={() => openWebsite("/terms")}>Terms</LinkText>
+        {IAP_AVAILABLE && !isSampleMode && (
+          <>
+            <LinkText onPress={() => void restore()}>{restoring ? "Restoring…" : "Restore purchases"}</LinkText>
+            {" · "}
+          </>
+        )}
+        <LinkText onPress={() => openWebsite("/terms")}>Terms of Use</LinkText>
         {" · "}
-        <LinkText onPress={() => openWebsite("/privacy")}>Privacy</LinkText>
+        <LinkText onPress={() => openWebsite("/privacy")}>Privacy Policy</LinkText>
         {store.session && (
           <>
             {" · "}
@@ -292,18 +324,29 @@ export default function Paywall() {
   );
 }
 
+/** "$3.33" in the App Store's currency format, taken from its own label (e.g. "$39.99" → "$3.33"). */
+function perMonth(label: string, amount: number): string {
+  const number = amount.toFixed(2);
+  const match = /\d(?:[\d.,\s]*\d)?/.exec(label);
+  if (!match) return usdCents(amount);
+  const decimal = /\d,\d{2}$/.test(match[0]) ? "," : ".";
+  return label.replace(match[0], decimal === "," ? number.replace(".", ",") : number);
+}
+
 function PlanOption({
   on,
   onPress,
   title,
   badge,
-  children,
+  price,
+  detail,
 }: {
   on: boolean;
   onPress: () => void;
   title: string;
   badge?: string;
-  children: React.ReactNode;
+  price: string;
+  detail: string;
 }) {
   const c = useColors();
   return (
@@ -326,8 +369,11 @@ function PlanOption({
             </Pill>
           )}
         </View>
+        <Txt f="display" w={700} size={20} lh={1.2}>
+          {price}
+        </Txt>
         <Txt size={14} color="muted">
-          {children}
+          {detail}
         </Txt>
       </View>
     </Pressable>

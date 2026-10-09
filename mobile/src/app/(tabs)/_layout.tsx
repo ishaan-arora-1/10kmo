@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ClaimsIcon, HomeIcon, ProfileIcon, SearchIcon, type IconProps } from "@/components/icons";
 import { Txt } from "@/components/primitives";
 import { useStore } from "@/lib/store";
-import { isSampleMode } from "@/lib/supabase";
 import { useColors } from "@/theme";
 
 const TABS: Record<string, { label: string; icon: (props: IconProps) => ReactNode }> = {
@@ -18,12 +17,15 @@ const TABS: Record<string, { label: string; icon: (props: IconProps) => ReactNod
 
 /** The dashboard needs an account, not a membership: filing is what's locked behind the paywall. */
 export default function TabsLayout() {
-  const { isPremium, session, onboardingCompleted } = useStore();
+  const { isPremium, session, onboardingCompleted, selectedBrandIds } = useStore();
   const c = useColors();
   const insets = useSafeAreaInsets();
 
-  // The website opens on its landing page; the app opens on company picking until there's a dashboard.
-  if (!(isPremium || session || (isSampleMode && onboardingCompleted))) return <Redirect href="/start" />;
+  // The website opens on its landing page; the app opens on its intro, then company picking, until
+  // there's a dashboard. Finishing onboarding is enough: an account is optional (Guideline 5.1.1).
+  if (!(isPremium || session || onboardingCompleted)) {
+    return <Redirect href={selectedBrandIds.size > 0 ? "/start" : "/intro"} />;
+  }
 
   return (
     <Tabs

@@ -22,7 +22,6 @@ import { ClaimStatusBadge, Monogram } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { deadlineLabel, daysUntil, isUpcoming, opensLabel, payoutRange, plural } from "@/lib/models";
 import { useStore } from "@/lib/store";
-import { isSampleMode } from "@/lib/supabase";
 import { useColors } from "@/theme";
 
 export default function SettlementDetail() {
@@ -79,7 +78,7 @@ export default function SettlementDetail() {
     if (!unlocked) {
       track("file_locked_tap", { userId: store.session?.user.id ?? null, detail: settlement.company });
       const paywall = `/paywall?next=${encodeURIComponent(`/settlements/${settlement.id}`)}`;
-      router.push(store.session || isSampleMode ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
+      router.push(store.session || !store.purchaseNeedsAccount ? paywall : `/sign-in?next=${encodeURIComponent(paywall)}`);
       return;
     }
     if (store.freeClaimAvailable) {

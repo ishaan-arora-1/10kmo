@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { clientKind, track } from "@/lib/analytics";
+import { REVIEW_EMAIL } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
 import { Button, Field, QuietButton, Txt } from "./primitives";
 
@@ -26,6 +27,7 @@ export function EmailCodeForm({
   const [code, setCode] = useState("");
   const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
+  const [reviewPassword, setReviewPassword] = useState<string | null>(null);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -61,7 +63,25 @@ export function EmailCodeForm({
       setMessage("Enter a valid email address.");
       return;
     }
+    if (REVIEW_EMAIL && address === REVIEW_EMAIL) {
+      setMessage(null);
+      setReviewPassword("");
+      return;
+    }
     void sendCode(address);
+  };
+
+  const submitReviewPassword = async () => {
+    if (!supabase || !reviewPassword) return;
+    setBusy(true);
+    setMessage(null);
+    const { error } = await supabase.auth.signInWithPassword({ email: REVIEW_EMAIL, password: reviewPassword });
+    if (error) {
+      setBusy(false);
+      setMessage("That password didn’t work.");
+      return;
+    }
+    onVerified?.();
   };
 
   const submitCode = async () => {
@@ -90,6 +110,38 @@ export function EmailCodeForm({
     setCode("");
     setMessage(null);
   };
+
+  if (reviewPassword !== null) {
+    return (
+      <>
+        <View style={styles.form}>
+          <Txt w={600} size={14}>
+            Password
+          </Txt>
+          <Field
+            value={reviewPassword}
+            onChangeText={setReviewPassword}
+            secureTextEntry
+            autoFocus
+            autoCapitalize="none"
+            textContentType="password"
+            accessibilityLabel="Password"
+            returnKeyType="go"
+            onSubmitEditing={() => void submitReviewPassword()}
+          />
+          <Button onPress={() => void submitReviewPassword()} disabled={busy || !reviewPassword}>
+            {busy ? "Signing in…" : "Sign in"}
+          </Button>
+        </View>
+        <QuietButton onPress={() => setReviewPassword(null)}>Use a different email</QuietButton>
+        {message && (
+          <Txt size={14} color="danger" accessibilityRole="alert">
+            {message}
+          </Txt>
+        )}
+      </>
+    );
+  }
 
   return (
     <>

@@ -13,7 +13,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Txt } from "@/components/primitives";
@@ -24,6 +24,8 @@ import { StoreProvider, useStore } from "@/lib/store";
 import { useColors, useIsDark } from "@/theme";
 
 void SplashScreen.preventAutoHideAsync();
+// The splash fades into the intro screen, whose seal starts where the splash's is.
+SplashScreen.setOptions({ duration: 350, fade: true });
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -70,16 +72,20 @@ function App() {
   const { ready, error, dismissError } = useStore();
   const c = useColors();
   const insets = useSafeAreaInsets();
+  // Only the first load shows the boot screen. Later reloads (signing in syncs the account) keep
+  // the navigator mounted, so people stay on the screen they were on.
+  const [booted, setBooted] = useState(false);
+  if (ready && !booted) setBooted(true);
 
   useEffect(() => {
     track("app_open");
   }, []);
 
   useEffect(() => {
-    if (ready) void SplashScreen.hideAsync();
-  }, [ready]);
+    if (booted) void SplashScreen.hideAsync();
+  }, [booted]);
 
-  if (!ready) {
+  if (!booted) {
     return (
       <View style={[styles.boot, { backgroundColor: c.paper }]} accessibilityLabel="Loading Rightful">
         <BrandSeal size={44} />
@@ -91,7 +97,8 @@ function App() {
     <>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.paper } }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="start" options={{ animation: "fade" }} />
+        <Stack.Screen name="intro" options={{ animation: "fade" }} />
+        <Stack.Screen name="start" />
         <Stack.Screen name="sign-in" />
         <Stack.Screen name="paywall" options={{ animation: "slide_from_bottom" }} />
         <Stack.Screen name="welcome" options={{ animation: "fade" }} />

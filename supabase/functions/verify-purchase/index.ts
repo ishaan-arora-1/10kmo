@@ -6,12 +6,16 @@ import {
 import { withSupabase } from "npm:@supabase/server@1.5.2";
 import type { Database } from "../_shared/database.types.ts";
 
-const bundleID = Deno.env.get("APPLE_BUNDLE_ID") ?? "com.rightful.app";
+const bundleID = Deno.env.get("APPLE_BUNDLE_ID") ?? "com.claimrightful.app";
 const productionAppID = Number(Deno.env.get("APPLE_APP_ID"));
-const validProducts: ReadonlyMap<string, "yearly" | "weekly"> = new Map([
-  ["com.rightful.app.yearly", "yearly"],
-  ["com.rightful.app.weekly", "weekly"],
-]);
+// Keep in sync with private.apple_product_plan and mobile/src/lib/config.ts.
+const validProducts: ReadonlyMap<string, "yearly" | "monthly" | "weekly"> =
+  new Map([
+    ["com.claimrightful.app.yearly", "yearly"],
+    ["com.claimrightful.app.monthly", "monthly"],
+    ["com.rightful.app.yearly", "yearly"],
+    ["com.rightful.app.weekly", "weekly"],
+  ]);
 
 const roots = await Promise.all([
   Deno.readFile(new URL("../_shared/AppleRootCA-G2.cer", import.meta.url)),

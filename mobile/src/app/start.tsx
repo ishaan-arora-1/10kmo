@@ -29,6 +29,7 @@ import {
   SettlementCard,
 } from "@/components/ui";
 import { clientKind, track } from "@/lib/analytics";
+import { IAP_AVAILABLE } from "@/lib/iap";
 import {
   ALSO_USED_COMPANIES,
   cappedTotal,
@@ -822,6 +823,8 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
             onVerified={toDashboard}
           />
           <FinePrint center>This creates your Rightful account. No password needed.</FinePrint>
+          {/* An account is optional on iPhone (App Review Guideline 5.1.1): everything but email works without one. */}
+          {IAP_AVAILABLE && !codeSent && <QuietButton onPress={toDashboard}>Skip for now</QuietButton>}
         </>
       )}
     </FlowScreen>

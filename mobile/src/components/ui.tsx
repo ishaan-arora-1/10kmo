@@ -20,7 +20,6 @@ import {
   type Settlement,
 } from "@/lib/models";
 import { useStore } from "@/lib/store";
-import { isSampleMode } from "@/lib/supabase";
 import { alpha, RADIUS, useColors } from "@/theme";
 import { Pill, SampleBadge, Txt } from "./primitives";
 
@@ -58,7 +57,7 @@ export function Wordmark() {
       Claim<Txt f="display" w={800} size={21} lh={1.2} ls={-0.02} color="money">Rightful</Txt>
     </Txt>
   );
-  const hasDashboard = isPremium || session || (isSampleMode && onboardingCompleted);
+  const hasDashboard = isPremium || session || onboardingCompleted;
   return hasDashboard ? (
     <Pressable onPress={() => router.navigate("/")} accessibilityRole="link" accessibilityLabel="ClaimRightful dashboard" hitSlop={8}>
       {text}
