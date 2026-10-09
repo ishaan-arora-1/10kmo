@@ -4,17 +4,34 @@ import { useEffect, useState } from "react";
 export const RECENT_FILER = { name: "Aryan G.", place: "California", company: "Apple", amount: "up to $95" };
 
 const SHOW_AFTER_MS = 2000;
+const SEEN_KEY = "rightful.recentFilerSeen";
 const VISIBLE_MS = 5000;
 
+function seenBefore(): boolean {
+  try {
+    return localStorage.getItem(SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Slides up from the bottom once per visit, shows a thin bar counting down how long it
- * stays, then slides away. It can be closed early.
+ * Slides up from the bottom the first time someone opens the paywall (not on later visits),
+ * shows a thin bar counting down how long it stays, then slides away. It can be closed early.
  */
 export function ActivityToast() {
   const [phase, setPhase] = useState<"waiting" | "in" | "out">("waiting");
 
   useEffect(() => {
-    const show = window.setTimeout(() => setPhase("in"), SHOW_AFTER_MS);
+    if (seenBefore()) return;
+    const show = window.setTimeout(() => {
+      setPhase("in");
+      try {
+        localStorage.setItem(SEEN_KEY, "1");
+      } catch {
+        // Storage blocked (private mode): it may show again, which is fine.
+      }
+    }, SHOW_AFTER_MS);
     const hide = window.setTimeout(() => setPhase("out"), SHOW_AFTER_MS + VISIBLE_MS);
     return () => {
       window.clearTimeout(show);
