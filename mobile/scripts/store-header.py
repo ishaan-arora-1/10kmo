@@ -56,7 +56,9 @@ def main() -> None:
     # A guide copy with the iPhone safe area outlined, for checking the crop.
     guide = canvas.convert("RGB")
     ImageDraw.Draw(guide).rectangle(SAFE, outline="#E5484D", width=6)
-    guide.resize((W // 2, H // 2), Image.LANCZOS).save(search.OUT / "header-safe-area.png")
+    guides = search.ROOT / "store/guides"
+    guides.mkdir(parents=True, exist_ok=True)
+    guide.resize((W // 2, H // 2), Image.LANCZOS).save(guides / "header-safe-area.png")
 
 
 if __name__ == "__main__":
