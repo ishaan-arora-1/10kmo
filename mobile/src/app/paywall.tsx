@@ -6,7 +6,7 @@ import { Button, CloseButton, FinePrint, FlowTitle, LinkText, Txt } from "@/comp
 import { FlowScreen } from "@/components/screens";
 import { BrandSeal, historyHeadline } from "@/components/ui";
 import { track } from "@/lib/analytics";
-import { type WebPlan } from "@/lib/config";
+import { PRICE_VALUES, type WebPlan } from "@/lib/config";
 import { IAP_AVAILABLE } from "@/lib/iap";
 import {
   cappedTotal,
@@ -87,8 +87,10 @@ export default function Paywall() {
   // On iPhone these are the App Store's own localized prices.
   const { monthly, yearly } = store.prices;
   const price = store.prices[plan];
-  // Whole dollars, rounded down, so it never overstates.
-  const keep = Math.floor(billTotal - price.value);
+  // Whole dollars, rounded down, so it never overstates. Claims are in US dollars, so a price in another
+  // currency (e.g. a tester's ₹499) is swapped for the dollar price before subtracting.
+  const priceInDollars = price.label.includes("$") ? price.value : PRICE_VALUES[plan];
+  const keep = Math.floor(billTotal - priceInDollars);
   const closingSoon = fileable.filter((s) => daysUntil(s.deadline) <= 30).length;
   const showBill = billTotal > 0;
 

@@ -35,7 +35,7 @@ export default function Claims() {
           title="No claims filed yet"
           body="When you finish a claim on its official site, it’ll appear here until you’re paid."
           action={
-            <Button block={false} onPress={() => router.navigate("/browse")}>
+            <Button block={false} style={{ alignSelf: "center" }} onPress={() => router.navigate("/browse")}>
               Browse matches
             </Button>
           }

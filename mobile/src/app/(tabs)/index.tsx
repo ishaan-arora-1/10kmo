@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ArrowRightIcon, GiftIcon, LockIcon } from "@/components/icons";
-import { Button, Eyebrow, FinePrint, PageTitle, SampleBadge, SectionLabel, Sheet, Txt, EmptyCard } from "@/components/primitives";
+import { Button, FinePrint, PageTitle, SampleBadge, SectionLabel, Sheet, Txt, EmptyCard } from "@/components/primitives";
 import { PageScreen, Section, Stack } from "@/components/screens";
 import { StatePicker } from "@/components/StatePicker";
 import { CardNote, CardRow, CardTop, MoneyCheck, Monogram, PayoutList } from "@/components/ui";
@@ -15,7 +15,6 @@ import {
   opensLabel,
   payoutRange,
   plural,
-  usd,
   type Settlement,
 } from "@/lib/models";
 import { useStore } from "@/lib/store";
@@ -42,7 +41,6 @@ export default function Home() {
       a.deadline.localeCompare(b.deadline),
   );
   const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
-  const noProof = toFile.filter((settlement) => !settlement.proofRequired).length;
   const firstOpen = toFile.find((settlement) => !isUpcoming(settlement));
   // Highlight the spotlight claim; without one, the most urgent claim.
   const spotlight = toFile.find((settlement) => settlement.isSpotlight && !isUpcoming(settlement));
@@ -54,9 +52,6 @@ export default function Home() {
       : index === 0 && settlement === firstOpen && daysUntil(settlement.deadline) <= 30
         ? "Most urgent"
         : null;
-  const soonest = toFile
-    .filter((settlement) => !isUpcoming(settlement))
-    .reduce<Settlement | undefined>((best, s) => (!best || s.deadline < best.deadline ? s : best), undefined);
   const needsStates = store.selectedStates.size === 0;
   const missedTotal = store.missed.reduce((total, payout) => total + payout.amountMax, 0);
   const watching = store.estimates.filter(({ brand }) => !toFile.some((s) => s.brandId === brand.id));
@@ -75,17 +70,6 @@ export default function Home() {
             label: "Paid this past year",
             amount: store.history.total,
           };
-
-  const subline =
-    toFile.length > 0
-      ? [
-          `${toFile.length} ${plural(toFile.length, "claim", "claims")} ready to file`,
-          noProof > 0 && `${noProof} need no proof`,
-          soonest && `first closes in ${dayCount(daysUntil(soonest.deadline))}`,
-        ]
-          .filter(Boolean)
-          .join(" · ")
-      : `We’re watching your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`;
 
   // Their own companies first, then the claims open to everyone.
   const payees = [
@@ -110,11 +94,12 @@ export default function Home() {
   return (
     <PageScreen>
       <View>
-        <Eyebrow style={{ marginBottom: 6 }}>{greeting()}</Eyebrow>
         <PageTitle>{hero.headline}</PageTitle>
-        <Txt color="muted" style={{ marginTop: 4 }}>
-          {store.isSampleData ? "Previewing Rightful with sample data" : subline}
-        </Txt>
+        {store.isSampleData && (
+          <Txt color="muted" style={{ marginTop: 4 }}>
+            Previewing Rightful with sample data
+          </Txt>
+        )}
       </View>
 
       <MoneyCheck
@@ -124,7 +109,7 @@ export default function Home() {
         amount={hero.amount}
         capped
         memo={memo}
-        footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED ‖ ${usd(store.paidTotal)} PAID`}
+        footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED`}
       />
 
       {!store.isPremium &&
@@ -206,20 +191,6 @@ export default function Home() {
         <Section>
           <SectionLabel>You missed up to {cappedTotal(missedTotal)}</SectionLabel>
           <PayoutList payouts={store.missed} />
-        </Section>
-      )}
-
-      {store.peoplePaid.payouts.length > 0 && (
-        <Section>
-          <SectionLabel>Paid this past year to people like you</SectionLabel>
-          <Txt color="muted">
-            People got up to{" "}
-            <Txt f="mono" color="money">
-              {cappedTotal(store.peoplePaid.total)}
-            </Txt>{" "}
-            from these settlements alone.
-          </Txt>
-          <PayoutList payouts={store.peoplePaid.payouts} />
         </Section>
       )}
 
@@ -350,13 +321,6 @@ function dayCount(days: number): string {
 
 function closesIn(days: number): string {
   return days === 0 ? "Closes today" : `${dayCount(days)} left`;
-}
-
-function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 5 || hour >= 18) return "Good evening";
-  if (hour < 12) return "Good morning";
-  return "Good afternoon";
 }
 
 const styles = StyleSheet.create({
