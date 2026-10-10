@@ -19,7 +19,6 @@ import {
 import { FlowScreen, Stack } from "@/components/screens";
 import {
   CardAction,
-  CardNote,
   CardRow,
   CardTop,
   historyHeadline,
@@ -44,7 +43,6 @@ import {
   reminderSchedule,
   shortDay,
   sortBrandsForPicker,
-  WATCHED_BRAND_NAMES,
   type Brand,
   type PendingCase,
   type Settlement,
@@ -176,7 +174,7 @@ function ScanStep({ onDone }: { onDone: () => void }) {
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <FlowScreen bodyStyle={{ alignItems: "center", paddingTop: 48 }}>
+    <FlowScreen bodyStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
       <View style={{ width: ring, height: ring }} accessibilityLiveRegion="polite">
         <Svg width={ring} height={ring} style={StyleSheet.absoluteFill}>
           <Circle cx={ring / 2} cy={ring / 2} r={radius} stroke={c.line} strokeWidth={stroke} fill="none" />
@@ -269,20 +267,14 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
           + {matches.length - 3} more {plural(matches.length - 3, "match", "matches")}
         </Txt>
       )}
+      <FeaturedSettlements onSelect={startClaiming} />
       <EstimatedPayouts onSelect={startClaiming} />
       <PendingCases onSelect={startClaiming} />
-      <FeaturedSettlements onSelect={startClaiming} />
       <FinePrint>
         Amounts are the most each settlement pays, from court filings. Most people get less, and final amounts depend
         on how many people claim and what you can document.
         {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
       </FinePrint>
-      {store.history.total > 0 && (
-        <>
-          <SubTitle style={{ marginTop: 8 }}>{historyHeadline(store.history)}</SubTitle>
-          <PayoutHistoryCard history={store.history} />
-        </>
-      )}
     </FlowScreen>
   );
 }
@@ -341,20 +333,14 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
           <FeaturedSettlements onSelect={onContinue} />
           <EstimatedPayouts onSelect={onContinue} />
           <PendingCases onSelect={onContinue} />
-          {history.total > 0 && (
-            <>
-              <SubTitle style={{ marginTop: 8 }}>{historyHeadline(history)}</SubTitle>
-              <PayoutHistoryCard history={history} />
-            </>
-          )}
         </>
       ) : (
         <>
           <FlowTitle>{historyHeadline(history)}</FlowTitle>
           <Muted>None of the companies you picked has a settlement open right now.</Muted>
           <PayoutHistoryCard history={history} />
-          <PendingCases onSelect={onContinue} />
           <FeaturedSettlements onSelect={onContinue} />
+          <PendingCases onSelect={onContinue} />
         </>
       )}
       <SubTitle style={{ marginTop: 8 }}>Add more options</SubTitle>
@@ -422,7 +408,6 @@ function PendingCaseCard({
           amount={estimate ? `Up to ${cappedTotal(estimate.amount)}` : <CasePending />}
         />
         {estimate && <CasePending />}
-        <CardNote>{pendingCase.summary}</CardNote>
         <CardAction>
           {isPremium
             ? "As a member, you’ll get an email the day claims open."
@@ -446,7 +431,7 @@ function CasePending() {
 
 /** Picked companies with nothing open: their sourced "up to" figure. Pending cases show in PendingCases instead. */
 function EstimatedPayouts({ onSelect }: { onSelect: () => void }) {
-  const { estimates, isPremium } = useStore();
+  const { estimates } = useStore();
   const shown = estimates.filter(({ brand }) => !pendingCaseFor(brand));
   if (shown.length === 0) return null;
   return (
@@ -457,12 +442,6 @@ function EstimatedPayouts({ onSelect }: { onSelect: () => void }) {
           <Pressable key={brand.id} onPress={onSelect} accessibilityRole="button">
             <CardRow brand={brand} name={brand.name}>
               <CardTop title={`${brand.name} · ${estimate.label}`} amount={`Up to ${cappedTotal(estimate.amount)}`} />
-              <CardNote>{estimate.note}</CardNote>
-              <CardAction>
-                {isPremium
-                  ? "As a member, you’ll get an email the day a new one opens."
-                  : "Get a Rightful plan and we’ll email you the day a new one opens."}
-              </CardAction>
             </CardRow>
           </Pressable>
         ))}
@@ -733,8 +712,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
   const pending = brands.filter(
     (brand) => selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand),
   );
-  const scheduled = new Set([...rows.map((row) => row.settlement.company), ...pending.map((brand) => brand.name)]);
-  const watched = WATCHED_BRAND_NAMES.filter((name) => !scheduled.has(name)).slice(0, 4);
 
   // Accounts land on their dashboard; the paywall waits until they go to file a claim.
   const toDashboard = () => router.push("/welcome");
@@ -748,7 +725,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
           ← Back
         </Txt>
       </Pressable>
-      <Eyebrow>Almost there</Eyebrow>
       <FlowTitle>Your reminder schedule</FlowTitle>
       <Muted>Rightful members get an email before every deadline, so nothing closes on you.</Muted>
 
@@ -798,12 +774,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
           </View>
         )}
       </View>
-      {watched.length > 0 && (
-        <Txt size={15} color="muted">
-          👀 We also watch <Txt w={700} size={15} color="muted">{watched.join(", ")}</Txt> and{" "}
-          {brands.length - watched.length}+ other companies, and email members the day a new settlement opens.
-        </Txt>
-      )}
 
       {session ? (
         <>

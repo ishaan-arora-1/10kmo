@@ -14,7 +14,9 @@ export function useGridColumns(inset = GUTTER * 2): { columns: number; tileWidth
   const { width } = useWindowDimensions();
   const available = Math.min(width, 640) - inset;
   const columns = Math.max(2, Math.floor((available + GAP) / (TILE_MIN + GAP)));
-  return { columns, tileWidth: (available - GAP * (columns - 1)) / columns };
+  // Whole points: an exact fraction (e.g. 123.33 on a 430pt iPhone) can overflow the row in layout
+  // rounding and wrap the last tile, leaving two columns.
+  return { columns, tileWidth: Math.floor((available - GAP * (columns - 1)) / columns) };
 }
 
 export const BrandTile = memo(function BrandTile({
