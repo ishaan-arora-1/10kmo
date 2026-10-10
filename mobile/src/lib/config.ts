@@ -1,3 +1,9 @@
+/**
+ * "First claim free": free accounts could file one claim without paying (website, 2026-10-07 to 10-09).
+ * Off, as on the website: filing is locked until they subscribe. Claims they already started stay unlocked.
+ */
+export const FIRST_CLAIM_FREE = false;
+
 /** Same support address as the website (scripts/set-support-email.sh updates both). */
 export const SUPPORT_EMAIL = "support@claimrightful.com";
 

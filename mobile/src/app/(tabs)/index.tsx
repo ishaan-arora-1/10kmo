@@ -100,10 +100,12 @@ export default function Home() {
       ? `${payees.slice(0, 3).join(", ")}${payees.length > 3 ? ` + ${payees.length - 3} more` : ""}`
       : "Settlements you could have claimed";
 
-  // Free accounts see everything and file one claim free; the plan unlocks the rest.
+  // Free accounts see everything; the plan unlocks filing.
   const unlock = () => router.push(`/paywall?next=${encodeURIComponent("/")}`);
   const locked = toFile.filter((settlement) => !store.canFile(settlement));
   const lockedMax = maxTotal(locked);
+  // Accounts that used a free claim while it was offered keep that one claim unlocked.
+  const usedFreeClaim = store.claims.length > 0;
 
   return (
     <PageScreen>
@@ -148,12 +150,12 @@ export default function Home() {
             <LockIcon color={c.money} />
             <View style={{ flex: 1, gap: 2 }}>
               <Txt f="mono" w={500} size={12} ls={0.1} upper color="money">
-                {store.freeClaimAvailable ? "Free plan" : "Free claim used"}
+                {usedFreeClaim ? "Free claim used" : "Free plan"}
               </Txt>
               <Txt size={15}>
                 {locked.length > 0
                   ? `Unlock your ${
-                      store.freeClaimAvailable
+                      !usedFreeClaim
                         ? `${locked.length} ${plural(locked.length, "claim", "claims")}`
                         : locked.length === 1
                           ? "other claim"

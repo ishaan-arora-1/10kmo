@@ -37,7 +37,7 @@ import {
 } from "./models";
 import { track } from "./analytics";
 import { useCheckout } from "./checkout";
-import { PRICE_LABELS, PRICE_VALUES, SUPPORT_EMAIL, type WebPlan } from "./config";
+import { FIRST_CLAIM_FREE, PRICE_LABELS, PRICE_VALUES, SUPPORT_EMAIL, type WebPlan } from "./config";
 import * as AppStore from "./iap";
 import type { AppleEntitlement, StorePrice, TransactionHandler } from "./iap-types";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
@@ -837,8 +837,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       estimates,
       estimateMax: estimates.reduce((total, { estimate }) => total + estimate.amount, 0),
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
-      freeClaimAvailable: !isPremium && local.claims.length === 0,
-      canFile: (settlement) => isPremium || local.claims.length === 0 || claimBySettlement.has(settlement.id),
+      freeClaimAvailable: FIRST_CLAIM_FREE && !isPremium && local.claims.length === 0,
+      canFile: (settlement) =>
+        isPremium ||
+        claimBySettlement.has(settlement.id) ||
+        (FIRST_CLAIM_FREE && local.claims.length === 0),
       history,
       peoplePaid: payoutHistory(recentPayouts, new Set()),
       missed: missedPayouts(recentPayouts, matchBrandIds),
