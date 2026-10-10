@@ -19,7 +19,6 @@ import {
   reminderSchedule,
   shortDay,
   sortBrandsForPicker,
-  WATCHED_BRAND_NAMES,
   type Brand,
   type PendingCase,
   type Settlement,
@@ -202,20 +201,14 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
             + {matches.length - 3} more {plural(matches.length - 3, "match", "matches")}
           </p>
         )}
+        <FeaturedSettlements onSelect={startClaiming} />
         <EstimatedPayouts onSelect={startClaiming} />
         <PendingCases onSelect={startClaiming} />
-        <FeaturedSettlements onSelect={startClaiming} />
         <p className="fine-print">
           Amounts are the most each settlement pays, from court filings. Most people get less, and final
           amounts depend on how many people claim and what you can document.
           {matches.some((s) => s.isSample) && " Sample records are labeled and are not live claims."}
         </p>
-        {store.history.total > 0 && (
-          <>
-            <h2 className="past-year-title">{historyHeadline(store.history)}</h2>
-            <PayoutHistoryCard history={store.history} />
-          </>
-        )}
       </div>
       <div className="sticky-cta">
         <button type="button" className="btn block" onClick={startClaiming}>
@@ -275,20 +268,14 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
             <FeaturedSettlements onSelect={onContinue} />
             <EstimatedPayouts onSelect={onContinue} />
             <PendingCases onSelect={onContinue} />
-            {history.total > 0 && (
-              <>
-                <h2 className="past-year-title">{historyHeadline(history)}</h2>
-                <PayoutHistoryCard history={history} />
-              </>
-            )}
           </>
         ) : (
           <>
             <h1 className="flow-title">{historyHeadline(history)}</h1>
             <p className="muted">None of the companies you picked has a settlement open right now.</p>
             <PayoutHistoryCard history={history} />
-            <PendingCases onSelect={onContinue} />
             <FeaturedSettlements onSelect={onContinue} />
+            <PendingCases onSelect={onContinue} />
           </>
         )}
         <h2 className="past-year-title">Add more options</h2>
@@ -374,7 +361,6 @@ function PendingCaseCard({
             )}
           </div>
           {estimate && <span className="status-badge warn">Case pending</span>}
-          <span className="sc-note">{pendingCase.summary}</span>
           <span className="sc-action">
             {isPremium
               ? "As a member, you’ll get an email the day claims open."
@@ -388,7 +374,7 @@ function PendingCaseCard({
 
 /** Picked companies with nothing open: their sourced "up to" figure. Pending cases show in PendingCases instead. */
 function EstimatedPayouts({ onSelect }: { onSelect: () => void }) {
-  const { estimates, isPremium } = useStore();
+  const { estimates } = useStore();
   const shown = estimates.filter(({ brand }) => !pendingCaseFor(brand));
   if (shown.length === 0) return null;
   return (
@@ -406,12 +392,6 @@ function EstimatedPayouts({ onSelect }: { onSelect: () => void }) {
                   </span>
                   <span className="sc-amount">Up to {cappedTotal(estimate.amount)}</span>
                 </div>
-                <span className="sc-note">{estimate.note}</span>
-                <span className="sc-action">
-                  {isPremium
-                    ? "As a member, you’ll get an email the day a new one opens."
-                    : "Get a Rightful plan and we’ll email you the day a new one opens."}
-                </span>
               </div>
             </div>
           </button>
@@ -651,8 +631,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
   const pending = brands.filter(
     (brand) => selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand),
   );
-  const scheduled = new Set([...rows.map((row) => row.settlement.company), ...pending.map((brand) => brand.name)]);
-  const watched = WATCHED_BRAND_NAMES.filter((name) => !scheduled.has(name)).slice(0, 4);
 
   // Accounts land on their dashboard; the paywall waits until they go to file a claim.
   const toDashboard = () => navigate("/welcome");
@@ -666,7 +644,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
       <button type="button" className="back-link" onClick={onBack}>
         ← Back
       </button>
-      <p className="eyebrow">Almost there</p>
       <h1 className="flow-title">Your reminder schedule</h1>
       <p className="muted">Rightful members get an email before every deadline, so nothing closes on you.</p>
 
@@ -698,12 +675,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
           </li>
         )}
       </ul>
-      {watched.length > 0 && (
-        <p className="muted r-watched">
-          👀 We also watch <b>{watched.join(", ")}</b> and {brands.length - watched.length}+ other companies, and email
-          members the day a new settlement opens.
-        </p>
-      )}
 
       {session ? (
         <>
