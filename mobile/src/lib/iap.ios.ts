@@ -29,6 +29,8 @@ function fromPurchase(purchase: Purchase): AppleEntitlement | null {
   if (!plan || purchase.purchaseState === "pending") return null;
   const ios = purchase as Purchase & { expirationDateIOS?: number | null; revocationDateIOS?: number | null };
   if (ios.revocationDateIOS) return null;
+  // Apple replays old transactions at launch; one whose period has ended unlocks nothing.
+  if (ios.expirationDateIOS && ios.expirationDateIOS < Date.now()) return null;
   return {
     productId: purchase.productId,
     plan,
