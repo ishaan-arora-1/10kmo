@@ -5,12 +5,12 @@ import { SettlementCard } from "../components/ui";
 import { daysUntil } from "../lib/models";
 import { useStore } from "../lib/store";
 
-const FILTERS = ["Matches me", "No proof", "Closing soon", "Highest payout"] as const;
+const FILTERS = ["All", "Matches me", "No proof", "Closing soon", "Highest payout"] as const;
 type Filter = (typeof FILTERS)[number];
 
 export function Browse() {
   const store = useStore();
-  const [filter, setFilter] = useState<Filter>("Matches me");
+  const [filter, setFilter] = useState<Filter>("All");
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => {
