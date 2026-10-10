@@ -457,7 +457,6 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .reminder-list small { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
 .r-date { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--money); }
 .reminder-list li.r-more { display: block; color: var(--muted); font-size: 14px; }
-.r-watched { font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .q-option { transition: none; } }
 .flow-body > button.back-link { justify-self: start; padding: 0; background: none; border: 0; cursor: pointer; }
 
