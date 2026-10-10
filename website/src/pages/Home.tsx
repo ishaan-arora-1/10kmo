@@ -12,7 +12,6 @@ import {
   opensLabel,
   payoutRange,
   plural,
-  usd,
   type Settlement,
 } from "../lib/models";
 import { useStore } from "../lib/store";
@@ -36,7 +35,6 @@ export function Home() {
       a.deadline.localeCompare(b.deadline),
   );
   const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
-  const noProof = toFile.filter((settlement) => !settlement.proofRequired).length;
   const firstOpen = toFile.find((settlement) => !isUpcoming(settlement));
   // Highlight the spotlight claim; without one, the most urgent claim.
   const spotlight = toFile.find((settlement) => settlement.isSpotlight && !isUpcoming(settlement));
@@ -48,9 +46,6 @@ export function Home() {
       : index === 0 && settlement === firstOpen && daysUntil(settlement.deadline) <= 30
         ? "Most urgent"
         : null;
-  const soonest = toFile
-    .filter((settlement) => !isUpcoming(settlement))
-    .reduce<Settlement | undefined>((best, s) => (!best || s.deadline < best.deadline ? s : best), undefined);
   const needsStates = store.selectedStates.size === 0;
   const missedTotal = store.missed.reduce((total, payout) => total + payout.amountMax, 0);
   const watching = store.estimates.filter(({ brand }) => !toFile.some((s) => s.brandId === brand.id));
@@ -75,17 +70,6 @@ export function Home() {
             amount: store.history.total,
           };
 
-  const subline =
-    toFile.length > 0
-      ? [
-          `${toFile.length} ${plural(toFile.length, "claim", "claims")} ready to file`,
-          noProof > 0 && `${noProof} need no proof`,
-          soonest && `first closes in ${dayCount(daysUntil(soonest.deadline))}`,
-        ]
-          .filter(Boolean)
-          .join(" · ")
-      : `We’re watching your ${store.selectedBrandIds.size} ${plural(store.selectedBrandIds.size, "company", "companies")} for new settlements`;
-
   // Their own companies first, then the claims open to everyone.
   const payees = [
     ...new Set([
@@ -109,9 +93,8 @@ export function Home() {
   return (
     <div className="page">
       <header className="page-head">
-        <p className="eyebrow">{greeting()}</p>
         <h1>{hero.headline}</h1>
-        <p>{store.isSampleData ? "Previewing Rightful with sample data" : subline}</p>
+        {store.isSampleData && <p>Previewing Rightful with sample data</p>}
       </header>
 
       <MoneyCheck
@@ -121,7 +104,7 @@ export function Home() {
         amount={hero.amount}
         capped
         memo={memo}
-        footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED ‖ ${usd(store.paidTotal)} PAID`}
+        footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED`}
       />
 
       {!store.isPremium &&
@@ -205,16 +188,6 @@ export function Home() {
         <section className="section">
           <h2 className="section-label">You missed up to {cappedTotal(missedTotal)}</h2>
           <PayoutList payouts={store.missed} />
-        </section>
-      )}
-
-      {store.peoplePaid.payouts.length > 0 && (
-        <section className="section">
-          <h2 className="section-label">Paid this past year to people like you</h2>
-          <p className="proof-total">
-            People got up to <b>{cappedTotal(store.peoplePaid.total)}</b> from these settlements alone.
-          </p>
-          <PayoutList payouts={store.peoplePaid.payouts} />
         </section>
       )}
 
@@ -303,11 +276,4 @@ function dayCount(days: number): string {
 
 function closesIn(days: number): string {
   return days === 0 ? "Closes today" : `${dayCount(days)} left`;
-}
-
-function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 5 || hour >= 18) return "Good evening";
-  if (hour < 12) return "Good morning";
-  return "Good afternoon";
 }
