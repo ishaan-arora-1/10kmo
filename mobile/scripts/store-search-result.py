@@ -68,7 +68,10 @@ def draw_phone(canvas: Image.Image, left: int, name: str) -> None:
     frame = Image.new("RGBA", (PHONE_W, phone_h), (0, 0, 0, 0))
     ImageDraw.Draw(frame).rounded_rectangle((0, 0, PHONE_W - 1, phone_h - 1), RADIUS, fill=BEZEL)
     inner = (inner_w, phone_h - 2 * BEZEL_PX)
-    shot = Image.open(SCREENS / name).convert("RGB").resize(inner, Image.LANCZOS)
+    shot = Image.open(SCREENS / name).convert("RGB")
+    # Paint over the status bar (time, Wi-Fi, battery) in the app's background color.
+    ImageDraw.Draw(shot).rectangle((0, 0, shot.width, 200), fill=shot.getpixel((8, 220)))
+    shot = shot.resize(inner, Image.LANCZOS)
     mask = Image.new("L", inner, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, inner[0] - 1, inner[1] - 1), RADIUS - BEZEL_PX, fill=255)
     frame.paste(shot, (BEZEL_PX, BEZEL_PX), mask)
