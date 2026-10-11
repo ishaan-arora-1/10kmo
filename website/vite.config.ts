@@ -31,6 +31,8 @@ export default defineConfig({
         privacy: `${root}privacy.html`,
         terms: `${root}terms.html`,
         support: `${root}support.html`,
+        pricing: `${root}pricing.html`,
+        refund: `${root}refund.html`,
       },
     },
   },
