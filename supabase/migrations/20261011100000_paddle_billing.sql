@@ -27,7 +27,8 @@ alter table public.profiles
     check (plan_source is null or plan_source in ('apple', 'razorpay', 'paddle', 'grant'));
 
 -- Same rules as before (an Apple yearly plan wins, then any web plan, then a grant), with
--- Paddle counted as a web plan next to Razorpay.
+-- Paddle counted as a web plan next to Razorpay. Apple products come from
+-- private.apple_product_plan (20261010100000), so App Store plans rank exactly as before.
 create or replace function private.recompute_subscription_plan(p_user_id uuid)
 returns public.plan_type
 language plpgsql
@@ -47,10 +48,7 @@ declare
   renews boolean;
   expires_at timestamptz;
 begin
-  select case purchase_events.product_id
-      when 'com.rightful.app.yearly' then 'yearly'::public.plan_type
-      when 'com.rightful.app.weekly' then 'weekly'::public.plan_type
-    end
+  select private.apple_product_plan(purchase_events.product_id)
   into apple_plan
   from private.purchase_events as purchase_events
   where purchase_events.user_id = p_user_id
@@ -59,13 +57,10 @@ begin
       purchase_events.expires_at is null
       or purchase_events.expires_at > now()
     )
-    and purchase_events.product_id in (
-      'com.rightful.app.yearly',
-      'com.rightful.app.weekly'
-    )
+    and private.apple_product_plan(purchase_events.product_id) is not null
   order by
-    case purchase_events.product_id
-      when 'com.rightful.app.yearly' then 0
+    case private.apple_product_plan(purchase_events.product_id)
+      when 'yearly' then 0
       else 1
     end,
     purchase_events.expires_at desc nulls first
