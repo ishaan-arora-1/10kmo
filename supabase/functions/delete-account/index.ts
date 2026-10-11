@@ -2,6 +2,7 @@ import { withSupabase } from "npm:@supabase/server@1.5.2";
 import type { Database } from "../_shared/database.types.ts";
 import { withCors } from "../_shared/cors.ts";
 import { razorpay, razorpayKeyId } from "../_shared/razorpay.ts";
+import { paddle, paddleConfigured } from "../_shared/paddle.ts";
 
 const handler = withSupabase<Database>(
   { auth: "user" },
@@ -30,6 +31,23 @@ const handler = withSupabase<Database>(
           );
         } catch (error) {
           console.error("razorpay cancel failed", subscriptionID, error);
+        }
+      }
+    }
+
+    if (paddleConfigured) {
+      const { data: paddleIDs } = await context.supabaseAdmin.rpc(
+        "active_paddle_subscription_ids",
+        { p_user_id: userID },
+      );
+      for (const subscriptionID of paddleIDs ?? []) {
+        try {
+          await paddle(
+            `/subscriptions/${encodeURIComponent(subscriptionID)}/cancel`,
+            { method: "POST", body: { effective_from: "immediately" } },
+          );
+        } catch (error) {
+          console.error("paddle cancel failed", subscriptionID, error);
         }
       }
     }
