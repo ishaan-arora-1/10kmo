@@ -4,6 +4,7 @@ import { BrandSeal } from "./components/ui";
 import { Shell } from "./components/Shell";
 import { track } from "./lib/analytics";
 import { useStore } from "./lib/store";
+import { Admin } from "./pages/Admin";
 import { Browse } from "./pages/Browse";
 import { Claims } from "./pages/Claims";
 import { Home } from "./pages/Home";
@@ -42,6 +43,7 @@ export function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/paywall" element={<Paywall />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/admin" element={<Admin />} />
         <Route
           element={
             <RequireAccount>
