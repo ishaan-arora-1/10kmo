@@ -19,6 +19,7 @@ type Day = {
 };
 type Dashboard = {
   generated_at: string;
+  total_signups?: number;
   daily: Day[];
   subscribers: { plan: string; source: string; n: number }[];
   tried_to_file: { claim: string; people: number }[];
@@ -149,6 +150,13 @@ export function Admin() {
       <Headline days={days} />
 
       <div className="admin-tiles">
+        {data.total_signups !== undefined && (
+          <div className="admin-tile total">
+            <span className="admin-label">Total sign-ups</span>
+            <span className="admin-big">{data.total_signups.toLocaleString("en-US")}</span>
+            <span className="small muted">+{today.signups} today</span>
+          </div>
+        )}
         <Tile label="Sign-ups today" value={today.signups} compare={yesterday.signups} />
         <Tile label="Saw the paywall" value={today.paywall} compare={yesterday.paywall} />
         <Tile label="Opened checkout" value={today.checkout} compare={yesterday.checkout} />
