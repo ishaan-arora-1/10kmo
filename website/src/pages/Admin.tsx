@@ -152,7 +152,7 @@ export function Admin() {
       <div className="admin-tiles">
         {data.total_signups !== undefined && (
           <div className="admin-tile total">
-            <span className="admin-label">Total sign-ups</span>
+            <span className="admin-label">Total users</span>
             <span className="admin-big">{data.total_signups.toLocaleString("en-US")}</span>
             <span className="small muted">+{today.signups} today</span>
           </div>
