@@ -459,3 +459,11 @@ verify_jwt = false
 [functions.razorpay-webhook]
 # Razorpay authenticates this webhook with an HMAC signature.
 verify_jwt = false
+
+[functions.marketing-email]
+# Checks its own x-marketing-key header (MARKETING_SECRET).
+verify_jwt = false
+
+[functions.email-unsubscribe]
+# Opened from email links, so no Supabase auth; the link carries a signed token.
+verify_jwt = false
