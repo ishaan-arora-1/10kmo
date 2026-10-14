@@ -202,7 +202,7 @@ export type Database = {
         Returns: string | null;
       };
       marketing_email_batch: {
-        Args: { p_limit?: number; p_top?: number; p_min_days_left?: number; p_min_days_between?: number };
+        Args: { p_limit?: number; p_top?: number; p_min_days_left?: number; p_min_days_between?: number; p_companies?: string[] };
         Returns: {
           user_id: string;
           email: string;

@@ -17,6 +17,12 @@ const from = Deno.env.get("MARKETING_EMAIL_FROM") ?? "ClaimRightful <hello@claim
 const replyTo = Deno.env.get("MARKETING_REPLY_TO") ?? "support@claimrightful.com";
 const unsubscribeBase = Deno.env.get("MARKETING_UNSUBSCRIBE_URL") ??
   `${Deno.env.get("SUPABASE_URL") ?? ""}/functions/v1/email-unsubscribe`;
+// Which settlements get emailed (company names, comma-separated).
+const companies = (Deno.env.get("MARKETING_COMPANIES") ?? "Apple,Visa & Mastercard")
+  .split(",").map((name) => name.trim()).filter(Boolean);
+// Plain text with no unsubscribe header reads like a personal note to Gmail (Primary, not
+// Promotions); the unsubscribe link stays in the body either way.
+const plainText = Deno.env.get("MARKETING_PLAIN_TEXT") === "true";
 // Resend's batch endpoint takes up to 100 emails per call.
 const BATCH_SIZE = 100;
 
@@ -38,12 +44,14 @@ async function sendBatch(items: Outgoing[]): Promise<(string | null)[]> {
         to: [to],
         reply_to: replyTo,
         subject: email.subject,
-        html: email.html,
         text: email.text,
-        headers: {
-          "List-Unsubscribe": `<${unsubscribe}>`,
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-        },
+        ...(plainText ? {} : {
+          html: email.html,
+          headers: {
+            "List-Unsubscribe": `<${unsubscribe}>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
+        }),
       };
     })),
     signal: AbortSignal.timeout(30_000),
@@ -73,7 +81,11 @@ export default {
     const limit = Math.min(Math.max(Number(options.limit ?? 100), 1), 500);
 
     const admin = context.supabaseAdmin;
-    const { data, error } = await admin.rpc("marketing_email_batch", { p_limit: mode === "send" ? limit : 500 });
+    const { data, error } = await admin.rpc("marketing_email_batch", {
+      p_limit: mode === "send" ? limit : 500,
+      p_top: companies.length || 4,
+      p_companies: companies.length ? companies : undefined,
+    });
     if (error) {
       console.error("marketing batch failed", error);
       return Response.json({ error: "Batch failed" }, { status: 500 });
