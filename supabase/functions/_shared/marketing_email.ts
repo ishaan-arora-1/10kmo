@@ -56,15 +56,6 @@ function dayLabel(day: string): string {
   return new Date(`${day}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-/** The summary's first sentence, without the "People in the US who" lead-in. */
-function whoQualifies(summary: string | null): string | null {
-  const first = (summary ?? "").split(/(?<=\.)\s/)[0]?.trim();
-  if (!first) return null;
-  // "People in the US who bought ..." -> "anyone who bought ..."; "People charged ..." -> "anyone charged ...".
-  const rest = first.replace(/^People (in the US )?/i, "").replace(/^that /i, "who ");
-  return rest === first ? first : `anyone ${rest}`;
-}
-
 export function renderMarketingEmail(
   row: MarketingRow,
   unsubscribeURL: string,
@@ -73,14 +64,12 @@ export function renderMarketingEmail(
   const name = settlementName(row.company);
   const max = Number(row.payout_max ?? 0);
   const amount = max > 0 ? `$${max.toLocaleString("en-US", { maximumFractionDigits: 0 })}` : null;
-  const who = whoQualifies(row.qualifies_summary);
   const link = claimLink(row.settlement_id);
 
   const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
-  const subject = amount ? `${capitalized} settlement: claim up to ${amount}` : `The ${name} settlement is open`;
+  const subject = amount ? `${capitalized} settlement is paying up to ${amount}` : `The ${name} settlement is paying out`;
   const opener = [
-    `The ${name} settlement is open for claims.`,
-    amount ? `It pays up to ${amount}.` : "",
+    amount ? `The ${name} settlement is paying out up to ${amount} per person.` : `The ${name} settlement is paying out.`,
     row.proof_required === false ? "No receipts needed." : "",
   ].filter(Boolean).join(" ");
 
@@ -88,7 +77,6 @@ export function renderMarketingEmail(
   const paragraphs: [string, string][] = [
     ["Hi,", "Hi,"],
     [escapeHTML(opener), opener],
-    ...(who ? [[escapeHTML(`It's for ${who}`), `It's for ${who}`] as [string, string]] : []),
     [`Claims close <b>${dayLabel(row.deadline)}</b>.`, `Claims close ${dayLabel(row.deadline)}.`],
     [
       `File yours here (about 5 minutes): <a href="${link}">${escapeHTML(name)} claim</a>`,
