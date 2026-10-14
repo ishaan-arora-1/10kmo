@@ -201,6 +201,28 @@ export type Database = {
         Args: { p_email: string };
         Returns: string | null;
       };
+      marketing_email_batch: {
+        Args: { p_limit?: number; p_top?: number; p_min_days_left?: number; p_min_days_between?: number };
+        Returns: {
+          user_id: string;
+          email: string;
+          settlement_id: string;
+          company: string;
+          title: string;
+          qualifies_summary: string | null;
+          payout_max: number | null;
+          proof_required: boolean | null;
+          deadline: string;
+        }[];
+      };
+      log_marketing_email: {
+        Args: { p_user_id: string; p_settlement_id: string; p_email: string; p_resend_id: string };
+        Returns: undefined;
+      };
+      marketing_unsubscribe: {
+        Args: { p_user_id: string };
+        Returns: undefined;
+      };
       register_notification_device: {
         Args: {
           p_apns_token: string;
