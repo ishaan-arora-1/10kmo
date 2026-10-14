@@ -110,12 +110,15 @@ export default {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
         return Response.json({ error: "Give a test address in \"to\"" }, { status: 400 });
       }
+      // Test copies carry the tester's own unsubscribe link, never a customer's.
+      const { data: testerId } = await admin.rpc("user_id_for_email", { p_email: to });
+      const testUnsubscribe = await unsubscribeURL((testerId as string | null) ?? "00000000-0000-0000-0000-000000000000");
       const seen = new Set<string>();
       const items: Outgoing[] = [];
       for (const row of rows) {
         if (seen.has(row.company)) continue;
         seen.add(row.company);
-        items.push({ row, to, unsubscribe: await unsubscribeURL(row.user_id) });
+        items.push({ row, to, unsubscribe: testUnsubscribe });
       }
       const ids = items.length ? await sendBatch(items) : [];
       return Response.json({ sent_to: to, versions: items.map((item, i) => ({ company: item.row.company, id: ids[i] })) });
