@@ -445,6 +445,17 @@ verify_jwt = true
 [functions.razorpay-cancel]
 verify_jwt = true
 
+[functions.paddle-cancel]
+verify_jwt = true
+
+[functions.paddle-webhook]
+# Paddle authenticates this webhook with an HMAC signature (Paddle-Signature header).
+verify_jwt = false
+
+[functions.gumroad-ping]
+# Gumroad pings are unsigned; the function confirms each one with Gumroad's API instead.
+verify_jwt = false
+
 [functions.razorpay-webhook]
 # Razorpay authenticates this webhook with an HMAC signature.
 verify_jwt = false

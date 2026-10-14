@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { ActivityToast } from "../components/ActivityToast";
 import { BrandSeal, historyHeadline } from "../components/ui";
 import { track } from "../lib/analytics";
-import { PRICE_LABELS, PRICE_VALUES, type WebPlan } from "../lib/config";
+import { PAYMENTS, PRICE_LABELS, PRICE_VALUES, type WebPlan } from "../lib/config";
 import {
   cappedTotal,
   daysUntil,
@@ -102,6 +102,12 @@ export function Paywall() {
   };
 
   const priceLabel = PRICE_LABELS[plan];
+  const checkoutBy =
+    PAYMENTS === "paddle"
+      ? "Secure checkout by Paddle: Apple Pay, Google Pay, PayPal or card."
+      : PAYMENTS === "gumroad"
+        ? "Secure checkout by Gumroad: card, PayPal, Apple Pay or Google Pay. Cancel anytime."
+        : "Payments are processed securely by Razorpay.";
   const buttonLabel = busy
     ? "Opening secure checkout…"
     : isSampleMode
@@ -242,8 +248,8 @@ export function Paywall() {
           {isSampleMode
             ? "Sample mode: no payment is taken."
             : plan === "yearly"
-              ? `Payments are processed securely by Razorpay. ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
-              : `Payments are processed securely by Razorpay. ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
+              ? `${checkoutBy} ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
+              : `${checkoutBy} ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
         </p>
         <p className="fine-print center">
           {afterFreeClaim && (
