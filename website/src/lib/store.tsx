@@ -33,8 +33,9 @@ import {
   withParentBrands,
 } from "./models";
 import { track } from "./analytics";
-import { FIRST_CLAIM_FREE, PRICE_VALUES, type WebPlan } from "./config";
+import { FIRST_CLAIM_FREE, PAYMENTS, PADDLE, PRICE_VALUES, type WebPlan } from "./config";
 import { pixel } from "./pixel";
+import { loadPaddle, onPaddleEvent } from "./paddle";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
@@ -461,6 +462,73 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return next;
   }, [userId]);
 
+  // Paddle shows its own receipt; access comes from the paddle-webhook, so wait for the plan to flip.
+  const waitForPlan = useCallback(async (): Promise<Plan> => {
+    for (let attempt = 0; attempt < 15; attempt += 1) {
+      const next = await refreshPlan();
+      if (next !== "free") return next;
+      await new Promise((resolve) => window.setTimeout(resolve, 2000));
+    }
+    return "free";
+  }, [refreshPlan]);
+
+  const startPaddleCheckout = useCallback(
+    async (chosen: WebPlan): Promise<CheckoutResult> => {
+      const userId = session?.user.id ?? null;
+      track("checkout_opened", { plan: chosen, userId, detail: "paddle" });
+      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+      const paddle = await loadPaddle();
+      if (!paddle) {
+        track("checkout_failed", { plan: chosen, userId, detail: "paddle: script_blocked" });
+        return {
+          ok: false,
+          message: "The payment window couldn’t load. Check your connection or pause ad blockers, then try again.",
+        };
+      }
+
+      return new Promise<CheckoutResult>((resolve) => {
+        let completed = false;
+        let lastFailure: string | null = null;
+        const stop = onPaddleEvent((event) => {
+          if (event.name === "checkout.completed") {
+            completed = true;
+            stop();
+            void waitForPlan().then((plan) => {
+              paddle.Checkout.close();
+              if (plan === "free") {
+                track("checkout_failed", { plan: chosen, userId, detail: "paddle: paid_not_unlocked" });
+                resolve({
+                  ok: false,
+                  message: "Payment received. Filing will unlock within a minute — refresh this page.",
+                });
+                return;
+              }
+              track("checkout_paid", { plan: chosen, userId, detail: "paddle" });
+              pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+              resolve({ ok: true });
+            });
+          } else if (event.name === "checkout.payment.failed" || event.name === "checkout.payment.error") {
+            lastFailure = "The payment didn’t go through. Please try another payment method.";
+            track("checkout_failed", { plan: chosen, userId, detail: `paddle: ${event.name}` });
+          } else if (event.name === "checkout.error") {
+            track("checkout_failed", { plan: chosen, userId, detail: `paddle: ${event.detail ?? "error"}` });
+          } else if (event.name === "checkout.closed" && !completed) {
+            stop();
+            track("checkout_dismissed", { plan: chosen, userId, detail: lastFailure ? "paddle: failed" : "paddle: closed" });
+            resolve(lastFailure ? { ok: false, message: lastFailure } : { ok: false, cancelled: true });
+          }
+        });
+        const email = session?.user.email;
+        paddle.Checkout.open({
+          items: [{ priceId: PADDLE.prices[chosen], quantity: 1 }],
+          ...(email ? { customer: { email } } : {}),
+          customData: { user_id: userId },
+        });
+      });
+    },
+    [session, waitForPlan],
+  );
+
   const startCheckout = useCallback(
     async (chosen: WebPlan): Promise<CheckoutResult> => {
       const client = supabase;
@@ -468,6 +536,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setLocal((previous) => ({ ...previous, sampleUnlocked: true }));
         return { ok: true };
       }
+      if (PAYMENTS === "paddle") return startPaddleCheckout(chosen);
 
       const userId = session?.user.id ?? null;
       track("checkout_opened", { plan: chosen, userId });
@@ -544,7 +613,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
       });
     },
-    [refreshPlan, session],
+    [refreshPlan, session, startPaddleCheckout],
   );
 
   const cancelSubscription = useCallback(async (): Promise<string | null> => {
@@ -553,14 +622,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const { data, error: invokeError } = await client.functions.invoke<{
       cancelled?: boolean;
       accessUntil?: string | null;
-    }>("razorpay-cancel", { body: {} });
+    }>(planSource === "paddle" ? "paddle-cancel" : "razorpay-cancel", { body: {} });
     if (invokeError || !data?.cancelled) {
       setError("Your subscription couldn’t be canceled. Please try again or email support@claimrightful.com.");
       return null;
     }
     await refreshPlan();
     return data.accessUntil ?? "";
-  }, [refreshPlan]);
+  }, [refreshPlan, planSource]);
 
   const setEmailReminders = useCallback(
     async (on: boolean) => {

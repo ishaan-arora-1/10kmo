@@ -52,7 +52,7 @@ export function Profile() {
   };
 
   const membershipDetail =
-    store.planSource === "razorpay"
+    store.planSource === "razorpay" || store.planSource === "paddle"
       ? store.planRenews === false && store.planExpiresAt
         ? `Ends ${longDate(store.planExpiresAt)}`
         : store.planExpiresAt
@@ -103,7 +103,7 @@ export function Profile() {
               <span>Rightful Premium · {planName}</span>
               <span className="muted">{membershipDetail}</span>
             </div>
-            {store.planSource === "razorpay" && store.planRenews !== false && (
+            {(store.planSource === "razorpay" || store.planSource === "paddle") && store.planRenews !== false && (
               <button type="button" className="setting-row" onClick={() => setCancelOpen(true)}>
                 <span>Cancel subscription</span>
                 <span className="muted">›</span>
