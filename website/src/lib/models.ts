@@ -1,5 +1,5 @@
 export type Plan = "free" | "yearly" | "monthly" | "weekly";
-export type PlanSource = "apple" | "razorpay" | "paddle" | "grant" | null;
+export type PlanSource = "apple" | "razorpay" | "paddle" | "gumroad" | "grant" | null;
 export type ClaimStatus = "To file" | "Filed" | "Approved" | "Rejected" | "Paid";
 export type SettlementStatus = "draft" | "verified" | "closed";
 

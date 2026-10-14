@@ -23,7 +23,7 @@ export type Database = {
           state_code: string | null;
           state_codes: string[];
           plan: "free" | "yearly" | "monthly" | "weekly";
-          plan_source: "apple" | "razorpay" | "paddle" | "grant" | null;
+          plan_source: "apple" | "razorpay" | "paddle" | "gumroad" | "grant" | null;
           plan_renews: boolean | null;
           plan_expires_at: string | null;
           email: string | null;
@@ -178,6 +178,28 @@ export type Database = {
       active_paddle_subscription_ids: {
         Args: { p_user_id: string };
         Returns: string[];
+      };
+      upsert_gumroad_subscription: {
+        Args: {
+          p_subscription_id: string;
+          p_user_id: string;
+          p_email: string | null;
+          p_product_id: string | null;
+          p_plan: "free" | "yearly" | "monthly" | "weekly";
+          p_status: "active" | "ended";
+          p_current_period_end: string | null;
+          p_cancel_at_period_end: boolean | null;
+          p_sale_id: string | null;
+        };
+        Returns: "free" | "yearly" | "monthly" | "weekly";
+      };
+      gumroad_subscription_state: {
+        Args: { p_subscription_id: string };
+        Returns: { user_id: string; plan: "free" | "yearly" | "monthly" | "weekly"; current_period_end: string | null }[];
+      };
+      user_id_for_email: {
+        Args: { p_email: string };
+        Returns: string | null;
       };
       register_notification_device: {
         Args: {

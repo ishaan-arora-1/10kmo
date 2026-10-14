@@ -105,7 +105,9 @@ export function Paywall() {
   const checkoutBy =
     PAYMENTS === "paddle"
       ? "Secure checkout by Paddle: Apple Pay, Google Pay, PayPal or card."
-      : "Payments are processed securely by Razorpay.";
+      : PAYMENTS === "gumroad"
+        ? "Secure checkout by Gumroad: card, PayPal, Apple Pay or Google Pay. Cancel anytime."
+        : "Payments are processed securely by Razorpay.";
   const buttonLabel = busy
     ? "Opening secure checkout…"
     : isSampleMode

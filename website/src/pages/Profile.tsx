@@ -52,7 +52,7 @@ export function Profile() {
   };
 
   const membershipDetail =
-    store.planSource === "razorpay" || store.planSource === "paddle"
+    store.planSource === "razorpay" || store.planSource === "paddle" || store.planSource === "gumroad"
       ? store.planRenews === false && store.planExpiresAt
         ? `Ends ${longDate(store.planExpiresAt)}`
         : store.planExpiresAt
@@ -108,6 +108,12 @@ export function Profile() {
                 <span>Cancel subscription</span>
                 <span className="muted">›</span>
               </button>
+            )}
+            {store.planSource === "gumroad" && (
+              <p className="muted small setting-note">
+                To cancel, use “Manage membership” in your Gumroad receipt email. You keep Premium until the
+                end of the period you paid for.
+              </p>
             )}
             {store.planSource === "apple" && (
               <p className="muted small setting-note">

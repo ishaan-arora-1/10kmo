@@ -33,7 +33,7 @@ import {
   withParentBrands,
 } from "./models";
 import { track } from "./analytics";
-import { FIRST_CLAIM_FREE, PAYMENTS, PADDLE, PRICE_VALUES, type WebPlan } from "./config";
+import { FIRST_CLAIM_FREE, GUMROAD, PAYMENTS, PADDLE, PRICE_VALUES, type WebPlan } from "./config";
 import { pixel } from "./pixel";
 import { loadPaddle, onPaddleEvent } from "./paddle";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
@@ -41,6 +41,8 @@ import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
 
 const STORAGE_KEY = "rightful.web.v1";
+/** Set when we send someone to Gumroad's checkout, so we can confirm the upgrade when they come back. */
+const GUMROAD_PENDING_KEY = "rightful.gumroadPending";
 
 /** Everything a visitor does before signing in lives in the browser, like the iPhone app. */
 interface LocalState {
@@ -529,6 +531,74 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [session, waitForPlan],
   );
 
+  // Gumroad's checkout is its own page. The paywall sends people there with their account id
+  // in the link; the gumroad-ping function unlocks the account when Gumroad reports the sale.
+  const startGumroadCheckout = useCallback(
+    async (chosen: WebPlan): Promise<CheckoutResult> => {
+      const userId = session?.user.id ?? null;
+      track("checkout_opened", { plan: chosen, userId, detail: "gumroad" });
+      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+      const url = new URL(GUMROAD[chosen]);
+      url.searchParams.set("wanted", "true");
+      const email = session?.user.email;
+      if (email) url.searchParams.set("email", email);
+      if (userId) url.searchParams.set("user_id", userId);
+      try {
+        localStorage.setItem(GUMROAD_PENDING_KEY, JSON.stringify({ plan: chosen, at: Date.now() }));
+      } catch {
+        // Storage blocked: the account still unlocks, we just can't record the purchase event.
+      }
+      return new Promise<CheckoutResult>((resolve) => {
+        // Coming back with the browser's Back button restores this page; let the paywall reset.
+        window.addEventListener(
+          "pageshow",
+          (event) => {
+            if (event.persisted) resolve({ ok: false, cancelled: true });
+          },
+          { once: true },
+        );
+        // A moment for the analytics event to leave before the page changes.
+        window.setTimeout(() => window.location.assign(url.toString()), 350);
+      });
+    },
+    [session],
+  );
+
+  // Back from Gumroad: wait for the sale to unlock the account, then record the purchase once.
+  useEffect(() => {
+    if (!userId) return;
+    let pending: { plan: WebPlan; at: number } | null = null;
+    try {
+      pending = JSON.parse(localStorage.getItem(GUMROAD_PENDING_KEY) ?? "null");
+    } catch {
+      pending = null;
+    }
+    if (!pending) return;
+    const { plan: chosen, at } = pending;
+    let stopped = false;
+    void waitForPlan().then((next) => {
+      if (stopped) return;
+      const clear = () => {
+        try {
+          localStorage.removeItem(GUMROAD_PENDING_KEY);
+        } catch {
+          // Nothing to clear.
+        }
+      };
+      if (next !== "free") {
+        clear();
+        track("checkout_paid", { plan: chosen, userId, detail: "gumroad" });
+        pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+      } else if (Date.now() - at > 30 * 60 * 1000) {
+        clear();
+        track("checkout_dismissed", { plan: chosen, userId, detail: "gumroad: not paid" });
+      }
+    });
+    return () => {
+      stopped = true;
+    };
+  }, [userId, waitForPlan]);
+
   const startCheckout = useCallback(
     async (chosen: WebPlan): Promise<CheckoutResult> => {
       const client = supabase;
@@ -537,6 +607,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return { ok: true };
       }
       if (PAYMENTS === "paddle") return startPaddleCheckout(chosen);
+      if (PAYMENTS === "gumroad") return startGumroadCheckout(chosen);
 
       const userId = session?.user.id ?? null;
       track("checkout_opened", { plan: chosen, userId });
@@ -613,7 +684,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         });
       });
     },
-    [refreshPlan, session, startPaddleCheckout],
+    [refreshPlan, session, startGumroadCheckout, startPaddleCheckout],
   );
 
   const cancelSubscription = useCallback(async (): Promise<string | null> => {

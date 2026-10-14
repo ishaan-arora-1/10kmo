@@ -22,8 +22,22 @@ export const PADDLE = {
   },
 };
 
-export const PAYMENTS: "paddle" | "razorpay" =
-  PADDLE.token && PADDLE.prices.monthly && PADDLE.prices.yearly ? "paddle" : "razorpay";
+/**
+ * Gumroad memberships (cards, PayPal, Apple Pay, Google Pay): the stopgap while Paddle's
+ * website review is pending. Each URL is a Gumroad membership product page.
+ */
+export const GUMROAD = {
+  monthly: import.meta.env.VITE_GUMROAD_MONTHLY_URL ?? "",
+  yearly: import.meta.env.VITE_GUMROAD_YEARLY_URL ?? "",
+};
+
+/** Paddle when configured, else Gumroad when configured, else Razorpay. */
+export const PAYMENTS: "paddle" | "gumroad" | "razorpay" =
+  PADDLE.token && PADDLE.prices.monthly && PADDLE.prices.yearly
+    ? "paddle"
+    : GUMROAD.monthly && GUMROAD.yearly
+      ? "gumroad"
+      : "razorpay";
 
 /** The plans the website sells. Existing weekly subscriptions still renew, but weekly isn't offered. */
 export type WebPlan = "yearly" | "monthly";
