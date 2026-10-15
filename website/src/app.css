@@ -524,6 +524,8 @@ input::placeholder { color: var(--muted); opacity: .8; }
   padding: 3px 9px; border-radius: 99px; background: var(--ink); color: var(--on-ink);
 }
 .admin-refresh { display: flex; align-items: center; gap: 12px; }
+.admin-nav { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.admin-nav:hover { color: var(--ink); }
 .admin-btn { padding: 8px 16px; font-size: 14px; }
 .admin-headline {
   font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4.4vw, 44px);
@@ -565,6 +567,9 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .admin-chart .bar-group:focus-visible .hit { stroke: var(--money); stroke-width: 1.5; }
 .admin-chart .ck { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; }
 .admin-chart .ck.paid { fill: var(--money); stroke: var(--money); }
+.admin-chart .line { fill: none; stroke: var(--money); stroke-width: 2.5; stroke-linejoin: round; }
+.admin-chart .area { fill: var(--money); opacity: .1; }
+.admin-chart .pt { fill: var(--money); stroke: var(--surface); stroke-width: 2; }
 .admin-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 4px 6px; }
 .admin-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .admin-legend .sw { width: 11px; height: 11px; border-radius: 3px; background: var(--money); display: inline-block; }
@@ -596,8 +601,9 @@ input::placeholder { color: var(--muted); opacity: .8; }
   .admin-step .track { grid-column: 1 / -1; grid-row: 2; }
 }
 
+.admin-pair.even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .admin-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: start; }
-@media (max-width: 820px) { .admin-pair { grid-template-columns: 1fr; } }
+@media (max-width: 820px) { .admin-pair, .admin-pair.even { grid-template-columns: 1fr; } }
 .admin-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 16px; margin: 0; }
 .admin-claim { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding-block: 8px; font-size: 15px; }
 .admin-claim .track { grid-column: 1 / -1; height: 7px; }
