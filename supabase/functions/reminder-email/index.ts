@@ -19,6 +19,7 @@ const unsubscribeBase = Deno.env.get("MARKETING_UNSUBSCRIBE_URL") ??
   `${Deno.env.get("SUPABASE_URL") ?? ""}/functions/v1/email-unsubscribe`;
 // Resend's batch endpoint takes up to 100 emails per call.
 const BATCH_SIZE = 100;
+const PAGE_SIZE = 1000;
 const ZERO_UUID = "00000000-0000-0000-0000-000000000000";
 
 async function unsubscribeURL(userId: string): Promise<string> {
@@ -84,12 +85,20 @@ export default {
     const today = mode !== "send" && /^\d{4}-\d{2}-\d{2}$/.test(options.today ?? "") ? options.today : undefined;
 
     const admin = context.supabaseAdmin;
-    const { data, error } = await admin.rpc("reminder_email_batch", today ? { p_today: today } : {});
-    if (error) {
-      console.error("reminder batch failed", error);
-      return Response.json({ error: "Batch failed" }, { status: 500 });
+    // The API returns at most 1,000 rows per call, so read the day's items in pages.
+    const rows: ReminderRow[] = [];
+    for (let from = 0;; from += PAGE_SIZE) {
+      const { data, error } = await admin
+        .rpc("reminder_email_batch", today ? { p_today: today } : {})
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) {
+        console.error("reminder batch failed", error);
+        return Response.json({ error: "Batch failed" }, { status: 500 });
+      }
+      rows.push(...((data ?? []) as ReminderRow[]));
+      if ((data ?? []).length < PAGE_SIZE) break;
     }
-    const people = byPerson((data ?? []) as ReminderRow[]);
+    const people = byPerson(rows);
 
     if (mode === "preview") {
       const kinds: Record<string, number> = {};
