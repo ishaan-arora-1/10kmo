@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { BrandSeal, Wordmark } from "../components/ui";
 import { useStore } from "../lib/store";
 import { supabase } from "../lib/supabase";
@@ -137,6 +137,7 @@ export function Admin() {
         <div className="admin-title">
           <Wordmark />
           <span className="admin-chip">Admin</span>
+          <Link className="admin-nav small" to="/users">User stats</Link>
         </div>
         <div className="admin-refresh">
           <span className="mono small muted">{timeLabel(data.generated_at)}</span>

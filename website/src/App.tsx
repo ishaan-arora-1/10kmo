@@ -13,6 +13,7 @@ import { Paywall } from "./pages/Paywall";
 import { Profile } from "./pages/Profile";
 import { SettlementDetail } from "./pages/SettlementDetail";
 import { SignIn } from "./pages/SignIn";
+import { Users } from "./pages/Users";
 import { Welcome } from "./pages/Welcome";
 import { isSampleMode } from "./lib/supabase";
 
@@ -44,6 +45,8 @@ export function App() {
         <Route path="/paywall" element={<Paywall />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/user" element={<Navigate to="/users" replace />} />
         <Route
           element={
             <RequireAccount>
