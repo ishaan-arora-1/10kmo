@@ -223,6 +223,27 @@ export type Database = {
         Args: { p_user_id: string };
         Returns: undefined;
       };
+      reminder_email_batch: {
+        Args: { p_today?: string; p_weekly_days?: number };
+        Returns: {
+          user_id: string;
+          email: string;
+          kind: "deadline" | "opens" | "new" | "payout" | "weekly";
+          item: string;
+          settlement_id: string;
+          company: string;
+          title: string;
+          qualifies_summary: string | null;
+          payout_min: number | null;
+          payout_max: number | null;
+          deadline: string;
+          days_left: number;
+        }[];
+      };
+      log_reminder_emails: {
+        Args: { p_user_ids: string[]; p_items: string[]; p_emails: string[]; p_resend_ids: string[] };
+        Returns: undefined;
+      };
       register_notification_device: {
         Args: {
           p_apns_token: string;

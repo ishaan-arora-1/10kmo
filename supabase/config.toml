@@ -464,6 +464,10 @@ verify_jwt = false
 # Checks its own x-marketing-key header (MARKETING_SECRET).
 verify_jwt = false
 
+[functions.reminder-email]
+# Checks its own x-marketing-key header (MARKETING_SECRET).
+verify_jwt = false
+
 [functions.email-unsubscribe]
 # Opened from email links, so no Supabase auth; the link carries a signed token.
 verify_jwt = false
