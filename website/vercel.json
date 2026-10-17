@@ -1,5 +1,21 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [{ "source": "/app/:path+", "destination": "/app" }]
+  "rewrites": [
+    {
+      "source": "/app/:path+",
+      "destination": "/app"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/apple-developer-merchantid-domain-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        }
+      ]
+    }
+  ]
 }
