@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { ActivityToast } from "../components/ActivityToast";
 import { BrandSeal, historyHeadline } from "../components/ui";
 import { track } from "../lib/analytics";
-import { PAYMENTS, PRICE_LABELS, PRICE_VALUES, type WebPlan } from "../lib/config";
+import { PAYMENTS, PRICE_LABELS, PRICE_VALUES, YEARLY_TRIAL_DAYS, type WebPlan } from "../lib/config";
 import {
   cappedTotal,
   daysUntil,
@@ -30,7 +30,8 @@ export function Paywall() {
   const next = safeNext(params.get("next"));
   // Shown right after they file their free claim.
   const afterFreeClaim = params.get("from") === "free_claim";
-  const [plan, setPlan] = useState<WebPlan>("monthly");
+  // With the yearly free trial on, yearly is the default.
+  const [plan, setPlan] = useState<WebPlan>(YEARLY_TRIAL_DAYS > 0 ? "yearly" : "monthly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   // Opened from a settlement's "File your claim" button: lead with that claim.
@@ -102,6 +103,15 @@ export function Paywall() {
   };
 
   const priceLabel = PRICE_LABELS[plan];
+  const trial = plan === "yearly" && YEARLY_TRIAL_DAYS > 0;
+  const trialLength = YEARLY_TRIAL_DAYS === 1 ? "1 day" : `${YEARLY_TRIAL_DAYS} days`;
+  // When the first payment happens if they don't cancel (Paddle counts from checkout).
+  const chargeAt = new Date(Date.now() + YEARLY_TRIAL_DAYS * 86_400_000).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
   const checkoutBy =
     PAYMENTS === "paddle"
       ? "Secure checkout by Paddle: Apple Pay, Google Pay, PayPal or card."
@@ -112,7 +122,9 @@ export function Paywall() {
     ? "Opening secure checkout…"
     : isSampleMode
       ? "Unlock sample"
-      : showBill
+      : trial
+        ? `Try free for ${trialLength}`
+        : showBill
         ? `Claim my ${usd(billTotal)} for ${priceLabel}`
         : plan === "yearly"
           ? `Subscribe for ${PRICE_LABELS.yearly}/year`
@@ -129,7 +141,9 @@ export function Paywall() {
       <div className="flow-body">
         {afterFreeClaim && <p className="pw-done">✓ Claim filed. Nice work.</p>}
         <h1 className="flow-title">
-          {showBill
+          {showBill && trial
+            ? `Try free for ${trialLength}. Claim up to ${usd(billTotal)}.`
+            : showBill
             ? `Pay ${priceLabel}. Claim up to ${usd(billTotal)}.`
             : afterFreeClaim
               ? "Be first when your companies settle"
@@ -175,7 +189,7 @@ export function Paywall() {
                 <span className="bill-amt">up to {usd(billTotal)}</span>
               </div>
               <div className="bill-row">
-                <span>Rightful, {plan === "yearly" ? "1 year" : "1 month"}</span>
+                <span>Rightful, {plan === "yearly" ? (trial ? `1 year (first ${trialLength.replace("1 ", "")} free)` : "1 year") : "1 month"}</span>
                 <span className="bill-amt minus">−{priceLabel}</span>
               </div>
               {keep > 0 && (
@@ -217,11 +231,17 @@ export function Paywall() {
           {buttonLabel}
         </button>
         <p className="pw-plan">
-          {plan === "monthly" ? `${PRICE_LABELS.monthly}/month · cancel anytime` : `${PRICE_LABELS.yearly} billed yearly · cancel anytime`}
+          {plan === "monthly"
+            ? `${PRICE_LABELS.monthly}/month · cancel anytime`
+            : trial
+              ? `Free for ${trialLength}, then ${PRICE_LABELS.yearly}/year · cancel anytime`
+              : `${PRICE_LABELS.yearly} billed yearly · cancel anytime`}
           <br />
           <button type="button" className="link-btn" onClick={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
             {plan === "monthly"
-              ? `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
+              ? YEARLY_TRIAL_DAYS > 0
+                ? `or try free for ${trialLength}, then ${PRICE_LABELS.yearly}/year`
+                : `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
               : `or ${PRICE_LABELS.monthly}/month`}
           </button>
         </p>
@@ -247,7 +267,9 @@ export function Paywall() {
         <p className="fine-print center">
           {isSampleMode
             ? "Sample mode: no payment is taken."
-            : plan === "yearly"
+            : trial
+              ? `${checkoutBy} Nothing is charged today. If you don’t cancel in Profile by ${chargeAt}, ${PRICE_LABELS.yearly} is charged then and every year until you cancel.`
+              : plan === "yearly"
               ? `${checkoutBy} ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
               : `${checkoutBy} ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
         </p>

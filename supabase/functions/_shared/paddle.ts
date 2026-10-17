@@ -9,15 +9,16 @@ const apiKey = Deno.env.get("PADDLE_API_KEY") ?? "";
 export const paddleWebhookSecret = Deno.env.get("PADDLE_WEBHOOK_SECRET") ?? "";
 export const paddleConfigured = apiKey !== "";
 
-const priceIds: Record<WebPlan, string | undefined> = {
-  yearly: Deno.env.get("PADDLE_PRICE_YEARLY"),
-  monthly: Deno.env.get("PADDLE_PRICE_MONTHLY"),
-  weekly: undefined,
+const priceIds: Record<WebPlan, (string | undefined)[]> = {
+  // The yearly plan with a free trial is its own Paddle price; both unlock "yearly".
+  yearly: [Deno.env.get("PADDLE_PRICE_YEARLY"), Deno.env.get("PADDLE_PRICE_YEARLY_TRIAL")],
+  monthly: [Deno.env.get("PADDLE_PRICE_MONTHLY")],
+  weekly: [],
 };
 
 export function planForPrice(priceId: string): WebPlan | null {
-  if (priceId && priceId === priceIds.yearly) return "yearly";
-  if (priceId && priceId === priceIds.monthly) return "monthly";
+  if (priceId && priceIds.yearly.includes(priceId)) return "yearly";
+  if (priceId && priceIds.monthly.includes(priceId)) return "monthly";
   return null;
 }
 

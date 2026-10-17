@@ -1,5 +1,5 @@
 /** Meta Pixel events, so ads can be optimized for people who actually subscribe. */
-type PixelEvent = "ViewContent" | "CompleteRegistration" | "InitiateCheckout" | "Purchase";
+type PixelEvent = "ViewContent" | "CompleteRegistration" | "InitiateCheckout" | "StartTrial" | "Purchase";
 
 declare global {
   interface Window {
