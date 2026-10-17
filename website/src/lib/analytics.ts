@@ -23,6 +23,7 @@ export type FunnelEvent =
   | "checkout_dismissed"
   | "checkout_failed"
   | "checkout_paid"
+  | "trial_started"
   | "account_deleted"
   | "account_delete_failed";
 

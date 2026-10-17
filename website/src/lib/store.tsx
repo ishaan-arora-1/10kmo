@@ -33,7 +33,7 @@ import {
   withParentBrands,
 } from "./models";
 import { track } from "./analytics";
-import { FIRST_CLAIM_FREE, GUMROAD, PAYMENTS, PADDLE, PRICE_VALUES, type WebPlan } from "./config";
+import { FIRST_CLAIM_FREE, GUMROAD, PAYMENTS, PADDLE, PRICE_VALUES, YEARLY_TRIAL_DAYS, type WebPlan } from "./config";
 import { pixel } from "./pixel";
 import { loadPaddle, onPaddleEvent } from "./paddle";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
@@ -505,8 +505,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 });
                 return;
               }
-              track("checkout_paid", { plan: chosen, userId, detail: "paddle" });
-              pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+              if (chosen === "yearly" && YEARLY_TRIAL_DAYS > 0) {
+                // Nothing was charged yet; the first payment comes when the trial ends.
+                track("trial_started", { plan: chosen, userId, detail: "paddle" });
+                pixel("StartTrial", { content_name: chosen, currency: "USD", value: 0, predicted_ltv: PRICE_VALUES[chosen] });
+              } else {
+                track("checkout_paid", { plan: chosen, userId, detail: "paddle" });
+                pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+              }
               resolve({ ok: true });
             });
           } else if (event.name === "checkout.payment.failed" || event.name === "checkout.payment.error") {

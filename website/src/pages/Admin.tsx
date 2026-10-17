@@ -15,12 +15,14 @@ type Day = {
   paywall: number;
   tapped_file: number;
   checkout: number;
+  trials?: number;
   paid: number;
 };
 type Dashboard = {
   generated_at: string;
   total_signups?: number;
   daily: Day[];
+  trials?: { on_trial: number; canceling: number; paid: number; canceled: number };
   subscribers: { plan: string; source: string; n: number }[];
   tried_to_file: { claim: string; people: number }[];
   checkouts: { at: string; event: string; detail: string | null; tz: string | null; who: string }[];
@@ -35,6 +37,7 @@ const STEPS: { key: keyof Day; label: string }[] = [
   { key: "paywall", label: "Saw the paywall" },
   { key: "tapped_file", label: "Tapped File" },
   { key: "checkout", label: "Opened checkout" },
+  { key: "trials", label: "Started free trial" },
   { key: "paid", label: "Paid" },
 ];
 
@@ -162,6 +165,15 @@ export function Admin() {
         <Tile label="Saw the paywall" value={today.paywall} compare={yesterday.paywall} />
         <Tile label="Opened checkout" value={today.checkout} compare={yesterday.checkout} />
         <Subscribers rows={data.subscribers} />
+        {data.trials && (
+          <div className="admin-tile">
+            <span className="admin-label">Yearly trials</span>
+            <span className="admin-big">{data.trials.on_trial + data.trials.canceling}</span>
+            <span className="small muted">
+              on trial ({data.trials.canceling} canceling) · {data.trials.paid} paid · {data.trials.canceled} canceled
+            </span>
+          </div>
+        )}
       </div>
 
       <section className="admin-block">
@@ -338,8 +350,8 @@ function Funnel({ day }: { day: Day }) {
   let worstRate = 2;
   STEPS.forEach((s, i) => {
     if (i === 0) return;
-    const prev = day[STEPS[i - 1].key] as number;
-    const rate = (day[s.key] as number) / prev;
+    const prev = Number(day[STEPS[i - 1].key] ?? 0);
+    const rate = Number(day[s.key] ?? 0) / prev;
     if (prev >= 3 && rate < worstRate) {
       worstRate = rate;
       worst = i;
@@ -348,8 +360,8 @@ function Funnel({ day }: { day: Day }) {
   return (
     <div className="admin-funnel">
       {STEPS.map((s, i) => {
-        const v = day[s.key] as number;
-        const prev = i > 0 ? (day[STEPS[i - 1].key] as number) : null;
+        const v = Number(day[s.key] ?? 0);
+        const prev = i > 0 ? Number(day[STEPS[i - 1].key] ?? 0) : null;
         const pct = prev === null ? "" : prev > 0 ? `${Math.round((v / prev) * 100)}%` : "–";
         return (
           <div key={s.key} className={`admin-step${i === worst ? " drop" : ""}`}>
@@ -425,7 +437,7 @@ function DayTable({ days }: { days: Day[] }) {
           {[...days].reverse().map((d) => (
             <tr key={d.d}>
               <td>{dayLabel(d.d, true)}</td>
-              {[d.signups, ...STEPS.map((s) => d[s.key] as number)].map((v, i, all) => (
+              {[d.signups, ...STEPS.map((s) => Number(d[s.key] ?? 0))].map((v, i, all) => (
                 <td key={i} className={v === 0 ? "zero" : i === all.length - 1 ? "money strong" : undefined}>
                   {v}
                 </td>

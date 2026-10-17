@@ -39,6 +39,13 @@ export const PAYMENTS: "paddle" | "gumroad" | "razorpay" =
       ? "gumroad"
       : "razorpay";
 
+/**
+ * Free trial on the yearly plan, in days (2026-10-17 test: 1 day, then $39.99/year). Only with
+ * Paddle, and VITE_PADDLE_PRICE_YEARLY must then be the Paddle price that has this trial.
+ * 0 or unset: no trial, yearly is charged at checkout.
+ */
+export const YEARLY_TRIAL_DAYS = PAYMENTS === "paddle" ? Number(import.meta.env.VITE_PADDLE_YEARLY_TRIAL_DAYS || 0) : 0;
+
 /** The plans the website sells. Existing weekly subscriptions still renew, but weekly isn't offered. */
 export type WebPlan = "yearly" | "monthly";
 
