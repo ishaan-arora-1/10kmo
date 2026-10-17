@@ -235,6 +235,36 @@ export function Paywall() {
           </p>
         )}
 
+        {YEARLY_TRIAL_DAYS > 0 && (
+          <fieldset className="plans">
+            <legend className="sr-only">Choose a plan</legend>
+            <label className={`plan-option${plan === "yearly" ? " on" : ""}`}>
+              <input
+                type="radio"
+                name="plan"
+                checked={plan === "yearly"}
+                onChange={() => setPlan("yearly")}
+              />
+              <span className="plan-text">
+                <b>{trialLength} free trial</b>
+                <span>Free today, then {PRICE_LABELS.yearly}/year</span>
+              </span>
+            </label>
+            <label className={`plan-option${plan === "monthly" ? " on" : ""}`}>
+              <input
+                type="radio"
+                name="plan"
+                checked={plan === "monthly"}
+                onChange={() => setPlan("monthly")}
+              />
+              <span className="plan-text">
+                <b>Monthly</b>
+                <span>{PRICE_LABELS.monthly}/month, no trial</span>
+              </span>
+            </label>
+          </fieldset>
+        )}
+
         <button type="button" className="btn block" onClick={subscribe} disabled={busy}>
           {buttonLabel}
         </button>
@@ -244,14 +274,16 @@ export function Paywall() {
             : trial
               ? `Free for ${trialLength} · cancel anytime`
               : `${PRICE_LABELS.yearly} billed yearly · cancel anytime`}
-          <br />
-          <button type="button" className="link-btn" onClick={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
-            {plan === "monthly"
-              ? YEARLY_TRIAL_DAYS > 0
-                ? `or try free for ${trialLength}`
-                : `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
-              : `or ${PRICE_LABELS.monthly}/month`}
-          </button>
+          {YEARLY_TRIAL_DAYS === 0 && (
+            <>
+              <br />
+              <button type="button" className="link-btn" onClick={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
+                {plan === "monthly"
+                  ? `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
+                  : `or ${PRICE_LABELS.monthly}/month`}
+              </button>
+            </>
+          )}
         </p>
 
         <ul className="features compact">
