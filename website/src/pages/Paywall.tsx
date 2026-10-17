@@ -75,7 +75,9 @@ export function Paywall() {
   const shown = fileable.slice(0, 5);
   const rest = fileable.slice(5);
   const anyBig = fileable.some((s) => s.payoutMax > BIG_CLAIM);
-  const price = PRICE_VALUES[plan];
+  const trial = plan === "yearly" && YEARLY_TRIAL_DAYS > 0;
+  // Nothing is charged today on the trial, so the bill doesn't subtract the price.
+  const price = trial ? 0 : PRICE_VALUES[plan];
   // Whole dollars, rounded down, so it never overstates.
   const keep = Math.floor(billTotal - price);
   const closingSoon = fileable.filter((s) => daysUntil(s.deadline) <= 30).length;
@@ -103,7 +105,6 @@ export function Paywall() {
   };
 
   const priceLabel = PRICE_LABELS[plan];
-  const trial = plan === "yearly" && YEARLY_TRIAL_DAYS > 0;
   const trialLength = YEARLY_TRIAL_DAYS === 1 ? "1 day" : `${YEARLY_TRIAL_DAYS} days`;
   // When the first payment happens if they don't cancel (Paddle counts from checkout).
   const chargeAt = new Date(Date.now() + YEARLY_TRIAL_DAYS * 86_400_000).toLocaleString("en-US", {
@@ -123,7 +124,7 @@ export function Paywall() {
     : isSampleMode
       ? "Unlock sample"
       : trial
-        ? `Try free for ${trialLength}`
+        ? "Start my free trial"
         : showBill
         ? `Claim my ${usd(billTotal)} for ${priceLabel}`
         : plan === "yearly"
@@ -188,11 +189,18 @@ export function Paywall() {
                 <span>You could claim</span>
                 <span className="bill-amt">up to {usd(billTotal)}</span>
               </div>
-              <div className="bill-row">
-                <span>Rightful, {plan === "yearly" ? (trial ? `1 year (first ${trialLength.replace("1 ", "")} free)` : "1 year") : "1 month"}</span>
-                <span className="bill-amt minus">−{priceLabel}</span>
-              </div>
-              {keep > 0 && (
+              {trial ? (
+                <div className="bill-row">
+                  <span>Rightful, {trialLength} free trial</span>
+                  <span className="bill-amt">$0 today</span>
+                </div>
+              ) : (
+                <div className="bill-row">
+                  <span>Rightful, {plan === "yearly" ? "1 year" : "1 month"}</span>
+                  <span className="bill-amt minus">−{priceLabel}</span>
+                </div>
+              )}
+              {keep > 0 && !trial && (
                 <div className="bill-row keep">
                   <span>You could keep</span>
                   <span className="bill-amt">up to {usd(keep)}</span>
@@ -234,13 +242,13 @@ export function Paywall() {
           {plan === "monthly"
             ? `${PRICE_LABELS.monthly}/month · cancel anytime`
             : trial
-              ? `Free for ${trialLength}, then ${PRICE_LABELS.yearly}/year · cancel anytime`
+              ? `Free for ${trialLength} · cancel anytime`
               : `${PRICE_LABELS.yearly} billed yearly · cancel anytime`}
           <br />
           <button type="button" className="link-btn" onClick={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
             {plan === "monthly"
               ? YEARLY_TRIAL_DAYS > 0
-                ? `or try free for ${trialLength}, then ${PRICE_LABELS.yearly}/year`
+                ? `or try free for ${trialLength}`
                 : `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
               : `or ${PRICE_LABELS.monthly}/month`}
           </button>
