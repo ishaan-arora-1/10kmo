@@ -495,6 +495,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           if (event.name === "checkout.completed") {
             completed = true;
             stop();
+            // Record it as soon as Paddle confirms, before waiting for the unlock: people often
+            // close the window on Paddle's success screen.
+            if (chosen === "yearly" && YEARLY_TRIAL_DAYS > 0) {
+              // Nothing was charged yet; the first payment comes when the trial ends.
+              track("trial_started", { plan: chosen, userId, detail: "paddle" });
+              pixel("StartTrial", { content_name: chosen, currency: "USD", value: 0, predicted_ltv: PRICE_VALUES[chosen] });
+            } else {
+              track("checkout_paid", { plan: chosen, userId, detail: "paddle" });
+              pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+            }
             void waitForPlan().then((plan) => {
               paddle.Checkout.close();
               if (plan === "free") {
@@ -504,14 +514,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                   message: "Payment received. Filing will unlock within a minute — refresh this page.",
                 });
                 return;
-              }
-              if (chosen === "yearly" && YEARLY_TRIAL_DAYS > 0) {
-                // Nothing was charged yet; the first payment comes when the trial ends.
-                track("trial_started", { plan: chosen, userId, detail: "paddle" });
-                pixel("StartTrial", { content_name: chosen, currency: "USD", value: 0, predicted_ltv: PRICE_VALUES[chosen] });
-              } else {
-                track("checkout_paid", { plan: chosen, userId, detail: "paddle" });
-                pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
               }
               resolve({ ok: true });
             });
