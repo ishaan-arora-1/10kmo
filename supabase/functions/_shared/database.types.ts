@@ -169,6 +169,7 @@ export type Database = {
           p_current_period_end: string | null;
           p_cancel_at_period_end: boolean | null;
           p_occurred_at: string | null;
+          p_paid?: boolean | null;
         };
         Returns: "free" | "yearly" | "monthly" | "weekly";
       };
