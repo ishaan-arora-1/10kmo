@@ -26,6 +26,7 @@ export type Database = {
           plan_source: "apple" | "razorpay" | "paddle" | "gumroad" | "grant" | null;
           plan_renews: boolean | null;
           plan_expires_at: string | null;
+          plan_trial_until: string | null;
           email: string | null;
           email_reminders: boolean;
           notifications_enabled: boolean;
@@ -176,6 +177,10 @@ export type Database = {
         Returns: string | null;
       };
       active_paddle_subscription_ids: {
+        Args: { p_user_id: string };
+        Returns: string[];
+      };
+      trialing_paddle_subscription_ids: {
         Args: { p_user_id: string };
         Returns: string[];
       };

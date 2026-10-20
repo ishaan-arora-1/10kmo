@@ -106,6 +106,8 @@ export function Paywall() {
 
   const priceLabel = PRICE_LABELS[plan];
   const trialLength = YEARLY_TRIAL_DAYS === 1 ? "1 day" : `${YEARLY_TRIAL_DAYS} days`;
+  // The trial includes a few claims (TRIAL_CLAIMS); the rest unlock with the first payment.
+  const trialNames = store.trialClaimNames;
   // When the first payment happens if they don't cancel (Paddle counts from checkout).
   const chargeAt = new Date(Date.now() + YEARLY_TRIAL_DAYS * 86_400_000).toLocaleString("en-US", {
     month: "short",
@@ -115,7 +117,7 @@ export function Paywall() {
   });
   const checkoutBy =
     PAYMENTS === "paddle"
-      ? "Secure checkout by Paddle: Apple Pay, Google Pay, PayPal or card."
+      ? "Secure checkout by Paddle: Apple Pay, PayPal or card."
       : PAYMENTS === "gumroad"
         ? "Secure checkout by Gumroad: card, PayPal, Apple Pay or Google Pay. Cancel anytime."
         : "Payments are processed securely by Razorpay.";
@@ -213,7 +215,11 @@ export function Paywall() {
               )}
             </div>
             <p className="pw-lines">
-              {plan === "monthly" ? "File them all this month, cancel anytime." : "File them all, and every new claim this year."}
+              {plan === "monthly"
+                ? "File them all this month, cancel anytime."
+                : trial && trialNames
+                  ? "After the trial: file them all, and every new claim this year."
+                  : "File them all, and every new claim this year."}
               <br />
               {closingSoon > 0
                 ? `${closingSoon === fileable.length && closingSoon === 1 ? "Your claim closes" : `${closingSoon} of your claims close`} in the next 30 days.`
@@ -247,7 +253,11 @@ export function Paywall() {
               />
               <span className="plan-text">
                 <b>{trialLength} free trial</b>
-                <span>Free today, then {PRICE_LABELS.yearly}/year</span>
+                <span>
+                  {trialNames
+                    ? `Free today: file the ${store.trialClaims.length} most popular claims (${trialNames}). Then ${PRICE_LABELS.yearly}/year unlocks all your claims.`
+                    : `Free today, then ${PRICE_LABELS.yearly}/year`}
+                </span>
               </span>
             </label>
             <label className={`plan-option${plan === "monthly" ? " on" : ""}`}>
@@ -308,7 +318,7 @@ export function Paywall() {
           {isSampleMode
             ? "Sample mode: no payment is taken."
             : trial
-              ? `${checkoutBy} Nothing is charged today. If you don’t cancel in Profile by ${chargeAt}, ${PRICE_LABELS.yearly} is charged then and every year until you cancel.`
+              ? `${checkoutBy} Nothing is charged today.${trialNames ? ` During the trial you can file the ${trialNames} claims; the rest unlock when your yearly plan starts.` : ""} If you don’t cancel in Profile by ${chargeAt}, ${PRICE_LABELS.yearly} is charged then and every year until you cancel.`
               : plan === "yearly"
               ? `${checkoutBy} ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
               : `${checkoutBy} ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
