@@ -20,6 +20,8 @@ export function loadPaddle(): Promise<Paddle | undefined> {
         locale: "en",
         allowLogout: false,
         showAddDiscounts: false,
+        // Google Pay attempts never completed (they all stopped at action_required), so it's left out.
+        allowedPaymentMethods: ["card", "apple_pay", "paypal", "saved_payment_methods"],
       },
     },
   }).catch(() => {
