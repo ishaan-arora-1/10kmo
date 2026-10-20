@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRightIcon, GiftIcon, LockIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
+import { trialEndLabel, UnlockNowModal } from "../components/UnlockNow";
 import { Modal, MoneyCheck, Monogram, PayoutList, SampleBadge } from "../components/ui";
 import { track } from "../lib/analytics";
 import {
@@ -19,6 +20,7 @@ import { useStore } from "../lib/store";
 export function Home() {
   const store = useStore();
   const [statesOpen, setStatesOpen] = useState(false);
+  const [unlockOpen, setUnlockOpen] = useState(false);
 
   useEffect(() => {
     track("dashboard_seen", { userId: store.session?.user.id ?? null, detail: store.isPremium ? "member" : "free" });
@@ -89,6 +91,7 @@ export function Home() {
   const lockedMax = maxTotal(locked);
   // Accounts that used a free claim while it was offered keep that one claim unlocked.
   const usedFreeClaim = store.claims.length > 0;
+  const trialEnds = trialEndLabel(store.trialUntil);
 
   return (
     <div className="page">
@@ -106,6 +109,22 @@ export function Home() {
         memo={memo}
         footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED`}
       />
+
+      {store.trialUntil && locked.length > 0 && (
+        <div className="unlock-strip free">
+          <GiftIcon />
+          <span>
+            <b>Free trial: {store.trialClaims.length} claims included</b>
+            <span>
+              Your other {locked.length} {plural(locked.length, "claim unlocks", "claims unlock")}{" "}
+              {trialEnds ? `on ${trialEnds}, when your yearly plan starts.` : "when your first payment goes through."}
+            </span>
+            <button type="button" className="link-btn strong" onClick={() => setUnlockOpen(true)}>
+              Unlock all now
+            </button>
+          </span>
+        </div>
+      )}
 
       {!store.isPremium &&
         (store.freeClaimAvailable && toFile.some((settlement) => !isUpcoming(settlement)) ? (
@@ -155,6 +174,7 @@ export function Home() {
                 flag={flagFor(settlement, index)}
                 openToAll={featuredIds.has(settlement.id)}
                 locked={!store.canFile(settlement)}
+                afterTrial={store.trialUntil !== null && !store.canFile(settlement)}
                 free={store.freeClaimAvailable}
               />
             ))}
@@ -214,6 +234,8 @@ export function Home() {
         firm and is not affiliated with settlement administrators.
       </p>
 
+      <UnlockNowModal open={unlockOpen} onClose={() => setUnlockOpen(false)} />
+
       <Modal open={statesOpen} onClose={() => setStatesOpen(false)} title="States you’ve lived in">
         <StatePicker />
         <button type="button" className="btn block" onClick={() => setStatesOpen(false)}>
@@ -230,12 +252,15 @@ function ClaimTile({
   flag,
   openToAll,
   locked,
+  afterTrial,
   free,
 }: {
   settlement: Settlement;
   flag: string | null;
   openToAll: boolean;
   locked: boolean;
+  /** Locked only until the free trial ends. */
+  afterTrial: boolean;
   free: boolean;
 }) {
   const { brandById } = useStore();
@@ -262,8 +287,8 @@ function ClaimTile({
       <span className="ct-side">
         <span className="ct-amount">{payoutRange(settlement)}</span>
         <span className={`pill-dark${free && !upcoming ? " free" : ""}`}>
-          {upcoming ? "Details" : free ? "File free" : "File"}
-          {locked && !upcoming && <LockIcon />}
+          {upcoming ? "Details" : afterTrial ? "After trial" : free ? "File free" : "File"}
+          {locked && !afterTrial && !upcoming && <LockIcon />}
         </span>
       </span>
     </Link>

@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Session } from "@supabase/supabase-js";
+import { FunctionsHttpError, type Session } from "@supabase/supabase-js";
 import {
   brandEstimates,
   brandFromRow,
@@ -17,6 +17,7 @@ import {
   claimToRow,
   matchSettlements,
   featuredSettlements,
+  isOpen,
   isUpcoming,
   missedPayouts,
   maxTotal,
@@ -33,7 +34,17 @@ import {
   withParentBrands,
 } from "./models";
 import { track } from "./analytics";
-import { FIRST_CLAIM_FREE, GUMROAD, PAYMENTS, PADDLE, PRICE_VALUES, YEARLY_TRIAL_DAYS, type WebPlan } from "./config";
+import {
+  FIRST_CLAIM_FREE,
+  GUMROAD,
+  PAYMENTS,
+  PADDLE,
+  PRICE_VALUES,
+  TRIAL_CLAIM_COUNT,
+  TRIAL_CLAIMS,
+  YEARLY_TRIAL_DAYS,
+  type WebPlan,
+} from "./config";
 import { pixel } from "./pixel";
 import { loadPaddle, onPaddleEvent } from "./paddle";
 import { loadRazorpay, openRazorpayCheckout } from "./razorpay";
@@ -103,6 +114,12 @@ export interface Store {
   planRenews: boolean | null;
   planExpiresAt: string | null;
   isPremium: boolean;
+  /** On a free trial that includes only trialClaims: when it ends. Null with full access or no plan. */
+  trialUntil: string | null;
+  /** The claims a free trial includes (TRIAL_CLAIMS still open), for the trial and the paywall. */
+  trialClaims: Settlement[];
+  /** Their short names for copy: "Apple, ATM fee and Pork". */
+  trialClaimNames: string;
   isSampleData: boolean;
   emailReminders: boolean;
   error: string | null;
@@ -124,7 +141,10 @@ export interface Store {
   paidTotal: number;
   /** Free accounts get one claim to file without paying; true until they start it. */
   freeClaimAvailable: boolean;
-  /** Members file anything; free accounts their free claim (any claim they've started or filed). */
+  /**
+   * Members file anything (on a limited trial, the trial's claims); free accounts their free claim
+   * (any claim they've started or filed).
+   */
   canFile(settlement: Settlement): boolean;
   /** Real past payouts to show instead of $0 (see payoutHistory). */
   history: PayoutHistory;
@@ -144,6 +164,8 @@ export interface Store {
   markPaid(claimId: string, amount: number): Promise<void>;
   refreshPlan(): Promise<Plan>;
   startCheckout(plan: WebPlan): Promise<CheckoutResult>;
+  /** Ends a limited free trial now: yearly charges the saved payment method, monthly opens checkout. */
+  unlockNow(plan: WebPlan): Promise<CheckoutResult>;
   /** Returns when access ends ("" if it ended now), or null if cancellation failed. */
   cancelSubscription(): Promise<string | null>;
   setEmailReminders(on: boolean): Promise<void>;
@@ -169,6 +191,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [planSource, setPlanSource] = useState<PlanSource>(null);
   const [planRenews, setPlanRenews] = useState<boolean | null>(null);
   const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
+  const [planTrialUntil, setPlanTrialUntil] = useState<string | null>(null);
   const [emailReminders, setEmailRemindersState] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
@@ -241,7 +264,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const [profileResult, picksResult, claimsResult] = await Promise.all([
         client
           .from("profiles")
-          .select("plan,plan_source,plan_renews,plan_expires_at,state_codes,email_reminders")
+          .select("plan,plan_source,plan_renews,plan_expires_at,plan_trial_until,state_codes,email_reminders")
           .eq("user_id", uid)
           .maybeSingle(),
         client.from("profile_brands").select("brand_id").eq("user_id", uid),
@@ -310,6 +333,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setPlanSource((profileResult.data?.plan_source as PlanSource | undefined) ?? null);
       setPlanRenews((profileResult.data?.plan_renews as boolean | null | undefined) ?? null);
       setPlanExpiresAt((profileResult.data?.plan_expires_at as string | null | undefined) ?? null);
+      setPlanTrialUntil((profileResult.data?.plan_trial_until as string | null | undefined) ?? null);
       setEmailRemindersState(Boolean(profileResult.data?.email_reminders));
     },
     [pushClaims],
@@ -321,6 +345,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setPlanSource(null);
       setPlanRenews(null);
       setPlanExpiresAt(null);
+      setPlanTrialUntil(null);
       setEmailRemindersState(false);
       setSyncedUserId(null);
       return;
@@ -453,7 +478,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!client || !userId) return "free";
     const { data } = await client
       .from("profiles")
-      .select("plan,plan_source,plan_renews,plan_expires_at")
+      .select("plan,plan_source,plan_renews,plan_expires_at,plan_trial_until")
       .eq("user_id", userId)
       .maybeSingle();
     const next = (data?.plan as Plan | undefined) ?? "free";
@@ -461,6 +486,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPlanSource((data?.plan_source as PlanSource | undefined) ?? null);
     setPlanRenews((data?.plan_renews as boolean | null | undefined) ?? null);
     setPlanExpiresAt((data?.plan_expires_at as string | null | undefined) ?? null);
+    setPlanTrialUntil((data?.plan_trial_until as string | null | undefined) ?? null);
     return next;
   }, [userId]);
 
@@ -695,6 +721,64 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [refreshPlan, session, startGumroadCheckout, startPaddleCheckout],
   );
 
+  // Ends a limited free trial early so every claim unlocks now. Yearly: paddle-unlock charges the
+  // payment method saved at checkout. Monthly: a normal checkout; the webhook then ends the trial.
+  const unlockNow = useCallback(
+    async (chosen: WebPlan): Promise<CheckoutResult> => {
+      const client = supabase;
+      const uid = session?.user.id ?? null;
+      if (!client || !uid) return { ok: false, message: "Please sign in again, then try again." };
+      const fullAccess = async () => {
+        const { data } = await client.from("profiles").select("plan,plan_trial_until").eq("user_id", uid).maybeSingle();
+        return Boolean(data && data.plan !== "free" && !data.plan_trial_until);
+      };
+
+      if (chosen === "monthly") {
+        const result = await startPaddleCheckout("monthly");
+        if (!result.ok) return result;
+      } else {
+        track("checkout_opened", { plan: chosen, userId: uid, detail: "paddle: trial_unlock" });
+        const { data, error: invokeError } = await client.functions.invoke<{ unlocked?: boolean }>("paddle-unlock", {
+          body: {},
+        });
+        if (invokeError || !data?.unlocked) {
+          const reason =
+            invokeError instanceof FunctionsHttpError
+              ? (((await invokeError.context.json().catch(() => null)) as { error?: string } | null)?.error ?? "")
+              : "";
+          // A timed-out request can still have gone through.
+          if (await fullAccess()) {
+            await refreshPlan();
+            return { ok: true };
+          }
+          await refreshPlan();
+          track("checkout_failed", { plan: chosen, userId: uid, detail: `paddle: trial_unlock ${reason || "error"}` });
+          return {
+            ok: false,
+            message:
+              reason === "declined"
+                ? "The payment didn’t go through, so nothing changed. You can try again, or pick monthly to pay another way."
+                : "That didn’t work. Please refresh the page and try again.",
+          };
+        }
+        track("checkout_paid", { plan: chosen, userId: uid, detail: "paddle: trial_unlock" });
+        pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+      }
+
+      // Monthly waits for the webhook; yearly is already saved.
+      for (let attempt = 0; attempt < 15; attempt += 1) {
+        if (await fullAccess()) {
+          await refreshPlan();
+          return { ok: true };
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, 2000));
+      }
+      await refreshPlan();
+      return { ok: false, message: "Payment received. Your claims will unlock within a minute — refresh this page." };
+    },
+    [session, startPaddleCheckout, refreshPlan],
+  );
+
   const cancelSubscription = useCallback(async (): Promise<string | null> => {
     const client = supabase;
     if (!client) return null;
@@ -733,6 +817,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPlanSource(null);
     setPlanRenews(null);
     setPlanExpiresAt(null);
+    setPlanTrialUntil(null);
     setEmailRemindersState(false);
   }, []);
 
@@ -784,6 +869,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const featured = featuredSettlements(settlements, matched);
     const toFile = [...unfiled, ...featured.filter(notFiled)];
     const isPremium = plan !== "free" || (isSampleMode && local.sampleUnlocked);
+    const trialClaims = TRIAL_CLAIMS.flatMap(({ id }) => settlementMap.get(id) ?? [])
+      .filter((settlement) => isOpen(settlement) && !isUpcoming(settlement))
+      .slice(0, TRIAL_CLAIM_COUNT);
+    const trialIds = new Set(trialClaims.map((settlement) => settlement.id));
+    const trialLabels = TRIAL_CLAIMS.filter(({ id }) => trialIds.has(id)).map(({ label }) => label);
+    // With nothing left on the list, a trial has full access.
+    const trialUntil = isPremium && trialClaims.length > 0 ? planTrialUntil : null;
 
     return {
       ready: publicLoaded && authReady && (!userId || loadedUserId === userId),
@@ -799,6 +891,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       planRenews,
       planExpiresAt,
       isPremium,
+      trialUntil,
+      trialClaims,
+      trialClaimNames:
+        trialLabels.length > 1 ? `${trialLabels.slice(0, -1).join(", ")} and ${trialLabels[trialLabels.length - 1]}` : trialLabels.join(""),
       isSampleData: isSampleMode || settlements.some((settlement) => settlement.isSample),
       emailReminders,
       error,
@@ -818,7 +914,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       paidTotal: local.claims.reduce((total, claim) => total + (claim.paidAmount ?? 0), 0),
       freeClaimAvailable: FIRST_CLAIM_FREE && !isPremium && local.claims.length === 0,
       canFile: (settlement) =>
-        isPremium ||
+        (isPremium && (!trialUntil || trialIds.has(settlement.id))) ||
         claimBySettlement.has(settlement.id) ||
         (FIRST_CLAIM_FREE && local.claims.length === 0),
       history,
@@ -835,6 +931,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       markPaid,
       refreshPlan,
       startCheckout,
+      unlockNow,
       cancelSubscription,
       setEmailReminders,
       signOut,
@@ -856,6 +953,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     planSource,
     planRenews,
     planExpiresAt,
+    planTrialUntil,
     emailReminders,
     error,
     toggleBrand,
@@ -866,6 +964,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     markPaid,
     refreshPlan,
     startCheckout,
+    unlockNow,
     cancelSubscription,
     setEmailReminders,
     signOut,

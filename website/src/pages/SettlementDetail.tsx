@@ -2,8 +2,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ExternalIcon, LockIcon } from "../components/icons";
 import { ClaimStatusBadge, Modal, Monogram, SampleBadge } from "../components/ui";
+import { trialEndLabel, UnlockNowModal } from "../components/UnlockNow";
 import { track } from "../lib/analytics";
-import { deadlineLabel, daysUntil, isUpcoming, opensLabel, payoutRange, plural } from "../lib/models";
+import { deadlineLabel, daysUntil, isUpcoming, opensLabel, parseDay, payoutRange, plural } from "../lib/models";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -16,6 +17,7 @@ export function SettlementDetail() {
   const [awaitingReturn, setAwaitingReturn] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reference, setReference] = useState("");
+  const [unlockOpen, setUnlockOpen] = useState(false);
 
   useEffect(() => {
     setChecks(settlement ? settlement.eligibilityDetails.map(() => false) : []);
@@ -55,6 +57,11 @@ export function SettlementDetail() {
   const upcoming = isUpcoming(settlement);
   const unlocked = store.canFile(settlement);
   const isFreeClaim = !store.isPremium && unlocked;
+  // On a limited free trial, this claim opens when the plan starts.
+  const afterTrial = !unlocked && store.trialUntil !== null && !upcoming;
+  const trialEnds = trialEndLabel(store.trialUntil);
+  const openAfterTrial =
+    store.trialUntil !== null && parseDay(settlement.deadline).getTime() + 86_400_000 > Date.parse(store.trialUntil);
 
   const file = () => {
     if (!unlocked) {
@@ -173,24 +180,42 @@ export function SettlementDetail() {
         </div>
       )}
 
-      <button type="button" className="btn block" onClick={file} disabled={!eligible || upcoming}>
-        {upcoming ? (
-          <>Claims open {opensLabel(settlement)}</>
-        ) : store.freeClaimAvailable ? (
-          <>
-            File free <ExternalIcon />
-          </>
-        ) : unlocked ? (
-          <>
-            File on official site <ExternalIcon />
-          </>
-        ) : (
-          <>
-            File your claim <LockIcon />
-          </>
-        )}
-      </button>
-      {!eligible && !upcoming && (
+      {afterTrial ? (
+        <div className="trial-lock">
+          <b>
+            <LockIcon /> {trialEnds ? `Unlocks on ${trialEnds}` : "Unlocks when your first payment goes through"}
+          </b>
+          <p>
+            Your free trial covers the {store.trialClaimNames} claims. This one opens when your yearly plan starts.
+            {openAfterTrial && ` You can file it any time before the ${deadlineLabel(settlement)} deadline.`}
+          </p>
+          <Link className="btn block" to="/">
+            File a free claim now
+          </Link>
+          <button type="button" className="btn secondary block" onClick={() => setUnlockOpen(true)}>
+            Unlock all now
+          </button>
+        </div>
+      ) : (
+        <button type="button" className="btn block" onClick={file} disabled={!eligible || upcoming}>
+          {upcoming ? (
+            <>Claims open {opensLabel(settlement)}</>
+          ) : store.freeClaimAvailable ? (
+            <>
+              File free <ExternalIcon />
+            </>
+          ) : unlocked ? (
+            <>
+              File on official site <ExternalIcon />
+            </>
+          ) : (
+            <>
+              File your claim <LockIcon />
+            </>
+          )}
+        </button>
+      )}
+      {!eligible && !upcoming && !afterTrial && (
         <p className="fine-print center">Confirm both statements to continue.</p>
       )}
       {store.freeClaimAvailable && !upcoming && (
@@ -202,6 +227,8 @@ export function SettlementDetail() {
       <p className="fine-print center">
         Verified settlement administrator link. Rightful is not a law firm and is not affiliated with this company.
       </p>
+
+      <UnlockNowModal open={unlockOpen} onClose={() => setUnlockOpen(false)} />
 
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Did you submit your claim?">
         <form className="stack" onSubmit={confirmFiled}>

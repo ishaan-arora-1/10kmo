@@ -1,6 +1,7 @@
 import { withSupabase } from "npm:@supabase/server@1.5.2";
 import type { Database } from "../_shared/database.types.ts";
 import {
+  paddle,
   type PaddleSubscription,
   recordPaddleSubscription,
   subscriptionUserId,
@@ -60,6 +61,25 @@ export default {
         event.occurred_at ?? null,
       );
       console.log("paddle", event.event_type, subscription.id, subscription.status, "->", plan);
+
+      // Paid while a free trial was still running (people on a trial can pay monthly to unlock
+      // everything now): end the trial right away so it never charges the yearly price too.
+      // A failure here returns 500, so Paddle retries the whole event.
+      if (plan && subscription.status === "active") {
+        const { data: trialIDs, error: trialError } = await context.supabaseAdmin.rpc(
+          "trialing_paddle_subscription_ids",
+          { p_user_id: userID },
+        );
+        if (trialError) throw trialError;
+        for (const trialID of (trialIDs ?? []).filter((id) => id !== subscription.id)) {
+          const canceled = await paddle<PaddleSubscription>(
+            `/subscriptions/${encodeURIComponent(trialID)}/cancel`,
+            { method: "POST", body: { effective_from: "immediately" } },
+          );
+          await recordPaddleSubscription(context.supabaseAdmin, canceled, userID, new Date().toISOString());
+          console.log("paddle trial canceled after payment", trialID, "paid by", subscription.id);
+        }
+      }
     } catch (error) {
       console.error("paddle webhook processing failed", event.event_type, event.event_id, error);
       return Response.json({ error: "Webhook processing failed" }, { status: 500 });

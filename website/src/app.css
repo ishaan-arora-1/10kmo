@@ -325,6 +325,7 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .unlock-strip > span b { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--money); }
 .unlock-strip svg { color: var(--money); flex: none; }
 .unlock-strip.free { grid-template-columns: auto 1fr; }
+.unlock-strip .link-btn { justify-self: start; margin-top: 4px; color: var(--money); }
 .pill-dark.free { background: var(--money); color: var(--on-money); }
 .fine-print.money { color: var(--money); font-weight: 600; }
 .find-more {
@@ -337,6 +338,10 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .find-more:hover { border-color: var(--check-line); }
 
 /* ---------- settlement detail ---------- */
+.trial-lock { display: grid; gap: 10px; padding: 16px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.trial-lock > b { display: flex; align-items: center; gap: 8px; }
+.trial-lock > b svg { width: 16px; height: 16px; color: var(--muted); flex: none; }
+.trial-lock p { margin: 0; color: var(--muted); font-size: 15px; }
 .detail-head { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
 .detail-head h1 { font-size: clamp(28px, 5vw, 38px); font-weight: 800; line-height: 1.05; }
 .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin: 0; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }

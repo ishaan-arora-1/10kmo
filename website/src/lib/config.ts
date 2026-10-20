@@ -8,7 +8,7 @@ export const FIRST_CLAIM_FREE = false;
 export const SUPPORT_EMAIL = "support@claimrightful.com";
 
 /**
- * Paddle checkout (Apple Pay, Google Pay, PayPal, cards). Used when all of these are set;
+ * Paddle checkout (Apple Pay, PayPal, cards). Used when all of these are set;
  * otherwise the site keeps using Razorpay. Sandbox and live have different tokens and price IDs.
  */
 export const PADDLE = {
@@ -45,6 +45,21 @@ export const PAYMENTS: "paddle" | "gumroad" | "razorpay" =
  * 0 or unset: no trial, yearly is charged at checkout.
  */
 export const YEARLY_TRIAL_DAYS = PAYMENTS === "paddle" ? Number(import.meta.env.VITE_PADDLE_YEARLY_TRIAL_DAYS || 0) : 0;
+
+/**
+ * What the yearly free trial includes (2026-10-20): the three most-filed claims, by settlement
+ * id, with the short name the copy uses. The first three still open count, so CVS takes Pork's
+ * place once Pork closes on Oct 29. Everything else unlocks with the first payment.
+ * Trials started before this rule have full access (the database decides; see
+ * profiles.plan_trial_until).
+ */
+export const TRIAL_CLAIMS: { id: string; label: string }[] = [
+  { id: "0e0a8a5e-4a3f-5d52-9a1e-9b2a1f0d7c31", label: "Apple" },
+  { id: "13ad194f-c4b3-5071-8afc-59248754e7e4", label: "ATM fee" },
+  { id: "38714408-60ba-59e6-959d-0d0e4d77626f", label: "Pork" },
+  { id: "988e6c93-a552-536c-b3aa-e6807cafe4c6", label: "CVS" },
+];
+export const TRIAL_CLAIM_COUNT = 3;
 
 /** The plans the website sells. Existing weekly subscriptions still renew, but weekly isn't offered. */
 export type WebPlan = "yearly" | "monthly";
