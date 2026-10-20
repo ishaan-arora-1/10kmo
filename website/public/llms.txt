@@ -1,0 +1,43 @@
+# ClaimRightful
+
+> ClaimRightful (https://claimrightful.com) helps people in the US find open class action settlements they may be owed money from, and file their claims on the official settlement websites before the deadline. It is not a law firm and is not affiliated with any company, court or settlement administrator.
+
+- Checking which settlements you may qualify for is free: pick the companies you've used at https://claimrightful.com/app/start.
+- Filing help (verified official claim links, step-by-step guides, deadline reminders and a claim tracker) costs $4.99 a month or $39.99 a year. ClaimRightful never takes a percentage of any payout.
+- Payments come from each settlement's court-appointed administrator, usually months after the deadline. Amounts shown are the most each settlement pays, from court filings; most people get less.
+- Also written as: Claim Rightful.
+
+## Open settlements (updated October 20, 2026)
+
+- [VSL#3: Probiotic labeling](https://claimrightful.com/settlements/vsl-3-probiotic-labeling): Varies: the fund is split among everyone who files. Deadline October 20, 2026.
+- [Lands' End: Data breach](https://claimrightful.com/settlements/lands-end-data-breach): $60 to $5,000. Deadline October 22, 2026.
+- [TED: Video privacy](https://claimrightful.com/settlements/ted-video-privacy): Up to $5. Deadline October 26, 2026.
+- [Real estate brokerages: Homebuyer commissions](https://claimrightful.com/settlements/real-estate-brokerages-homebuyer-commissions): Varies: the fund is split among everyone who files. Deadline October 27, 2026.
+- [Pork producers: Pork price-fixing](https://claimrightful.com/settlements/pork-producers-pork-price-fixing): Up to $100. Deadline October 29, 2026.
+- [Bestway: Above-ground pool straps](https://claimrightful.com/settlements/bestway-above-ground-pool-straps): Up to $40. Deadline October 30, 2026.
+- [LiveHealth Online: Appointment booking privacy](https://claimrightful.com/settlements/livehealth-online-appointment-booking-privacy): Varies: the fund is split among everyone who files. Deadline October 30, 2026.
+- [Whirlpool: Refrigerator wire harness](https://claimrightful.com/settlements/whirlpool-refrigerator-wire-harness): Varies: the fund is split among everyone who files. Deadline November 2, 2026.
+- [Levoit: Air purifier HEPA claims](https://claimrightful.com/settlements/levoit-air-purifier-hepa-claims): Up to $10. Deadline November 3, 2026.
+- [CVS: Website & app privacy](https://claimrightful.com/settlements/cvs-website-and-app-privacy): $5 to $10. Deadline November 16, 2026.
+- [Kia: Window regulators](https://claimrightful.com/settlements/kia-window-regulators): $40 to $400. Deadline November 23, 2026.
+- [Raging Waters: Ticket processing fees](https://claimrightful.com/settlements/raging-waters-ticket-processing-fees): Varies: the fund is split among everyone who files. Deadline November 24, 2026.
+- [Dr. Squatch: “All natural” labeling](https://claimrightful.com/settlements/dr-squatch-all-natural-labeling): Varies: the fund is split among everyone who files. Deadline November 27, 2026.
+- [Amazon: Late or missing return refunds](https://claimrightful.com/settlements/amazon-late-or-missing-return-refunds): Varies: the fund is split among everyone who files. Deadline December 1, 2026.
+- [Toyota: Airbag control units](https://claimrightful.com/settlements/toyota-airbag-control-units): Up to $250. Deadline December 16, 2026.
+- [Apple: Apple Intelligence & Siri claims](https://claimrightful.com/settlements/apple-intelligence-and-siri-claims): Up to $95. Deadline December 21, 2026.
+- [Kroger: Pharmacy Savings Club prices](https://claimrightful.com/settlements/kroger-pharmacy-savings-club-prices): Varies: the fund is split among everyone who files. Deadline December 21, 2026.
+- [Equifax: Credit score errors](https://claimrightful.com/settlements/equifax-credit-score-errors): $95 to $280. Deadline December 28, 2026.
+- [GoodRx: Health data privacy](https://claimrightful.com/settlements/goodrx-health-data-privacy): Varies: the fund is split among everyone who files. Deadline December 29, 2026.
+- [John Deere: Farm equipment repairs](https://claimrightful.com/settlements/john-deere-farm-equipment-repairs): Varies: the fund is split among everyone who files. Deadline December 31, 2026.
+- [RealPage: Apartment rent pricing](https://claimrightful.com/settlements/realpage-apartment-rent-pricing): Up to $50. Deadline January 29, 2027.
+- [Visa & Mastercard: Non-bank ATM fees](https://claimrightful.com/settlements/visa-and-mastercard-non-bank-atm-fees): Up to $25. Deadline February 10, 2027.
+- [Chewy, Petco & PetSmart: Flea & tick treatment prices](https://claimrightful.com/settlements/chewy-petco-petsmart-flea-and-tick-treatment-prices): Up to $40. Opens January 8, 2027.
+- [Hyundai & Kia: Car theft (no immobilizer)](https://claimrightful.com/settlements/hyundai-kia-car-theft-no-immobilizer): Up to $4,500. Deadline March 31, 2027.
+- [Hyundai & Kia: Airbag control units](https://claimrightful.com/settlements/hyundai-kia-airbag-control-units): Up to $350. Deadline April 8, 2027.
+
+## More
+
+- [All open settlements](https://claimrightful.com/settlements)
+- [Pricing](https://claimrightful.com/pricing)
+- [Support](https://claimrightful.com/support): support@claimrightful.com
+- [Terms](https://claimrightful.com/terms) and [Privacy](https://claimrightful.com/privacy)

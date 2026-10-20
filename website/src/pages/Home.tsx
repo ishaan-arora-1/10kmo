@@ -97,7 +97,7 @@ export function Home() {
     <div className="page">
       <header className="page-head">
         <h1>{hero.headline}</h1>
-        {store.isSampleData && <p>Previewing Rightful with sample data</p>}
+        {store.isSampleData && <p>Previewing ClaimRightful with sample data</p>}
       </header>
 
       <MoneyCheck
@@ -230,7 +230,7 @@ export function Home() {
       )}
 
       <p className="fine-print">
-        Amounts are the most each settlement pays, from court filings. Most people get less. Rightful is not a law
+        Amounts are the most each settlement pays, from court filings. Most people get less. ClaimRightful is not a law
         firm and is not affiliated with settlement administrators.
       </p>
 

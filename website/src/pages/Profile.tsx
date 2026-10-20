@@ -100,7 +100,7 @@ export function Profile() {
         {planName ? (
           <>
             <div className="setting-row static">
-              <span>Rightful Premium · {planName}</span>
+              <span>ClaimRightful Premium · {planName}</span>
               <span className="muted">{membershipDetail}</span>
             </div>
             {(store.planSource === "razorpay" || store.planSource === "paddle") && store.planRenews !== false && (
@@ -201,7 +201,7 @@ export function Profile() {
         )}
       </section>
 
-      <p className="fine-print center">Rightful 1.0 · Not a law firm. Not affiliated with settlement administrators.</p>
+      <p className="fine-print center">ClaimRightful 1.0 · Not a law firm. Not affiliated with settlement administrators.</p>
 
       <Modal open={brandsOpen} onClose={() => setBrandsOpen(false)} title="Companies you’ve used">
         <BrandPicker idPrefix="profile-brands" />

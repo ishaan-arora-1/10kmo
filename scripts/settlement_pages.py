@@ -7,6 +7,7 @@ Supabase CLI) and writes:
   website/public/settlements.html             the list of open settlements
   website/public/settlements/<slug>.html      one page per settlement
   website/public/sitemap.xml                  the site's pages plus the settlement pages
+  website/public/llms.txt                     a plain summary of the site for AI assistants
 Run it after each weekly settlement check and commit the output. Closed settlements drop off.
 
 The pages explain who qualifies, how much, the deadline and whether proof is needed. Filing
@@ -168,6 +169,9 @@ def page(s: dict, today: dt.date) -> str:
   <link rel="canonical" href="{SITE}/settlements/{s['slug']}">
   <meta property="og:title" content="{e(page_title)}">
   <meta property="og:description" content="{e(description)}">
+  <meta property="og:site_name" content="ClaimRightful">
+  <meta property="og:image" content="{SITE}/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400&display=swap">
@@ -241,6 +245,10 @@ def index(cases: list[dict], today: dt.date) -> str:
   <title>Open Class Action Settlements You Can Claim ({today:%B %Y})</title>
   <meta name="description" content="{len(cases)} open class action settlements in the US, with who qualifies, how much they pay and claim deadlines. Updated weekly.">
   <link rel="canonical" href="{SITE}/settlements">
+  <meta property="og:title" content="Open Class Action Settlements You Can Claim ({today:%B %Y})">
+  <meta property="og:site_name" content="ClaimRightful">
+  <meta property="og:image" content="{SITE}/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400&display=swap">
@@ -272,10 +280,44 @@ def index(cases: list[dict], today: dt.date) -> str:
 """
 
 
-def sitemap(cases: list[dict]) -> str:
+def sitemap(cases: list[dict], today: dt.date) -> str:
+    # The settlement list and pages change with every run; the other pages rarely do.
+    fresh = {f"{SITE}/settlements"} | {f"{SITE}/settlements/{c['slug']}" for c in cases}
     urls = [f"{SITE}{p if p != '/' else '/'}" for p in STATIC_PAGES] + [f"{SITE}/settlements/{c['slug']}" for c in cases]
-    body = "\n".join(f"  <url><loc>{u}</loc></url>" for u in urls)
+    body = "\n".join(
+        f"  <url><loc>{u}</loc><lastmod>{today.isoformat()}</lastmod></url>" if u in fresh else f"  <url><loc>{u}</loc></url>"
+        for u in urls
+    )
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}\n</urlset>\n'
+
+
+def llms(cases: list[dict], today: dt.date) -> str:
+    """llms.txt (llmstxt.org): what the site is, for AI assistants, with the open settlements."""
+    lines = "\n".join(
+        f"- [{c['name']}: {c['title']}]({SITE}/settlements/{c['slug']}): {amount(c)}. "
+        + (f"Deadline {day(c['deadline'])}." if is_open(c, today) else f"Opens {day(c['opens_on'])}.")
+        for c in cases
+    )
+    return f"""# ClaimRightful
+
+> ClaimRightful ({SITE}) helps people in the US find open class action settlements they may be owed money from, and file their claims on the official settlement websites before the deadline. It is not a law firm and is not affiliated with any company, court or settlement administrator.
+
+- Checking which settlements you may qualify for is free: pick the companies you've used at {SITE}/app/start.
+- Filing help (verified official claim links, step-by-step guides, deadline reminders and a claim tracker) costs $4.99 a month or $39.99 a year. ClaimRightful never takes a percentage of any payout.
+- Payments come from each settlement's court-appointed administrator, usually months after the deadline. Amounts shown are the most each settlement pays, from court filings; most people get less.
+- Also written as: Claim Rightful.
+
+## Open settlements (updated {day(today.isoformat())})
+
+{lines}
+
+## More
+
+- [All open settlements]({SITE}/settlements)
+- [Pricing]({SITE}/pricing)
+- [Support]({SITE}/support): support@claimrightful.com
+- [Terms]({SITE}/terms) and [Privacy]({SITE}/privacy)
+"""
 
 
 def main() -> None:
@@ -287,8 +329,9 @@ def main() -> None:
     for case in cases:
         (OUT_DIR / f"{case['slug']}.html").write_text(page(case, today))
     (PUBLIC / "settlements.html").write_text(index(cases, today))
-    (PUBLIC / "sitemap.xml").write_text(sitemap(cases))
-    print(f"wrote {len(cases)} settlement pages, the index and the sitemap")
+    (PUBLIC / "sitemap.xml").write_text(sitemap(cases, today))
+    (PUBLIC / "llms.txt").write_text(llms(cases, today))
+    print(f"wrote {len(cases)} settlement pages, the index, the sitemap and llms.txt")
 
 
 if __name__ == "__main__":

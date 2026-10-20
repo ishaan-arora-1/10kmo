@@ -31,7 +31,7 @@ export function App() {
 
   if (!ready) {
     return (
-      <div className="boot" aria-busy="true" aria-label="Loading Rightful">
+      <div className="boot" aria-busy="true" aria-label="Loading ClaimRightful">
         <BrandSeal size={44} />
       </div>
     );

@@ -104,7 +104,7 @@ function PaidModal({ claim, settlement, onClose }: { claim: Claim; settlement: S
       const outcome = await shareOrDownload(
         image,
         "rightful-paid-check.png",
-        `I got ${usd(paid)} from a settlement I didn’t know I was owed. Find yours with Rightful.`,
+        `I got ${usd(paid)} from a settlement I didn’t know I was owed. Find yours with ClaimRightful.`,
       );
       if (outcome === "downloaded") setShareNote("Image saved. Post it anywhere.");
     } catch {
