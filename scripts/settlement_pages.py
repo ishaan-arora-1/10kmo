@@ -305,7 +305,7 @@ def llms(cases: list[dict], today: dt.date) -> str:
 - Checking which settlements you may qualify for is free: pick the companies you've used at {SITE}/app/start.
 - Filing help (verified official claim links, step-by-step guides, deadline reminders and a claim tracker) costs $4.99 a month or $39.99 a year. ClaimRightful never takes a percentage of any payout.
 - Payments come from each settlement's court-appointed administrator, usually months after the deadline. Amounts shown are the most each settlement pays, from court filings; most people get less.
-- Also known as: Claim Rightful, Rightful.
+- Also written as: Claim Rightful.
 
 ## Open settlements (updated {day(today.isoformat())})
 
