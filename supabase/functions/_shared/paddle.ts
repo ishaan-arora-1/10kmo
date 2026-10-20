@@ -70,6 +70,17 @@ export function subscriptionUserId(subscription: PaddleSubscription): string | n
   return typeof userID === "string" ? userID : null;
 }
 
+/**
+ * Whether the subscription has a real payment: a paid or completed transaction above $0.
+ * A subscription can be 'active' before it is paid (a trial's first charge comes right after).
+ */
+export async function hasPaddlePayment(subscriptionID: string): Promise<boolean> {
+  const transactions = await paddle<{ details: { totals: { grand_total: string } } | null }[]>(
+    `/transactions?subscription_id=${encodeURIComponent(subscriptionID)}&status=paid,completed&per_page=30`,
+  );
+  return transactions.some((transaction) => Number(transaction.details?.totals.grand_total ?? 0) > 0);
+}
+
 /** Saves a subscription snapshot and recomputes the user's plan. Null if the price isn't ours. */
 export async function recordPaddleSubscription(
   // deno-lint-ignore no-explicit-any
@@ -81,6 +92,8 @@ export async function recordPaddleSubscription(
   const priceId = subscription.items.find((item) => item.price?.id)?.price?.id ?? "";
   const plan = planForPrice(priceId);
   if (!plan) return null;
+  // Being paid only matters once a subscription is active or past_due (see recompute_subscription_plan).
+  const paid = ["active", "past_due"].includes(subscription.status) ? await hasPaddlePayment(subscription.id) : null;
   const { data, error } = await admin.rpc("upsert_paddle_subscription", {
     p_subscription_id: subscription.id,
     p_user_id: userID,
@@ -91,6 +104,7 @@ export async function recordPaddleSubscription(
     p_current_period_end: subscription.current_billing_period?.ends_at ?? null,
     p_cancel_at_period_end: subscription.scheduled_change?.action === "cancel",
     p_occurred_at: occurredAt,
+    p_paid: paid,
   });
   if (error) throw error;
   return data as string;
