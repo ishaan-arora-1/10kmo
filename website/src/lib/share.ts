@@ -71,7 +71,7 @@ export async function renderPaidCheckImage(
   context.textAlign = "left";
   context.fillStyle = MUTED;
   context.font = `500 34px ${MONO}`;
-  context.fillText("Rightful", 172, 120);
+  context.fillText("ClaimRightful", 172, 120);
 
   // Headline
   context.textBaseline = "alphabetic";

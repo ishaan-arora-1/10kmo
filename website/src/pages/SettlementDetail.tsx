@@ -225,7 +225,7 @@ export function SettlementDetail() {
         <p className="fine-print center money">This is your free claim.</p>
       )}
       <p className="fine-print center">
-        Verified settlement administrator link. Rightful is not a law firm and is not affiliated with this company.
+        Verified settlement administrator link. ClaimRightful is not a law firm and is not affiliated with this company.
       </p>
 
       <UnlockNowModal open={unlockOpen} onClose={() => setUnlockOpen(false)} />

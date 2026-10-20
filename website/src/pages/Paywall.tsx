@@ -162,7 +162,7 @@ export function Paywall() {
             {target && !isUpcoming(target) && (
               <p className="pw-total">Starting with your {target.company} claim.</p>
             )}
-            <div className="bill" aria-label="Your claims compared with the price of Rightful">
+            <div className="bill" aria-label="Your claims compared with the price of ClaimRightful">
               <p className="bill-label">Your claims</p>
               {shown.map((s) => (
                 <div key={s.id} className={`bill-row${s.id === target?.id ? " target" : ""}`}>
@@ -193,12 +193,12 @@ export function Paywall() {
               </div>
               {trial ? (
                 <div className="bill-row">
-                  <span>Rightful, {trialLength} free trial</span>
+                  <span>ClaimRightful, {trialLength} free trial</span>
                   <span className="bill-amt">$0 today</span>
                 </div>
               ) : (
                 <div className="bill-row">
-                  <span>Rightful, {plan === "yearly" ? "1 year" : "1 month"}</span>
+                  <span>ClaimRightful, {plan === "yearly" ? "1 year" : "1 month"}</span>
                   <span className="bill-amt minus">−{priceLabel}</span>
                 </div>
               )}

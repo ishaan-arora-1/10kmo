@@ -53,7 +53,7 @@ export function SignIn() {
           </>
         )}
 
-        <p className="fine-print center">Rightful never asks for your bank, card, or email password.</p>
+        <p className="fine-print center">ClaimRightful never asks for your bank, card, or email password.</p>
       </div>
     </div>
   );

@@ -180,7 +180,7 @@ interface MoneyCheckProps {
   capped?: boolean;
 }
 
-/** The Rightful signature: found money shown as a check made out to you. */
+/** The ClaimRightful signature: found money shown as a check made out to you. */
 export function MoneyCheck({
   number,
   payee,
@@ -314,7 +314,7 @@ export function ExampleReminder({ settlement }: { settlement: Settlement | null 
       </span>
       <div>
         <div className="er-head">
-          <b>Rightful</b>
+          <b>ClaimRightful</b>
           <span>now</span>
         </div>
         <div className="er-title">{title}</div>

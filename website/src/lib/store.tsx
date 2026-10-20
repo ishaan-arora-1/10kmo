@@ -684,8 +684,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const checkout = openRazorpayCheckout({
           key: keyId,
           subscription_id: subscriptionId,
-          name: "Rightful",
-          description: chosen === "yearly" ? "Rightful Premium · Yearly" : "Rightful Premium · Monthly",
+          name: "ClaimRightful",
+          description: chosen === "yearly" ? "ClaimRightful Premium · Yearly" : "ClaimRightful Premium · Monthly",
           prefill: { email: data?.email ?? undefined, name: data?.name ?? undefined },
           theme: { color: "#0E7A4B" },
           handler: async (response) => {

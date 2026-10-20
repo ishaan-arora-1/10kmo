@@ -364,7 +364,7 @@ function PendingCaseCard({
           <span className="sc-action">
             {isPremium
               ? "As a member, you’ll get an email the day claims open."
-              : "Get a Rightful plan and we’ll email you the day claims open."}
+              : "Get a ClaimRightful plan and we’ll email you the day claims open."}
           </span>
         </div>
       </div>
@@ -645,7 +645,7 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
         ← Back
       </button>
       <h1 className="flow-title">Your reminder schedule</h1>
-      <p className="muted">Rightful members get an email before every deadline, so nothing closes on you.</p>
+      <p className="muted">ClaimRightful members get an email before every deadline, so nothing closes on you.</p>
 
       <ul className="reminder-list">
         {shown.map((row) => (
@@ -697,7 +697,7 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
             onCodeSent={(email) => setCodeSent(email !== null)}
             onVerified={verified}
           />
-          <p className="fine-print center">This creates your Rightful account. No password needed.</p>
+          <p className="fine-print center">This creates your ClaimRightful account. No password needed.</p>
         </>
       )}
     </div>
