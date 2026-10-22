@@ -27,9 +27,29 @@ export type FunnelEvent =
   | "account_deleted"
   | "account_delete_failed";
 
+const VISITOR_KEY = "rightful.visitor";
+
+/**
+ * A random id this browser keeps, so steps before sign-in count once per person rather than
+ * once per attempt. Not linked to an account or any personal data. Null when storage is blocked.
+ */
+function visitorId(): string | null {
+  try {
+    let id = localStorage.getItem(VISITOR_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(VISITOR_KEY, id);
+    }
+    return id;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Records a step anonymously: no IP, no personal data, just the step plus the browser's
- * time zone and language so we can tell roughly where people are. Never blocks the UI.
+ * time zone, language and anonymous visitor id so we can tell roughly where people are and
+ * count people rather than attempts. Never blocks the UI.
  */
 export function track(
   name: FunnelEvent,
@@ -48,6 +68,7 @@ export function track(
     .insert({
       name,
       user_id: options.userId ?? null,
+      visitor_id: visitorId(),
       time_zone: timeZone,
       language: typeof navigator === "undefined" ? null : navigator.language.slice(0, 20),
       plan: options.plan ?? null,
