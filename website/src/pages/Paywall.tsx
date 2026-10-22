@@ -117,7 +117,7 @@ export function Paywall() {
   });
   const checkoutBy =
     PAYMENTS === "paddle"
-      ? "Secure checkout by Paddle: Apple Pay, PayPal or card."
+      ? "Pay securely by card. Checkout by Paddle."
       : PAYMENTS === "gumroad"
         ? "Secure checkout by Gumroad: card, PayPal, Apple Pay or Google Pay. Cancel anytime."
         : "Payments are processed securely by Razorpay.";

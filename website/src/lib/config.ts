@@ -8,7 +8,7 @@ export const FIRST_CLAIM_FREE = false;
 export const SUPPORT_EMAIL = "support@claimrightful.com";
 
 /**
- * Paddle checkout (Apple Pay, PayPal, cards). Used when all of these are set;
+ * Paddle checkout (cards only for now; see lib/paddle.ts). Used when all of these are set;
  * otherwise the site keeps using Razorpay. Sandbox and live have different tokens and price IDs.
  */
 export const PADDLE = {

@@ -20,8 +20,10 @@ export function loadPaddle(): Promise<Paddle | undefined> {
         locale: "en",
         allowLogout: false,
         showAddDiscounts: false,
-        // Google Pay attempts never completed (they all stopped at action_required), so it's left out.
-        allowedPaymentMethods: ["card", "apple_pay", "paypal", "saved_payment_methods"],
+        // Card only (2026-10-22): cards are the only method that has taken real money. PayPal
+        // charges were all refused (0 of 7) and Apple Pay / Google Pay stopped at action_required.
+        // Bring the others back once Paddle confirms they work.
+        allowedPaymentMethods: ["card"],
       },
     },
   }).catch(() => {
