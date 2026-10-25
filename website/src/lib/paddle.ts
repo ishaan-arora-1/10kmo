@@ -20,10 +20,10 @@ export function loadPaddle(): Promise<Paddle | undefined> {
         locale: "en",
         allowLogout: false,
         showAddDiscounts: false,
-        // Card only (2026-10-22): cards are the only method that has taken real money. PayPal
-        // charges were all refused (0 of 7) and Apple Pay / Google Pay stopped at action_required.
-        // Bring the others back once Paddle confirms they work.
-        allowedPaymentMethods: ["card"],
+        // Card only from 2026-10-22 (PayPal charges were refused and Apple Pay / Google Pay stopped
+        // at action_required); the wallets are back from 2026-10-25. If they fail again, go back to
+        // ["card"].
+        allowedPaymentMethods: ["card", "apple_pay", "google_pay", "paypal", "saved_payment_methods"],
       },
     },
   }).catch(() => {
