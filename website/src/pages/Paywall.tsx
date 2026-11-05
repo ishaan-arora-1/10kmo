@@ -3,7 +3,16 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { ActivityToast } from "../components/ActivityToast";
 import { BrandSeal, historyHeadline } from "../components/ui";
 import { track } from "../lib/analytics";
-import { PAYMENTS, PRICE_LABELS, PRICE_VALUES, YEARLY_TRIAL_DAYS, type WebPlan } from "../lib/config";
+import {
+  FIRST_PRICE_LABELS,
+  FIRST_PRICE_VALUES,
+  MONTHLY_INTRO,
+  PAYMENTS,
+  PRICE_LABELS,
+  PRICE_VALUES,
+  YEARLY_TRIAL_DAYS,
+  type WebPlan,
+} from "../lib/config";
 import {
   cappedTotal,
   daysUntil,
@@ -77,7 +86,12 @@ export function Paywall() {
   const anyBig = fileable.some((s) => s.payoutMax > BIG_CLAIM);
   const trial = plan === "yearly" && YEARLY_TRIAL_DAYS > 0;
   // Nothing is charged today on the trial, so the bill doesn't subtract the price.
-  const price = trial ? 0 : PRICE_VALUES[plan];
+  const price = trial ? 0 : FIRST_PRICE_VALUES[plan];
+  // The $1.99 first month, on monthly only.
+  const intro = plan === "monthly" && MONTHLY_INTRO !== null;
+  const monthlyTerms = MONTHLY_INTRO
+    ? `${MONTHLY_INTRO.label} first month, then ${PRICE_LABELS.monthly}/month`
+    : `${PRICE_LABELS.monthly}/month`;
   // Whole dollars, rounded down, so it never overstates.
   const keep = Math.floor(billTotal - price);
   const closingSoon = fileable.filter((s) => daysUntil(s.deadline) <= 30).length;
@@ -104,7 +118,7 @@ export function Paywall() {
     }
   };
 
-  const priceLabel = PRICE_LABELS[plan];
+  const priceLabel = FIRST_PRICE_LABELS[plan];
   const trialLength = YEARLY_TRIAL_DAYS === 1 ? "1 day" : `${YEARLY_TRIAL_DAYS} days`;
   // The trial includes a few claims (TRIAL_CLAIMS); the rest unlock with the first payment.
   const trialNames = store.trialClaimNames;
@@ -131,7 +145,9 @@ export function Paywall() {
         ? `Claim my ${usd(billTotal)} for ${priceLabel}`
         : plan === "yearly"
           ? `Subscribe for ${PRICE_LABELS.yearly}/year`
-          : `Subscribe for ${PRICE_LABELS.monthly}/month`;
+          : intro
+            ? `Start for ${priceLabel}`
+            : `Subscribe for ${PRICE_LABELS.monthly}/month`;
 
   return (
     <div className="flow narrow">
@@ -198,7 +214,7 @@ export function Paywall() {
                 </div>
               ) : (
                 <div className="bill-row">
-                  <span>ClaimRightful, {plan === "yearly" ? "1 year" : "1 month"}</span>
+                  <span>ClaimRightful, {plan === "yearly" ? "1 year" : intro ? "first month" : "1 month"}</span>
                   <span className="bill-amt minus">−{priceLabel}</span>
                 </div>
               )}
@@ -269,7 +285,7 @@ export function Paywall() {
               />
               <span className="plan-text">
                 <b>Monthly</b>
-                <span>{PRICE_LABELS.monthly}/month, no trial</span>
+                <span>{monthlyTerms}, no trial</span>
               </span>
             </label>
           </fieldset>
@@ -280,7 +296,7 @@ export function Paywall() {
         </button>
         <p className="pw-plan">
           {plan === "monthly"
-            ? `${PRICE_LABELS.monthly}/month · cancel anytime`
+            ? `${monthlyTerms} · cancel anytime`
             : trial
               ? `Free for ${trialLength} · cancel anytime`
               : `${PRICE_LABELS.yearly} billed yearly · cancel anytime`}
@@ -290,7 +306,9 @@ export function Paywall() {
               <button type="button" className="link-btn" onClick={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
                 {plan === "monthly"
                   ? `or ${PRICE_LABELS.yearly}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
-                  : `or ${PRICE_LABELS.monthly}/month`}
+                  : MONTHLY_INTRO
+                    ? `or ${MONTHLY_INTRO.label} for your first month`
+                    : `or ${PRICE_LABELS.monthly}/month`}
               </button>
             </>
           )}
@@ -321,7 +339,9 @@ export function Paywall() {
               ? `${checkoutBy} Nothing is charged today.${trialNames ? ` During the trial you can file the ${trialNames} claims; the rest unlock when your yearly plan starts.` : ""} If you don’t cancel in Profile by ${chargeAt}, ${PRICE_LABELS.yearly} is charged then and every year until you cancel.`
               : plan === "yearly"
               ? `${checkoutBy} ${PRICE_LABELS.yearly} is charged today and every year until you cancel in Profile.`
-              : `${checkoutBy} ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
+              : intro
+                ? `${checkoutBy} ${priceLabel} is charged today, then ${PRICE_LABELS.monthly} every month from next month until you cancel in Profile.`
+                : `${checkoutBy} ${PRICE_LABELS.monthly} is charged today and every month until you cancel in Profile.`}
         </p>
         <p className="fine-print center">
           {afterFreeClaim && (

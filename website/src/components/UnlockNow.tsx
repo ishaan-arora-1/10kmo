@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PRICE_LABELS, type WebPlan } from "../lib/config";
+import { MONTHLY_INTRO, PRICE_LABELS, type WebPlan } from "../lib/config";
 import { useStore } from "../lib/store";
 import { Modal } from "./ui";
 
@@ -51,7 +51,11 @@ export function UnlockNowModal({ open, onClose }: { open: boolean; onClose: () =
           onClick={() => void unlock("monthly")}
           disabled={busy !== null}
         >
-          {busy === "monthly" ? "Opening secure checkout…" : `Or pay ${PRICE_LABELS.monthly}/month`}
+          {busy === "monthly"
+            ? "Opening secure checkout…"
+            : MONTHLY_INTRO
+              ? `Or ${MONTHLY_INTRO.label} for your first month, then ${PRICE_LABELS.monthly}/month`
+              : `Or pay ${PRICE_LABELS.monthly}/month`}
         </button>
         <p className="fine-print center">
           Opens checkout. Your trial ends and {PRICE_LABELS.yearly} isn’t charged. Cancel anytime in Profile.
