@@ -36,7 +36,9 @@ import {
 import { track } from "./analytics";
 import {
   FIRST_CLAIM_FREE,
+  FIRST_PRICE_VALUES,
   GUMROAD,
+  MONTHLY_INTRO,
   PAYMENTS,
   PADDLE,
   PRICE_VALUES,
@@ -503,8 +505,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const startPaddleCheckout = useCallback(
     async (chosen: WebPlan): Promise<CheckoutResult> => {
       const userId = session?.user.id ?? null;
-      track("checkout_opened", { plan: chosen, userId, detail: "paddle" });
-      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+      // The $1.99 first month: Paddle takes the discount off the first monthly payment only.
+      const introDiscount = chosen === "monthly" && MONTHLY_INTRO ? PADDLE.monthlyIntroDiscount : null;
+      const via = introDiscount ? "paddle: intro" : "paddle";
+      track("checkout_opened", { plan: chosen, userId, detail: via });
+      pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: FIRST_PRICE_VALUES[chosen] });
       const paddle = await loadPaddle();
       if (!paddle) {
         track("checkout_failed", { plan: chosen, userId, detail: "paddle: script_blocked" });
@@ -528,8 +533,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               track("trial_started", { plan: chosen, userId, detail: "paddle" });
               pixel("StartTrial", { content_name: chosen, currency: "USD", value: 0, predicted_ltv: PRICE_VALUES[chosen] });
             } else {
-              track("checkout_paid", { plan: chosen, userId, detail: "paddle" });
-              pixel("Purchase", { content_name: chosen, currency: "USD", value: PRICE_VALUES[chosen] });
+              track("checkout_paid", { plan: chosen, userId, detail: via });
+              pixel("Purchase", { content_name: chosen, currency: "USD", value: FIRST_PRICE_VALUES[chosen] });
             }
             void waitForPlan().then((plan) => {
               paddle.Checkout.close();
@@ -557,6 +562,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const email = session?.user.email;
         paddle.Checkout.open({
           items: [{ priceId: PADDLE.prices[chosen], quantity: 1 }],
+          ...(introDiscount ? { discountId: introDiscount } : {}),
           ...(email ? { customer: { email } } : {}),
           customData: { user_id: userId },
         });

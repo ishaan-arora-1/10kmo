@@ -20,6 +20,8 @@ export const PADDLE = {
     monthly: import.meta.env.VITE_PADDLE_PRICE_MONTHLY ?? "",
     yearly: import.meta.env.VITE_PADDLE_PRICE_YEARLY ?? "",
   },
+  /** One-time discount on the first monthly payment (see MONTHLY_INTRO). */
+  monthlyIntroDiscount: import.meta.env.VITE_PADDLE_MONTHLY_INTRO_DISCOUNT ?? "",
 };
 
 /**
@@ -74,6 +76,24 @@ export const PRICE_LABELS: Record<WebPlan, string> = {
 export const PRICE_VALUES: Record<WebPlan, number> = {
   yearly: Number(PRICE_LABELS.yearly.replace(/[^0-9.]/g, "")),
   monthly: Number(PRICE_LABELS.monthly.replace(/[^0-9.]/g, "")),
+};
+
+/**
+ * Intro offer (2026-11-06): the first month of the monthly plan is $1.99, then $4.99 a month.
+ * It's a Paddle discount ($3 off the first payment only, monthly price only) that checkout
+ * applies when VITE_PADDLE_MONTHLY_INTRO_DISCOUNT is set. Unset: monthly is $4.99 from the start.
+ */
+export const MONTHLY_INTRO: { label: string; value: number } | null =
+  PAYMENTS === "paddle" && PADDLE.monthlyIntroDiscount ? { label: "$1.99", value: 1.99 } : null;
+
+/** What the first payment costs: the intro price on monthly while it runs, else the plan price. */
+export const FIRST_PRICE_LABELS: Record<WebPlan, string> = {
+  yearly: PRICE_LABELS.yearly,
+  monthly: MONTHLY_INTRO?.label ?? PRICE_LABELS.monthly,
+};
+export const FIRST_PRICE_VALUES: Record<WebPlan, number> = {
+  yearly: PRICE_VALUES.yearly,
+  monthly: MONTHLY_INTRO?.value ?? PRICE_VALUES.monthly,
 };
 
 /** Email reminders need a custom sending domain, so they stay off until one exists. */
