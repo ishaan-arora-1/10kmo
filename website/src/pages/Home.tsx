@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRightIcon, GiftIcon, LockIcon } from "../components/icons";
 import { StatePicker } from "../components/StatePicker";
 import { trialEndLabel, UnlockNowModal } from "../components/UnlockNow";
-import { Modal, Monogram, PayoutList, SampleBadge } from "../components/ui";
+import { Modal, MoneyCheck, Monogram, PayoutList, SampleBadge } from "../components/ui";
 import { track } from "../lib/analytics";
 import {
   cappedTotal,
@@ -36,6 +36,7 @@ export function Home() {
       Number(isUpcoming(a)) - Number(isUpcoming(b)) ||
       a.deadline.localeCompare(b.deadline),
   );
+  const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
   const firstOpen = toFile.find((settlement) => !isUpcoming(settlement));
   // Highlight the spotlight claim; without one, the most urgent claim.
   const spotlight = toFile.find((settlement) => settlement.isSpotlight && !isUpcoming(settlement));
@@ -56,10 +57,33 @@ export function Home() {
   const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
   const hero =
     upTo > 0
-      ? { headline: `You may qualify for up to ${cappedTotal(upTo)}` }
+      ? {
+          headline: `You may qualify for up to ${cappedTotal(upTo)}`,
+          payee: "You",
+          label: "Up to",
+          amount: upTo,
+        }
       : missedTotal > 0
-        ? { headline: `You missed up to ${cappedTotal(missedTotal)}` }
-        : { headline: `People got up to ${cappedTotal(store.history.total)} this past year` };
+        ? { headline: `You missed up to ${cappedTotal(missedTotal)}`, payee: "You", label: "Missed", amount: missedTotal }
+        : {
+            headline: `People got up to ${cappedTotal(store.history.total)} this past year`,
+            payee: "People like you",
+            label: "Paid this past year",
+            amount: store.history.total,
+          };
+
+  // Their own companies first, then the claims open to everyone.
+  const payees = [
+    ...new Set([
+      ...toFile.filter((s) => !featuredIds.has(s.id)).map((s) => s.company),
+      ...watching.map(({ brand }) => brand.name),
+      ...toFile.filter((s) => featuredIds.has(s.id)).map((s) => s.company),
+    ]),
+  ];
+  const memo =
+    payees.length > 0
+      ? `${payees.slice(0, 3).join(", ")}${payees.length > 3 ? ` + ${payees.length - 3} more` : ""}`
+      : "Settlements you could have claimed";
 
   // Free accounts see everything and file one claim free; the plan unlocks the rest.
   const unlock = `/paywall?next=${encodeURIComponent("/")}`;
@@ -75,6 +99,16 @@ export function Home() {
         <h1>{hero.headline}</h1>
         {store.isSampleData && <p>Previewing ClaimRightful with sample data</p>}
       </header>
+
+      <MoneyCheck
+        number={String(toFile.length).padStart(4, "0")}
+        payee={hero.payee}
+        amountLabel={hero.label}
+        amount={hero.amount}
+        capped
+        memo={memo}
+        footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED`}
+      />
 
       {store.trialUntil && locked.length > 0 && (
         <div className="unlock-strip free">
