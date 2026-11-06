@@ -4,7 +4,7 @@ import { pixel } from "../lib/pixel";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { browserKind, EmailCodeForm } from "../components/EmailCodeForm";
-import { AmountBox, Monogram, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard, Wordmark } from "../components/ui";
+import { Monogram, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard, Wordmark } from "../components/ui";
 import {
   ALSO_USED_COMPANIES,
   cappedTotal,
@@ -173,11 +173,11 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
       <div className="flow-body">
         <p className="eyebrow">Good news</p>
         <h1 className="flow-title">
-          You may qualify for {claimable.length} {plural(claimable.length, "settlement", "settlements")}
+          {/* "Up to": amounts are the most each settlement pays. Never "$0" or "Varies". */}
+          You may qualify for {upTo > 0 ? `up to ${cappedTotal(upTo)} from ` : ""}
+          {claimable.length} {plural(claimable.length, "settlement", "settlements")}
         </h1>
         {matches.every((s) => s.isSample) && <SampleBadge />}
-        {/* Never "Varies": add pending/past figures, else show what settlements paid people this year. */}
-        <AmountBox amount={upTo > 0 ? upTo : store.history.total} />
         <div className="stack">
           {matches.slice(0, 3).map((settlement) => (
             <button key={settlement.id} type="button" className="card-button" onClick={startClaiming}>
@@ -235,7 +235,6 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
             {estimates.length > 0 && (
               <p className="muted">We’ll email you the day {estimates.length === 1 ? "yours opens" : "each of yours opens"}.</p>
             )}
-            <AmountBox amount={upTo} />
             <FeaturedSettlements onSelect={onContinue} />
             <EstimatedPayouts onSelect={onContinue} />
             <PendingCases onSelect={onContinue} />
