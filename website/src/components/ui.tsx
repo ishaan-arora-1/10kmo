@@ -230,11 +230,6 @@ export function MoneyCheck({
   );
 }
 
-/** Found money as one plain figure in a box. Totals over $5,000 show as "$5,000+". */
-export function AmountBox({ amount }: { amount: number }) {
-  return <div className="amount-box">{amount <= 0 ? "Varies" : cappedTotal(amount)}</div>;
-}
-
 export function Modal({
   open,
   onClose,
