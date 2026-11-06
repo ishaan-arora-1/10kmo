@@ -1,0 +1,1400 @@
+{
+ "23andMe": {
+  "track": "23andMe - DNA Testing",
+  "seller": "23andMe, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d6/e8/8c/d6e88ce9-4830-969f-79a6-af267d0e5856/AppIcon-0-0-1x_U007epad-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.23andme.com/"
+ },
+ "Activision Blizzard": {
+  "track": "Battle.net",
+  "seller": "Blizzard Entertainment, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4c/2e/a9/4c2ea994-4a5a-a0f1-dd58-1bf733fc22b9/AppIconGlass-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.blizzard.com/apps/battle.net/mobile"
+ },
+ "Adidas": {
+  "track": "adidas: Shop Shoes & Clothing",
+  "seller": "Adidas International Marketing B.V.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/ca/17/2a/ca172ad7-a8a6-0c37-7f4b-2dc2f78d5dd9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.adidas.com/us/adidasapp"
+ },
+ "Adobe": {
+  "track": "Acrobat Reader: PDF Editor",
+  "seller": "Adobe Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b7/32/10/b73210bb-c67c-5263-a381-2ab1cc503c0d/ReleaseAppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Aetna": {
+  "track": "Aetna Health",
+  "seller": "Aetna Life Insurance Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/ce/5f/56/ce5f564e-8e80-a21b-f032-1a5a4d41295f/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://www.aetna.com"
+ },
+ "Airbnb": {
+  "track": "Airbnb",
+  "seller": "Airbnb, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/14/9a/b4/149ab4bf-ceac-295c-5670-a68ec0b9fd63/AppIcon-0-0-1x_U007epad-0-1-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://airbnb.com"
+ },
+ "Alaska Airlines": {
+  "track": "Alaska Hawaiian",
+  "seller": "Alaska Airlines, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/80/bb/5d/80bb5d22-21d5-3f2e-306a-8b7f7045f47c/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.alaskaair.com"
+ },
+ "Allstate": {
+  "track": "Allstate\u00ae Mobile",
+  "seller": "Allstate Insurance Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/02/28/05/0228055b-1408-3dea-de78-7ca84d22683d/AppIcon-1x_U007emarketing-0-8-0-P3-85-220-0.png/512x512bb.jpg",
+  "url": "http://www.allstate.com/mobile/insurance-go.aspx"
+ },
+ "Ally": {
+  "track": "Ally: Bank, Auto & Invest",
+  "seller": "Ally Financial Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/bd/05/ad/bd05ad56-dea3-1acb-a5c9-2131c25f21c8/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.ally.com/"
+ },
+ "American Airlines": {
+  "track": "American Airlines",
+  "seller": "American Airlines, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f3/60/e5/f360e55a-3190-78a4-5bf5-a0682209ddf9/AppIconGlass-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.aa.com/app"
+ },
+ "American Express": {
+  "track": "Amex",
+  "seller": "American Express",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/76/37/0d/76370dae-3955-a380-7605-d10620c76235/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.americanexpress.com/mobile"
+ },
+ "Ancestry": {
+  "track": "Ancestry: Family History & DNA",
+  "seller": "Ancestry.com Operations Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8e/de/49/8ede49a5-36f1-9bcf-865b-e5610f61eb85/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.ancestry.com/ancestry-app"
+ },
+ "Apartment rent (RealPage)": {
+  "track": "Mobile Facilities by RealPage",
+  "seller": "RealPage, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/2f/e9/41/2fe94171-83bf-c0ab-0a07-69e3225a26be/AppIcon-0-0-1x_U007emarketing-0-5-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Apple": {
+  "track": "Apple Store",
+  "seller": "Apple Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7b/83/16/7b831651-30d2-55a7-aabe-a0d6053df222/AppIcon-0-1x_U007epad-0-0-0-1-0-0-85-220-0.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Audible": {
+  "track": "Audible: Audiobooks & Podcasts",
+  "seller": "Audible, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/3b/f0/90/3bf090c8-d53a-a202-1e44-e364e98b30e4/AppIcon-0-0-1x_U007emarketing-0-0-0-8-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.audible.com"
+ },
+ "Avis": {
+  "track": "Avis - Car Rental",
+  "seller": "AVIS BUDGET GROUP, INC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/79/49/e3/7949e337-6aca-b5a9-6f51-7e969e2e3ebe/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/512x512bb.jpg",
+  "url": "http://avis.com/mobile"
+ },
+ "Bank of America": {
+  "track": "Bank of America Mobile Banking",
+  "seller": "Bank of America",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dd/39/93/dd399398-8daa-e1d0-d427-1a5c620c7de0/AppIcon-0-0-1x_U007epad-0-11-0-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Bath & Body Works": {
+  "track": "Bath & Body Works | B&BW",
+  "seller": "Bath & Body Works",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/81/6f/bf/816fbf66-b6fd-d75e-09f7-4e0908df6284/AppIcon-0-0-1x_U007ephone-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Best Buy": {
+  "track": "Best Buy: Tech Deals & Savings",
+  "seller": "Best Buy Co., Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4c/d0/aa/4cd0aa20-24a4-3477-ea0c-c4cfd922eef9/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.bestbuy.com/site/misc/mobile-app/pcmcat208500050016.c?id=pcmcat208500050016"
+ },
+ "Bestway": {
+  "track": "Bestway Smart Hub",
+  "seller": "Bestway Global Holding Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/91/e8/ca/91e8ca2c-49a1-0b68-f77b-0455f4c3be0a/AppIcon-1x_U007emarketing-0-11-0-0-85-220-0.png/512x512bb.jpg",
+  "url": "http://www.bestwaycorp.cn/"
+ },
+ "Blue Cross Blue Shield": {
+  "track": "BCBSM",
+  "seller": "Blue Cross Blue Shield of Michigan",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/84/0e/60/840e60b9-3023-b9ef-e642-c7b7bb6973a7/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://bcbsm.com/app"
+ },
+ "BMW": {
+  "track": "My BMW",
+  "seller": "BMW NORTH AMERICA, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6f/1b/1c/6f1b1c39-4210-9f72-cbf5-b8ffcde7c541/bmwappstore-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.bmwusa.com/?tl=grp-wdpl-bcom-mix-mn-.-nscf-.-.-"
+ },
+ "Booking.com": {
+  "track": "Booking.com: Hotels & Travel",
+  "seller": "Booking.com B.V.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/95/34/8d/95348d03-b64a-d697-8e40-3d7aecf50b01/AppIcon-0-0-1x_U007epad-0-9-0-85-220.jpeg/512x512bb.jpg",
+  "url": "http://www.booking.com/apps.html?source=appstore"
+ },
+ "Bumble": {
+  "track": "Bumble Dating App: Meet & Date",
+  "seller": "Bumble Holding Limited",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/28/25/8c/28258ceb-9126-4088-1a2c-c0a37db79fe7/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://bumble.com/"
+ },
+ "Burger King": {
+  "track": "BURGER KING\u00ae App",
+  "seller": "Burger King Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b2/14/2f/b2142f88-9e99-5e1e-bb96-3e1c0853e4b2/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Canon": {
+  "track": "Canon Camera Connect",
+  "seller": "Canon Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4e/f5/ee/4ef5ee73-25e8-e263-5397-bf1a17db481d/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://ssw.imaging-saas.canon/app/app.html?app=cc"
+ },
+ "Capital One": {
+  "track": "Capital One Mobile",
+  "seller": "Capital One Services, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f1/b2/f7/f1b2f741-d614-9daf-593c-a644c2ad86cb/AppIcon-0-0-1x_U007epad-0-1-P3-85-220.png/512x512bb.jpg",
+  "url": "https://www.capitalone.com/applications/mobile/"
+ },
+ "Carnival Cruise Line": {
+  "track": "Carnival HUB",
+  "seller": "Carnival Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/96/6c/37/966c37db-ebcf-2a59-9748-81bc965f9162/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Carvana": {
+  "track": "Carvana: Buy/Sell Used Cars",
+  "seller": "Carvana LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/84/32/1a/84321af1-d951-fb84-4703-4f31c9769b3a/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Change Healthcare": {
+  "track": "UnitedHealthcare",
+  "seller": "UNITED HEALTHCARE SERVICES, INC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/74/6c/63/746c63f1-0627-a5df-2573-956f05b3c7a4/AppIcon-0-0-1x_U007epad-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.uhc.com"
+ },
+ "Chase": {
+  "track": "Chase Mobile\u00ae: Bank & Invest",
+  "seller": "JPMorgan Chase Bank, NA",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b7/f5/a9/b7f5a976-f112-0581-4c24-615f91ac96b3/ChaseLiquidGlass-0-0-1x_U007epad-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.chase.com/online/services/mobile-banking.htm"
+ },
+ "Chewy": {
+  "track": "Chewy - Pet Care & Pharmacy",
+  "seller": "Chewy, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b3/cb/fc/b3cbfce2-15bc-2d00-3f86-dd4be3dc8a09/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.chewy.com"
+ },
+ "Chick-fil-A": {
+  "track": "Chick-fil-A",
+  "seller": "Chick-fil-A, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f2/ac/e9/f2ace931-b3aa-5f66-1c53-2486e85e695d/app-icon-release-glass-0-0-1x_U007ephone-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.chick-fil-a.com"
+ },
+ "Chime": {
+  "track": "Chime\u00ae \u2013 Mobile Banking",
+  "seller": "Chime Financial, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7b/30/e1/7b30e1d9-7be8-fa4b-22fb-c91593ac7d6a/AppIcon-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.chime.com/"
+ },
+ "Chipotle": {
+  "track": "Chipotle",
+  "seller": "Chipotle Mexican Grill",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/cc/29/4b/cc294b25-7460-a32c-1f83-284e37fe4c6b/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.chipotle.com"
+ },
+ "Coinbase": {
+  "track": "Coinbase: Buy Crypto & Stocks",
+  "seller": "Coinbase, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6e/7b/83/6e7b834d-d196-ec1d-bcef-623700f5e787/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.coinbase.com"
+ },
+ "Comcast Xfinity": {
+  "track": "Xfinity",
+  "seller": "Comcast Interactive Media",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/2d/14/56/2d14560a-c0cc-b102-6fc2-e39f4581e244/AppIcon-0-0-1x_U007ephone-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://internet.xfinity.com"
+ },
+ "Costco": {
+  "track": "Costco",
+  "seller": "Costco Wholesale Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/39/98/ca/3998cae9-3fbf-b523-8ae1-78b7c521aff5/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220-0.png/512x512bb.jpg",
+  "url": "http://www.costco.com"
+ },
+ "Cox": {
+  "track": "Cox App by Spectrum",
+  "seller": "Cox Communications, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/ec/ac/93/ecac937e-442d-cea1-ff3a-a9e4ef0e10ec/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.cox.com/aboutus/home.html?sc_id=cr_mobile_app_z_coxapp_z"
+ },
+ "Credit Karma": {
+  "track": "Intuit Credit Karma",
+  "seller": "Credit Karma, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/11/4e/9d/114e9d92-3c1e-c52f-3c5f-c1eff07d182c/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.creditkarma.com"
+ },
+ "Cricket Wireless": {
+  "track": "myCricket App",
+  "seller": "Cricket Wireless, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/b9/0c/6c/b90c6cff-92ea-dea8-5a37-1e461edb1043/AppIcon-0-0-1x_U007epad-0-1-0-P3-85-220.png/512x512bb.jpg",
+  "url": "https://www.cricketwireless.com/support/apps-and-services/mycricket-app.html"
+ },
+ "CVS": {
+  "track": "CVS Health",
+  "seller": "CVS Pharmacy",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/af/42/2f/af422f85-1b8a-aabd-d315-0eb6e0bb33df/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.cvs.com"
+ },
+ "Dell": {
+  "track": "Dell Technologies Events",
+  "seller": "Dell Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/76/07/b1/7607b18b-be18-2060-95ba-7e3411ab5c59/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Delta Air Lines": {
+  "track": "Fly Delta",
+  "seller": "Delta Air Lines, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a6/de/61/a6de614c-6a7b-1d0d-8daf-1d607bc356fb/Icon-0-0-1x_U007emarketing-0-0-0-8-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.delta.com/app"
+ },
+ "DirecTV": {
+  "track": "DIRECTV: TV & Movie Streaming",
+  "seller": "DIRECTV",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d3/af/96/d3af96bd-5059-c767-77f0-820ec5436ed0/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://directv.com/"
+ },
+ "Discord": {
+  "track": "Discord - Talk, Play, Hang Out",
+  "seller": "Discord Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3d/c8/64/3dc8644e-a92b-e0c4-80e8-8ae8b48252eb/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://discord.com/"
+ },
+ "Discover": {
+  "track": "Discover Mobile",
+  "seller": "Discover Financial Services",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/17/79/e8/1779e83a-97c8-4cab-22b7-3cf97e7bbce9/AppIconProd-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.discover.com/mobile"
+ },
+ "Dish Network": {
+  "track": "DISH Anywhere",
+  "seller": "DISH Network LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/19/27/7f/19277f9b-6625-773e-f899-b109baec89ec/Dany-0-0-1x_U007epad-0-1-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.dish.com/features/dish-anywhere"
+ },
+ "Disney+": {
+  "track": "Disney+",
+  "seller": "Disney Electronic Content, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/3f/7f/cb/3f7fcb64-82d5-7f5d-e453-6532b9e497d4/AppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://disneyplus.com"
+ },
+ "Dollar General": {
+  "track": "Family Dollar",
+  "seller": "Family Dollar Stores, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d0/4e/4b/d04e4bbe-6fb1-dc05-b92b-595773c61005/AppIcon-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.familydollar.com"
+ },
+ "Domino's": {
+  "track": "Domino's Pizza USA",
+  "seller": "Domino's Pizza LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/07/bc/e7/07bce77c-1c41-23a4-f24e-f80eb2939ed6/LiquidGlassAppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "DoorDash": {
+  "track": "DoorDash: Food, Grocery, More",
+  "seller": "DoorDash, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/92/08/f8/9208f8f1-46bd-bd45-ff7b-1eb6337db1a4/AppIcon-0-0-1x_U007ephone-0-1-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.doordash.com/"
+ },
+ "Dropbox": {
+  "track": "Dropbox: Cloud Storage Backup",
+  "seller": "Dropbox, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/94/2b/ca/942bcaba-f8db-9467-f3c9-10f6f35267a3/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.dropbox.com"
+ },
+ "Dunkin'": {
+  "track": "Dunkin'",
+  "seller": "Dunkin' Donuts",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1e/04/4f/1e044fc1-5f25-7cb6-ff83-a99549b00335/AppIcon-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.dunkindonuts.com/"
+ },
+ "eBay": {
+  "track": "eBay online shopping & selling",
+  "seller": "eBay Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/eb/0f/bc/eb0fbce7-3dbb-8931-2614-cd2975765fe3/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.ebay.com/"
+ },
+ "Electronic Arts": {
+  "track": "The Sims\u2122 FreePlay",
+  "seller": "Electronic Arts Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/fc/aa/01/fcaa0115-9798-ddaf-9cf8-117ae563f78a/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://www.ea.com/iphone"
+ },
+ "Epic Games": {
+  "track": "Epic Games",
+  "seller": "Epic Games Sweden AB",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4e/db/44/4edb4481-a30a-b1b6-2019-9f4161ce7f14/AppIcon-Companion-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.epicgames.com/mobile"
+ },
+ "Epson": {
+  "track": "Epson Smart Panel",
+  "seller": "Seiko Epson Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d4/66/38/d4663893-5c2c-5b40-8fbb-edd3c9ea765b/AppIcon-0-0-1x_U007emarketing-0-5-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.epson.com"
+ },
+ "Equifax": {
+  "track": "myEquifax",
+  "seller": "Equifax Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/5d/8a/6c/5d8a6cb0-2656-597b-6fd6-f200eb8c2ea2/AppIcon-production-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.equifax.com/"
+ },
+ "Etsy": {
+  "track": "Etsy: Shop from Real People",
+  "seller": "Etsy, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1e/89/60/1e896077-51d7-c6c0-141b-7473a88de756/BOEAppIcon-0-0-1x_U007epad-0-1-0-0-0-0-GLES2_U002c0-85-220.png/512x512bb.jpg",
+  "url": "https://www.etsy.com/mobile"
+ },
+ "Expedia": {
+  "track": "Expedia: Hotels, Flights, Cars",
+  "seller": "Expedia, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/08/c5/d6/08c5d6da-18ce-6bb6-cb5f-d41de493adf9/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.expedia.com/app"
+ },
+ "Fandango": {
+  "track": "Fandango - Get Movie Tickets",
+  "seller": "Fandango",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/9b/4a/db/9b4adb10-0ddb-0c86-095d-02e22de5ed9e/app_icon_fandango-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.fandango.com/"
+ },
+ "FedEx": {
+  "track": "FedEx Mobile",
+  "seller": "FedEx Corporate Services, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/19/53/a5/1953a5c5-d469-2d44-43d2-15a3713bf55d/AppIcon-1x_U007emarketing-0-8-0-sRGB-0-85-220-0.png/512x512bb.jpg",
+  "url": "http://mobilesolutions.fedex.com/for-ios"
+ },
+ "Flo": {
+  "track": "Flo Cycle & Period Tracker",
+  "seller": "FLO HEALTH UK LIMITED",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8f/8f/06/8f8f0603-2009-42d8-e838-3a3472a973e8/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://flo.health/"
+ },
+ "Ford": {
+  "track": "Ford\u2122",
+  "seller": "Ford Motor Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/bd/44/77/bd4477e8-1a56-8ff5-cb77-094552ea22b5/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://www.fordpass.com"
+ },
+ "Frontier Airlines": {
+  "track": "Frontier Airlines",
+  "seller": "Frontier Airlines, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a8/12/4a/a8124a52-71e2-f36b-0ad0-18e94554a41a/ProdIcon-0-1x_U007epad-0-1-0-85-220-0.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Frontier Communications": {
+  "track": "MyFrontier",
+  "seller": "Frontier Communications Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/6d/cb/bf/6dcbbf6e-d7f0-d6be-6942-cf243fb49761/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.frontier.com"
+ },
+ "Gap": {
+  "track": "Gap: Apparel, denim and more",
+  "seller": "Gap Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dc/fa/b3/dcfab3e2-69a3-7d81-f20c-b06170981b21/AppIcon-Release-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.gap.com"
+ },
+ "Garmin": {
+  "track": "Garmin Connect\u2122",
+  "seller": "Garmin International",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/65/24/cc/6524cc12-606f-371c-e33e-02513bff21f3/AppIcon-0-0-1x_U007ephone-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.garmin.com/apps/gcmobile"
+ },
+ "GEICO": {
+  "track": "GEICO Mobile - Car Insurance",
+  "seller": "GEICO",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9c/e9/11/9ce91173-fec2-3043-69ce-cdb5f6e46cc5/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.geico.com/"
+ },
+ "GoDaddy": {
+  "track": "GoDaddy: Websites & Marketing",
+  "seller": "GoDaddy Mobile LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/71/70/4f/71704f77-7c26-d166-ec77-ebcf5235e269/GoDaddy-App-Icon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://godaddy.com/studio"
+ },
+ "GoodRx": {
+  "track": "GoodRx: Prescription Savings",
+  "seller": "GoodRx, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/dc/e7/af/dce7af12-35b0-0e6c-8785-e389b50a1e85/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.goodrx.com/mobile"
+ },
+ "Google": {
+  "track": "Google",
+  "seller": "Google LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1b/2f/56/1b2f5678-e28a-32bf-3483-7aab05093f32/SuperG_ios26-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.google.com/search/about"
+ },
+ "Google Fi": {
+  "track": "Google Fi Wireless",
+  "seller": "Google LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/50/cd/94/50cd94c6-13c7-e26e-87aa-e573287c68f3/fi-icon-ios26_prod-0-0-1x_U007ephone-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Gopuff": {
+  "track": "Gopuff - Grocery Delivery",
+  "seller": "GoPuff LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/93/4c/5e/934c5e52-84ca-f93f-a72a-e89df5fd828e/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Grindr": {
+  "track": "Grindr - Gay Dating & Chat",
+  "seller": "Grindr LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/07/1a/a2/071aa278-2562-9132-9548-efb54089d686/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.grindr.com"
+ },
+ "Grubhub": {
+  "track": "Grubhub: Food Delivery",
+  "seller": "GrubHub Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/e4/8c/18/e48c18d4-0787-e958-bdcb-d3e4287afb78/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.grubhub.com"
+ },
+ "HelloFresh": {
+  "track": "HelloFresh: Meal Kit & Recipes",
+  "seller": "Hellofresh GmbH",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/2a/4a/e8/2a4ae8fe-8ced-b110-9ac6-a2dd61c25455/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.hellofresh.com/app"
+ },
+ "Hertz": {
+  "track": "Hertz Rental Car, SUV, Van",
+  "seller": "The Hertz Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/49/39/e1/4939e177-98a7-56b5-ab51-1f20ea94e6bd/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.hertz.co.uk/p/hertz-car-hire-app"
+ },
+ "Hilton": {
+  "track": "Hilton Honors: Book Hotels",
+  "seller": "Hilton Worldwide Holdings Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/9b/3b/bb/9b3bbbbc-7eda-00f8-93a7-0b457adf4d72/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Hinge": {
+  "track": "Hinge Dating App: Match & Date",
+  "seller": "Hinge, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/70/90/4d/70904d92-8420-3846-3827-bfc1ada413e5/AppIcon-0-0-1x_U007emarketing-0-6-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://hinge.co"
+ },
+ "HireVue": {
+  "track": "HireVue for Candidates",
+  "seller": "Hirevue Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c0/5f/4d/c05f4d28-9ffb-6d90-b704-72499d1706a0/CandidateAppIcon-1x_U007emarketing-0-11-0-0-85-220-0.png/512x512bb.jpg",
+  "url": "https://www.hirevue.com/"
+ },
+ "Home Depot": {
+  "track": "The Home Depot",
+  "seller": "The Home Depot, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/0e/49/5e/0e495e30-079b-60c7-2fa5-547c226288a8/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.homedepot.com"
+ },
+ "Honda": {
+  "track": "HondaLink",
+  "seller": "American Honda Motor Co., Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e8/b3/e7/e8b3e711-4af7-6da9-7cae-6ed95c2de1ca/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Hulu": {
+  "track": "Hulu: Stream TV shows & movies",
+  "seller": "Hulu, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/03/c9/99/03c99983-a169-a097-d6a7-f8cad63e2acb/HuluAppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.hulu.com/start"
+ },
+ "Humana": {
+  "track": "MyHumana",
+  "seller": "Humana Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f2/8e/a6/f28ea676-1e11-f21e-d71b-e6521912d5fb/AppIcon-prod-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Hyatt": {
+  "track": "World of Hyatt: Book Hotels",
+  "seller": "Hyatt Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7c/8b/2f/7c8b2f2f-fbe8-a4b2-2c1b-64a45ccba4d4/AppIcon-0-0-1x_U007ephone-0-0-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.hyatt.com"
+ },
+ "Hyundai": {
+  "track": "MyHyundai with Bluelink",
+  "seller": "Hyundai Motor America",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/0a/eb/7b/0aeb7b5c-1de1-491d-e178-9bdc9f14eb3e/AppIcon-0-0-1x_U007emarketing-0-6-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.hyundaiusa.com"
+ },
+ "IKEA": {
+  "track": "IKEA",
+  "seller": "Inter IKEA Systems B.V.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/73/7c/76/737c7686-a272-81be-2601-642afa9b5785/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://www.ikea.com"
+ },
+ "Instagram": {
+  "track": "Instagram",
+  "seller": "Instagram, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b0/91/85/b09185ca-7b74-87a4-adaf-1755d434ee22/Prod-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://instagram.com/"
+ },
+ "JetBlue": {
+  "track": "JetBlue",
+  "seller": "JetBlue Airways Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/49/56/21/49562171-70b2-ff22-46d6-542d8e32fa5c/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.jetblue.com/mobile"
+ },
+ "John Deere": {
+  "track": "Equipment Mobile",
+  "seller": "John Deere",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b3/65/db/b365db52-6050-762d-c857-0edd8b094644/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Kaiser Permanente": {
+  "track": "Kaiser Permanente",
+  "seller": "Kaiser Permanente",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/73/fd/dc/73fddc9f-fff0-2c39-52e3-71102f808dff/KPAppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "http://kp.org/thrive"
+ },
+ "KFC": {
+  "track": "KFC US: Ordering & Delivery",
+  "seller": "KFC Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/87/77/8f/87778fce-2a57-ff69-d563-3944de03540b/Default-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Kia": {
+  "track": "Kia Access",
+  "seller": "Kia America, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4e/b4/60/4eb46069-20d6-24c6-254b-3e7b298188a4/AppIcon-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Kohl's": {
+  "track": "Kohl's - Shopping & Discounts",
+  "seller": "Kohl's Department Stores, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9e/5c/1e/9e5c1e75-9fd9-d2f0-379a-9c2a08c2369f/AppIcon-Berry-0-0-1x_U007emarketing-0-6-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.kohls.com/app"
+ },
+ "Kroger": {
+  "track": "Kroger",
+  "seller": "The Kroger Co.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/05/79/86/057986b5-3e38-5638-8aa7-e34d8730be96/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.kroger.com/topic/sign-on-and-save-more"
+ },
+ "LA Fitness": {
+  "track": "LA Fitness Mobile",
+  "seller": "Fitness International, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/02/88/b9/0288b9f5-73ca-4319-cb0a-e1259356492a/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/512x512bb.jpg",
+  "url": "http://lafitness.com/Pages/MobileHome.aspx"
+ },
+ "Lenovo": {
+  "track": "Lenovo Smart Connect",
+  "seller": "LENOVO (UNITED STATES) INC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a6/a5/6c/a6a56cac-0d1f-1a45-f291-2b0e58e3a168/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.lenovo.com/us/en/software/smart-connect/?orgRef=https%253A%252F%252Fwww.google.com%252F&srsltid=AfmBOopChcknTsgEG2UTuOYGP1Q8gkuk6T2vamLiKYayAgtexn7iOWPs"
+ },
+ "Liberty Mutual": {
+  "track": "Liberty Mutual Mobile",
+  "seller": "Liberty Mutual",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d5/65/42/d56542e1-7bba-646b-ddc1-377e1db89ecb/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.libertymutual.com/liberty-mutual-mobile"
+ },
+ "LinkedIn": {
+  "track": "LinkedIn: Community & Network",
+  "seller": "LinkedIn Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/81/62/17/81621741-aef5-e3e0-c20d-645b83902669/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.linkedin.com/mobile"
+ },
+ "LiveHealth Online": {
+  "track": "Dr Online - Patient",
+  "seller": "DOCTOR ONLINE FOR GENERAL TRADING AND INFORMATION TECHNOLOGY SERVICES-LTD",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/12/44/24/12442437-5478-45c2-9956-73eda4119deb/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Lowe's": {
+  "track": "Lowe's Home Improvement",
+  "seller": "Lowe's Companie's, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/49/de/1a/49de1a9f-98b1-3052-e5d3-c87af53d61b7/Lowes_Logo_App-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.lowes.com/l/download-apps.html"
+ },
+ "Lyft": {
+  "track": "Lyft",
+  "seller": "Lyft, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d9/4f/e1/d94fe126-a972-1957-e3df-236bd3326355/PassengerRelease-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://lyft.com"
+ },
+ "Macy's": {
+  "track": "Macy's: Shop, Save, and Earn",
+  "seller": "Macys Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/38/e3/3f/38e33f25-be1e-e74f-b866-c55a3e0462d5/AppIcon-0-0-1x_U007ephone-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.macys.com"
+ },
+ "Marriott": {
+  "track": "Marriott Bonvoy: Book Hotels",
+  "seller": "Marriott International",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/16/ee/36/16ee3614-fd33-2aba-d0c9-4febd99af62a/Bonvoy-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg",
+  "url": "http://mobileapp.marriott.com"
+ },
+ "Match.com": {
+  "track": "Match Dating App: Chat & Meet",
+  "seller": "Match Group Americas, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/19/51/ad/1951ad65-f356-2419-383f-b72ad61ad697/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.match.com"
+ },
+ "McAfee": {
+  "track": "McAfee: Stay Secure & Private",
+  "seller": "McAfee, LLC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4c/99/ac/4c99acc6-c3b3-7dd4-b122-d1dde98c50fc/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "McDonald's": {
+  "track": "McDonald's",
+  "seller": "McDonalds USA LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f6/e4/93/f6e49317-2ff8-b185-b570-01c98e2d54e0/AppIcon-US-0-0-1x_U007ephone-0-1-0-sRGB-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.mcdonalds.com/us/en-us/mobile-order-and-pay.html"
+ },
+ "MGM Resorts": {
+  "track": "MGM Rewards",
+  "seller": "MGM Resorts International",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/8c/79/09/8c790978-6393-f19c-b439-3eb7b1519331/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.mgmresorts.com/app/"
+ },
+ "Microsoft": {
+  "track": "Microsoft Outlook",
+  "seller": "Microsoft Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cb/e8/bd/cbe8bd39-9c76-6068-db83-5521a85e128b/AppIcon-outlook.prod-0-0-1x_U007epad-0-1-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://outlook.live.com"
+ },
+ "MoneyGram": {
+  "track": "MoneyGram\u00ae Money Transfers App",
+  "seller": "MoneyGram International, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/98/7d/7d987d9d-a334-456c-beb9-5fcf2fdbf38a/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.moneygram.com/us/en"
+ },
+ "Navy Federal": {
+  "track": "Navy Federal Credit Union",
+  "seller": "Navy Federal Credit Union",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/52/3d/28/523d28a0-4c2b-7f08-f23d-d2b02d8bd32d/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.navyfederal.org/services/mobile-online-banking.html"
+ },
+ "Netflix": {
+  "track": "Netflix",
+  "seller": "Netflix, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/73/dd/0e/73dd0eae-8fc8-94cc-da59-2512616c784f/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.netflix.com"
+ },
+ "Nike": {
+  "track": "Nike: Engineered for Athletes",
+  "seller": "Nike, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/21/f2/3c/21f23c8f-4f24-1192-7280-7d6d3794e271/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.nike.com"
+ },
+ "Nintendo": {
+  "track": "Nintendo Switch App",
+  "seller": "Nintendo Co., Ltd.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4b/4d/5a/4b4d5acf-d4a2-7a46-d694-def2e56e3e57/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.nintendo.com/switch"
+ },
+ "Nissan": {
+  "track": "MyNISSAN\u00ae",
+  "seller": "Nissan North America Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/8c/1c/a8/8c1ca8b7-c81d-f6c7-13fc-0d633a7e0338/AppIcon-Nissan-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Noom": {
+  "track": "Noom Weight Loss, Food Tracker",
+  "seller": "Noom, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/92/49/ee/9249ee43-78fb-1e0e-2f8a-ffc3c00807ce/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.noom.com/"
+ },
+ "Nordstrom": {
+  "track": "Nordstrom",
+  "seller": "Nordstrom, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/2f/ae/58/2fae5897-d1fb-b5ad-6a99-845515a7b0f6/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://nordstrom.com"
+ },
+ "Pandora": {
+  "track": "Pandora: Personalized Music",
+  "seller": "Pandora Media, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/06/13/15/0613151d-52c0-6569-5ed8-10a04f6c9cde/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.pandora.com/"
+ },
+ "Panera Bread": {
+  "track": "Panera Bread",
+  "seller": "Panera, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/fe/81/b7/fe81b70c-038e-1848-732d-6c890b4ba6e4/AppIcon-0-0-1x_U007emarketing-0-5-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.panerabread.com"
+ },
+ "Papa John's": {
+  "track": "Papa Johns Pizza & Delivery",
+  "seller": "Papa John's International Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/98/e7/66/98e766ac-b51d-caeb-2459-826de0273f46/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.papajohns.com"
+ },
+ "PayPal": {
+  "track": "PayPal - Pay, Send, Save",
+  "seller": "PayPal, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d5/23/d6/d523d67e-4d9d-818f-3e47-ca0f7344d201/AppIcon-0-0-1x_U007ephone-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.paypal.com/mobile"
+ },
+ "Peacock": {
+  "track": "Peacock TV: Stream TV & Movies",
+  "seller": "Peacock TV LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/02/50/8f/02508fc6-59f4-fa16-893a-98d93f74af0a/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.peacocktv.com/"
+ },
+ "Peloton": {
+  "track": "Peloton: Fitness & Workouts",
+  "seller": "Peloton Interactive, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/fe/ae/ff/feaeff40-a158-5d12-d2a5-3a5e11a92f1a/peloton-white-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.onepeloton.com"
+ },
+ "Petco": {
+  "track": "Petco: The Pet Parents Partner",
+  "seller": "PETCO ANIMAL SUPPLIES STORES, INC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b4/2f/c9/b42fc9d9-84ae-e202-8ca4-ebca2a09f071/AppIcon-0-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg",
+  "url": ""
+ },
+ "PetSmart": {
+  "track": "PetSmart",
+  "seller": "PetSmart LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/68/08/3c/68083ceb-e5ab-894b-d85f-5d6f8e3012a4/PetSmart_AppIcon-0-0-1x_U007ephone-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.petsmart.com/mobile-app.html"
+ },
+ "Pinterest": {
+  "track": "Pinterest",
+  "seller": "Pinterest, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7f/b8/f0/7fb8f09f-af9e-8fc3-9e34-38568fb1b1a2/AppIcon-0-0-1x_U007epad-0-1-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.pinterest.com"
+ },
+ "Pizza Hut": {
+  "track": "Pizza Hut - Delivery & Takeout",
+  "seller": "Pizza Hut, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/be/83/f1/be83f138-974a-20cc-dbc6-835048343000/PizzaHut-0-0-1x_U007epad-0-1-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Planet Fitness": {
+  "track": "Planet Fitness",
+  "seller": "Planet Fitness Holdings, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1e/e9/ec/1ee9ecb0-775b-f421-4cf8-65ad21157341/LogoIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://planetfitness.com"
+ },
+ "PlayStation": {
+  "track": "PlayStation App",
+  "seller": "PlayStation Mobile Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/bc/85/e3/bc85e37d-01ec-41c8-1b91-8e445b4f5479/PlayStation-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "PNC": {
+  "track": "PNC Mobile Banking",
+  "seller": "PNC Bank, N.A.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/77/dc/05/77dc0519-cd67-d001-d75a-d43a76450f9d/AppIcon_Glass-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.pnc.com/en/customer-service/mobile-app-directory.html"
+ },
+ "Progressive": {
+  "track": "Progressive",
+  "seller": "Progressive Insurance",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/bb/dc/f9/bbdcf937-7c31-e54a-4321-045c82bc1fbc/AppIcon-0-0-1x_U007emarketing-0-4-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.progressive.com"
+ },
+ "Publix": {
+  "track": "Publix",
+  "seller": "Publix Super Markets Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f7/c2/22/f7c22243-7d55-561f-952b-0e082689b63b/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.publix.com/mobile"
+ },
+ "Quest Diagnostics": {
+  "track": "MyQuest for Patients",
+  "seller": "Quest Diagnostics, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9f/e6/01/9fe60166-c0a5-474e-c01a-644d0605fca2/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Reddit": {
+  "track": "Reddit",
+  "seller": "REDDIT, INC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a1/74/9d/a1749d85-1061-a0ac-0731-6ea329d668cf/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.reddit.com/mobile/download"
+ },
+ "Roblox": {
+  "track": "Roblox",
+  "seller": "Roblox Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9d/cb/bf/9dcbbfe1-b31a-b9d0-9e6b-a7cbd72b1d8a/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.roblox.com/"
+ },
+ "Roku": {
+  "track": "Roku Remote (Official)",
+  "seller": "ROKU INC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/90/b9/7d/90b97de7-48ff-6169-ca50-4529ab444648/Roku-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.roku.com"
+ },
+ "Sallie Mae": {
+  "track": "Sallie Mae",
+  "seller": "Sallie Mae, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a9/bf/b2/a9bfb25f-05b8-d5ab-0429-b9223fa45a75/AppIcon-0-0-1x_U007epad-0-0-0-11-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.salliemae.com/"
+ },
+ "Samsung": {
+  "track": "SmartThings",
+  "seller": "Samsung Electronics Co., Ltd.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a0/73/d2/a073d200-46c9-cd20-5f1d-7c66fcf931e3/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "SeatGeek": {
+  "track": "SeatGeek - Buy Event Tickets",
+  "seller": "SeatGeek, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/82/0d/9d/820d9dbe-49f1-2979-324b-888444a0688f/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://seatgeek.com/mobile"
+ },
+ "Sephora": {
+  "track": "Sephora US: Makeup & Skincare",
+  "seller": "Sephora USA, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/79/9d/35/799d3571-0d83-0dfd-1fea-adb9afc7f899/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.sephora.com"
+ },
+ "Six Flags": {
+  "track": "Six Flags",
+  "seller": "Six Flags Entertainment Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/0f/19/66/0f19662d-d341-12b5-ad64-74c102a655f3/AppIcon-Release-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.sixflags.com"
+ },
+ "Sony": {
+  "track": "Sony | Sound Connect",
+  "seller": "Sony Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/84/bf/2b/84bf2b5d-0e1b-3e1e-a53b-152b9ed75d39/AppIcon-0-0-1x_U007emarketing-0-3-0-GLES2_U002c0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Southwest Airlines": {
+  "track": "Southwest Airlines: Travel App",
+  "seller": "Southwest Airlines",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b0/04/18/b0041822-428b-e532-ab7f-50b684d16b7b/AppIcon-Production-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.southwest.com"
+ },
+ "Spirit Airlines": {
+  "track": "Southwest Airlines: Travel App",
+  "seller": "Southwest Airlines",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b0/04/18/b0041822-428b-e532-ab7f-50b684d16b7b/AppIcon-Production-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.southwest.com"
+ },
+ "Spotify": {
+  "track": "Spotify: Music and Podcasts",
+  "seller": "Spotify",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/8b/f2/6a/8bf26ab9-3ced-cb5c-a2b3-19f65e7f5cc6/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.spotify.com/"
+ },
+ "Starbucks": {
+  "track": "Starbucks",
+  "seller": "Starbucks Coffee Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/24/78/3f/24783f9b-ae44-e768-7766-dce0b32045cb/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.starbucks.com/coffeehouse/mobile-apps/mystarbucks"
+ },
+ "State Farm": {
+  "track": "State Farm\u00ae",
+  "seller": "State Farm Mutual Automobile Insurance Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cc/a4/7b/cca47b83-bea7-1b29-14cc-844db0dce2ee/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-0-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "StubHub": {
+  "track": "StubHub: Event Tickets",
+  "seller": "Stubhub, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/74/18/b1/7418b1cb-1ab4-ca09-13d6-2bc0f7177a21/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.stubhub.com"
+ },
+ "Subaru": {
+  "track": "MySubaru",
+  "seller": "Subaru of America, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d2/2b/1b/d22b1be5-6ef7-a830-845c-56fa3cebb500/AppIcon-SOA-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.mysubaru.com"
+ },
+ "Synchrony": {
+  "track": "MySynchrony",
+  "seller": "Synchrony Financial",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4d/72/2a/4d722ae9-4343-2aa8-5ebb-25d75be88878/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.mysynchrony.com"
+ },
+ "Taco Bell": {
+  "track": "Taco Bell Fast Food & Delivery",
+  "seller": "Taco Bell",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/89/e6/2e/89e62e8a-07c7-c5f9-2ef3-82218fa457cc/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://www.tacobell.com"
+ },
+ "Target": {
+  "track": "Target: Shop. Style. Save.",
+  "seller": "Target",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/14/b8/9c/14b89c1b-fa1e-e59d-1555-3ab685aed82f/2026_Holiday_AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.target.com/c/target-app/-/N-4th2r"
+ },
+ "TD Bank": {
+  "track": "TD Bank (US)",
+  "seller": "TD Bank, N.A.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/18/5c/2b/185c2baf-68f0-a173-3645-bbaed6ef05da/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.tdbank.com"
+ },
+ "TED": {
+  "track": "TED Talks: Watch and Learn",
+  "seller": "TED Conferences LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/32/f6/65/32f66552-652d-1dd0-1eb6-b09325a339b0/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.ted.com"
+ },
+ "Tesla": {
+  "track": "Tesla",
+  "seller": "Tesla, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4b/61/aa/4b61aab6-138e-3bef-f183-abc3549975ca/ProdAppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.tesla.com"
+ },
+ "Ticketmaster": {
+  "track": "Ticketmaster\uff0dBuy, Sell Tickets",
+  "seller": "Ticketmaster L.L.C",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/b6/1c/09/b61c097d-c719-f0a7-9062-d602b89e8161/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.ticketmaster.com/"
+ },
+ "TikTok": {
+  "track": "TikTok - Videos, Shop & LIVE",
+  "seller": "TIKTOK PTE. LTD.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4b/af/40/4baf40d2-5fec-a1fe-da33-cafd0c87f18b/TikTok_AppIcon26-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.tiktok.com"
+ },
+ "Tinder": {
+  "track": "Tinder Dating App: Date & Chat",
+  "seller": "Tinder LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/fd/c3/77/fdc37782-c1c1-9174-fa8e-2eb53e9f39eb/AppIcon-BrandFlame-0-0-1x_U007ephone-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg",
+  "url": "https://tinder.com"
+ },
+ "Toyota": {
+  "track": "Toyota",
+  "seller": "Toyota Motor Sales, U.S.A., Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d9/a8/06/d9a806e6-af0f-1a45-1d92-8e0cab625e62/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.toyota.com"
+ },
+ "TransUnion": {
+  "track": "TransUnion\u00ae",
+  "seller": "TransUnion Interactive",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/91/a2/c3/91a2c3c8-1492-3b7a-96cf-642262539a31/AppIcon-AppStore-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Truist": {
+  "track": "Truist Mobile",
+  "seller": "Truist Financial Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/49/dd/af/49ddafd2-cb94-8169-a0b6-686fa77eee7f/AppIcon-0-0-1x_U007epad-0-11-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Twitch": {
+  "track": "Twitch: Live Streaming",
+  "seller": "Twitch Interactive, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d5/af/88/d5af88c1-ef7a-2d28-90c0-1f3335b21efe/TwitchAppIcon-0-0-1x_U007epad-0-1-0-0-sRGB-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://mobile.twitch.tv"
+ },
+ "U.S. Bank": {
+  "track": "Bank of America Mobile Banking",
+  "seller": "Bank of America",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dd/39/93/dd399398-8daa-e1d0-d427-1a5c620c7de0/AppIcon-0-0-1x_U007epad-0-11-0-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Uber": {
+  "track": "Uber - Rides, Eats, Hotels",
+  "seller": "Uber Technologies, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/79/9d/29/799d2981-68b0-ce94-161e-73a0268d91ef/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.uber.com"
+ },
+ "Ulta Beauty": {
+  "track": "Ulta Beauty: Makeup & Skincare",
+  "seller": "Ulta Salon, Cosmetics and Fragrance Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/2e/10/a0/2e10a034-11ab-b7df-292c-cf79019b386c/AppIcon-0-0-1x_U007ephone-0-0-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.ulta.com/app"
+ },
+ "United Airlines": {
+  "track": "United Airlines",
+  "seller": "United Air Lines",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f7/49/7c/f7497c18-3d72-e399-3513-b42ba63e67ca/AppIcon-0-0-1x_U007epad-0-10-0-85-220.png/512x512bb.jpg",
+  "url": "https://hub.united.com/united-app-travel-enhancements-2019-2625355292.html"
+ },
+ "UPS": {
+  "track": "UPS",
+  "seller": "UPS",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a4/b7/de/a4b7de38-7fb1-492a-eb1c-e2ba4f30568b/AppIcon-0-0-1x_U007emarketing-0-5-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.ups.com/mobile"
+ },
+ "Verizon": {
+  "track": "My Verizon",
+  "seller": "Verizon Wireless",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/79/20/df/7920df0a-4150-0164-e75f-9913b07635ba/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.verizon.com/solutions-and-services/my-verizon-mobile/"
+ },
+ "Victoria's Secret": {
+  "track": "Victoria's Secret\u2014Bras & More",
+  "seller": "Victoria's Secret Stores",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/5a/17/99/5a1799b0-1cea-c27f-c8a1-8b0ba767806c/AppIcon-0-0-1x_U007emarketing-0-11-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.victoriassecret.com"
+ },
+ "Visible": {
+  "track": "Visible mobile",
+  "seller": "Visible Service LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/61/4b/97/614b9765-602a-1644-4c77-b3307030e0b3/AppIcon-0-0-1x_U007emarketing-0-6-0-sRGB-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Vivid Seats": {
+  "track": "Vivid Seats | Buy Tickets",
+  "seller": "Vivid Seats LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/13/1f/d8/131fd8b0-7223-942a-60b1-a5ba7a7bfeeb/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.vividseats.com/vivid-seats-app.html"
+ },
+ "Volkswagen": {
+  "track": "myVW",
+  "seller": "Volkswagen of America Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/96/4e/21/964e2150-2de4-e9f5-c6f1-f41e16ec6136/AppIcon-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.vw.com/carnet"
+ },
+ "Walmart": {
+  "track": "Walmart: Shopping & Savings",
+  "seller": "Walmart",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/70/1e/80/701e80ab-f024-b1ce-816b-1911595e9bbb/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.walmart.com/cp/Walmart-Mobile-App/1087865#appleiOS"
+ },
+ "Wayfair": {
+  "track": "Wayfair \u2013 Shop All Things Home",
+  "seller": "Wayfair LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/3c/6e/7d3c6ee7-9dbe-a084-c1d6-2242c5360055/AppIcon-Wayfair-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Wells Fargo": {
+  "track": "Wells Fargo Mobile\u00ae",
+  "seller": "Wells Fargo Bank",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ec/ce/19/ecce1923-8ba8-5684-e1ac-f55da51ad270/AppIcon-0-0-1x_U007epad-0-0-0-11-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.wellsfargo.com/mobile"
+ },
+ "Wendy's": {
+  "track": "Wendy\u2019s",
+  "seller": "Wendys International, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e1/16/3b/e1163b61-e585-f81a-796e-c84b1a46de13/AppIcon-0-0-1x_U007ephone-0-1-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://wendys.com"
+ },
+ "Western Digital": {
+  "track": "My Cloud Home",
+  "seller": "Western Digital Technologies, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e8/99/c0/e899c08c-fc3b-34ac-1088-e3d9aed4a8ad/AppIcon-0-0-1x_U007emarketing-0-9-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.mycloud.com"
+ },
+ "Western Union": {
+  "track": "Western Union: Send Money",
+  "seller": "The Western Union Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/da/d5/15/dad51541-95d4-f0f2-c8ad-65d690317ea9/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/512x512bb.jpg",
+  "url": "https://www.westernunion.com/us/en/home.html"
+ },
+ "WhatsApp": {
+  "track": "WhatsApp",
+  "seller": "WhatsApp Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/15/eb/39/15eb3965-bec3-4737-950a-9d9df5303e93/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.whatsapp.com/"
+ },
+ "Whirlpool": {
+  "track": "Whirlpool",
+  "seller": "Whirlpool Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/f1/97/d0/f197d0c6-640c-c208-09d8-c1acc872d58c/AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.whirlpool.com/smart-appliances"
+ },
+ "Whole Foods": {
+  "track": "Whole Foods Market",
+  "seller": "Whole Foods Market Services, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4e/5d/61/4e5d6127-fa9c-03ef-e1e8-c044cf50de5f/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "http://www.wholefoodsmarket.com"
+ },
+ "Yahoo": {
+  "track": "Yahoo Mail: Your Email & Inbox",
+  "seller": "Yahoo Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/78/24/a7/7824a76f-12e2-3216-632b-263ea0a9f9d8/MailAppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://upgrade.mail.yahoo.com/"
+ },
+ "Zoom": {
+  "track": "Zoom Workplace",
+  "seller": "Zoom Communications, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/fc/d0/96/fcd09664-56c3-f856-4311-da9dcbae1fd2/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.zoom.com"
+ },
+ "Amazon": {
+  "track": "Amazon Shopping",
+  "seller": "AMZN Mobile LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/ff/99/f1/ff99f196-706f-c781-196d-00391ce216b3/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.amazon.com/"
+ },
+ "AMC Theatres": {
+  "track": "AMC Theatres: Movies & More",
+  "seller": "American Multi-Cinema, Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1a/fd/ca/1afdcab1-bd72-123c-fa86-141c46a56e4d/icon-app-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.amctheatres.com"
+ },
+ "AT&T": {
+  "track": "AT&T",
+  "seller": "AT&T Services, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7c/25/df/7c25df9d-20db-62ec-4cd7-cec9188fa402/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.att.com/"
+ },
+ "BetterHelp": {
+  "track": "BetterHelp - Therapy",
+  "seller": "Compile, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/de/f9/6c/def96c1c-fefa-2995-d9a6-90f7cfbdb149/BetterHelp-AppIcon-0-0-1x_U007emarketing-0-10-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.betterhelp.com"
+ },
+ "Boost Mobile": {
+  "track": "Boost Mobile",
+  "seller": "DISH Network LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/66/1a/37/661a378f-4983-8406-31b3-facd6236075f/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.boostmobile.com/"
+ },
+ "Cash App": {
+  "track": "Cash App",
+  "seller": "Block, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dd/9e/90/dd9e9016-6f77-12f3-6bcb-3ee91c0c458c/AppIcon-0-0-1x_U007ephone-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://cash.app"
+ },
+ "CenturyLink": {
+  "track": "My CenturyLink",
+  "seller": "CenturyTel Service Group, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4b/8b/7c/4b8b7ca3-76b1-4a51-4cc5-42a0ac0307f7/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.centurylink.com"
+ },
+ "Chevrolet": {
+  "track": "myChevrolet",
+  "seller": "General Motors",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/16/14/28/161428dd-10f8-f1c2-cc5f-3351850e5024/AppIcon-chevrolet-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://my.chevrolet.com/"
+ },
+ "Cigna": {
+  "track": "myCigna",
+  "seller": "Connecticut General Life Insurance Company",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d5/ef/91/d5ef91fe-2853-f33b-7ef5-ebb3c19a0c9f/AppIcon-1x_U007emarketing-0-6-0-85-220-0.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Citi": {
+  "track": "Citi Mobile\u00ae",
+  "seller": "Citibank, N.A.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e1/fd/79/e1fd79c0-a4ec-440e-42c6-bfcd0bbe7526/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.citibank.com"
+ },
+ "Enterprise": {
+  "track": "Enterprise Rent-A-Car",
+  "seller": "EAN Services, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/c4/55/24/c4552451-7a4f-9faa-0f5f-8168fc9f54ae/AppIcon-0-0-1x_U007ephone-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.enterprise.com"
+ },
+ "Experian": {
+  "track": "Experian\u00ae: Credit Score & more",
+  "seller": "CONSUMERINFO.COM, INC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/02/34/68/02346802-4e23-ee1d-3b2e-dac3e9983f0a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.experian.com/?pc=map_exp_ecwapp"
+ },
+ "Facebook": {
+  "track": "Facebook",
+  "seller": "Meta Platforms, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/4e/fe/ae/4efeae89-e950-1030-417b-f904101c1b1a/Icon-Production-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.facebook.com/mobile"
+ },
+ "Gmail": {
+  "track": "Gmail - Email by Google",
+  "seller": "Google LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/83/a9/eb/83a9eb0a-ab2b-da1f-41a9-8357822787a8/gmail_2026_ios-0-0-1x_U007epad-0-0-0-1-0-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://mail.google.com"
+ },
+ "H&M": {
+  "track": "H&M",
+  "seller": "H & M Hennes & Mauritz AB",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/0e/78/5e/0e785e8a-2355-6c86-58ce-84440ab39eb3/AppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.hm.com"
+ },
+ "H&R Block": {
+  "track": "MyBlock: Tax Docs & Refund",
+  "seller": "HRB Tax Group, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7a/c8/f5/7ac8f52a-eda7-afcf-7315-b514a70f7115/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg",
+  "url": "https://www.hrblock.com/mobile/index.html"
+ },
+ "HP": {
+  "track": "HP",
+  "seller": "HP Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8a/b7/a9/8ab7a923-830d-26ca-7ef9-6e42089b8d97/AppIcon-0-0-1x_U007epad-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.hp.com/hp-app"
+ },
+ "Instacart": {
+  "track": "Instacart: Groceries & Food",
+  "seller": "Maplebear Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/24/c8/24/24c82467-a2dc-5386-2fbd-1abe1d33a3fb/AppIcon-0-0-1x_U007emarketing-0-8-0-0-P3-85-220.png/512x512bb.jpg",
+  "url": "http://instacart.com/mobile"
+ },
+ "Jeep": {
+  "track": "Jeep\u00ae",
+  "seller": "FCA US LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/86/62/29/8662293c-2c1d-dee4-da9f-088770545e30/AppIcon.nafta.prod-0-0-1x_U007emarketing-0-6-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Labcorp": {
+  "track": "MyLabcorp",
+  "seller": "Laboratory Corporation of America",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/ac/ae/f4/acaef4e4-825e-c4ad-1b51-356901fb1161/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.labcorp.com"
+ },
+ "Max": {
+  "track": "HBO Max: Stream Movies & TV",
+  "seller": "WarnerMedia Global Digital Services, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/4c/4a/9d/4c4a9dd8-66c9-4735-b6d3-b50d414a221f/AppIcon-0-0-1x_U007epad-0-1-85-220.png/512x512bb.jpg",
+  "url": "https://www.hbomax.com"
+ },
+ "Metro by T-Mobile": {
+  "track": "myMetro\u00ae",
+  "seller": "MetroPCS Wireless, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3b/74/8e/3b748e82-ec60-2710-ed8d-b981cd3d1a17/AppIcon-0-0-1x_U007emarketing-0-6-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.metrobyt-mobile.com/apps"
+ },
+ "Mint Mobile": {
+  "track": "Mint Mobile",
+  "seller": "UVNV, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cc/ee/4e/ccee4e35-1ec5-bcc4-58f9-14f0a3a0fd9c/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.mintmobile.com"
+ },
+ "Norton": {
+  "track": "Norton 360 Mobile Security VPN",
+  "seller": "Gen Digital Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/08/f7/f4/08f7f4cc-2ebe-bcc7-0a6c-71159882282e/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Optimum": {
+  "track": "My Optimum",
+  "seller": "CSC Holdings, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d5/f9/a9/d5f9a973-bf8f-bb08-d330-622a4026dab1/AppIcon-0-0-1x_U007ephone-0-1-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Paramount+": {
+  "track": "Paramount+",
+  "seller": "CBS Mobile",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/69/05/ed/6905ed93-841f-8ed3-0fb7-de72e6f977fa/P_U002bAppIcon-0-0-1x_U007emarketing-0-8-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.paramountplus.com/"
+ },
+ "Postmates": {
+  "track": "Postmates - Food Delivery",
+  "seller": "Uber Technologies, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/86/24/12/862412e3-77be-269c-d7fe-89e41190655b/AppIcon-0-0-1x_U007emarketing-0-8-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.postmates.com"
+ },
+ "Ring": {
+  "track": "Ring - Always Home",
+  "seller": "Bot Home Automation, INC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/71/5e/e0/715ee0ef-ef20-b36f-8547-1d0a939b8ad8/AppIcon-NH-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Sam's Club": {
+  "track": "Sam's Club Shopping & Delivery",
+  "seller": "Walmart Stores Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/86/3c/79/863c79fb-4919-e050-863b-cb04d8a7cec9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www3.samsclub.com/mobile"
+ },
+ "Shein": {
+  "track": "SHEIN - Shopping Online",
+  "seller": "ROADGET BUSINESS PTE. LTD.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e3/52/aa/e352aaf1-7f2f-861b-0b8a-0d861781b2f9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.shein.com"
+ },
+ "SiriusXM": {
+  "track": "SiriusXM: Music, Sports & News",
+  "seller": "Sirius XM Radio, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3f/64/e3/3f64e3bf-5466-3167-3d06-33ae853ef377/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.siriusxm.com/whats-on"
+ },
+ "Snapchat": {
+  "track": "Snapchat",
+  "seller": "Snap, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f3/e6/ec/f3e6ec21-2c16-0205-d299-7b3077331caf/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.snapchat.com"
+ },
+ "SoFi": {
+  "track": "SoFi: Mobile Bank & Investing",
+  "seller": "Social Finance, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d6/a3/5b/d6a35b9e-3ef7-5a6a-c420-aa90f75f2227/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.sofi.com"
+ },
+ "Spectrum": {
+  "track": "My Spectrum",
+  "seller": "Charter Communications Operating, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/dd/67/24/dd672485-0753-d466-23a9-af47d0fd34a0/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "http://www.spectrum.com"
+ },
+ "Steam": {
+  "track": "Steam Mobile",
+  "seller": "Valve Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a2/b1/14/a2b1147b-bb53-2c78-264e-301efc614949/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",
+  "url": "https://store.steampowered.com/mobile"
+ },
+ "Subway": {
+  "track": "Subway\u00ae",
+  "seller": "Doctors Associates Inc",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/8e/94/b4/8e94b479-fbdb-d42c-89dd-843cc75d2616/AppIconRelease-0-1x_U007ephone-0-1-85-220-0.png/512x512bb.jpg",
+  "url": "https://www.subway.com/"
+ },
+ "T-Mobile": {
+  "track": "T-Life",
+  "seller": "T-Mobile USA, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/30/88/11/3088110c-b3de-f1c3-e26f-c8b0cce1fbc4/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "Temu": {
+  "track": "Temu: Shop Like a Billionaire",
+  "seller": "Whaleco Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e1/7e/af/e17eafc7-cbc2-6898-32da-57b06f2bb0a9/AppIcon-0-0-1x_U007epad-0-1-0-85-220.png/512x512bb.jpg",
+  "url": ""
+ },
+ "TurboTax": {
+  "track": "TurboTax: File Your Tax Return",
+  "seller": "Intuit Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/5a/19/9c/5a199cd2-1b41-2d45-88d3-72507757e1be/AppIcon-0-0-1x_U007epad-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://turbotax.intuit.com/personal-taxes/mobile-apps/turbotax.jsp"
+ },
+ "UnitedHealthcare": {
+  "track": "UnitedHealthcare",
+  "seller": "UNITED HEALTHCARE SERVICES, INC.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/74/6c/63/746c63f1-0627-a5df-2573-956f05b3c7a4/AppIcon-0-0-1x_U007epad-0-11-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.uhc.com"
+ },
+ "USAA": {
+  "track": "USAA Mobile",
+  "seller": "United Services Automobile Association",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/55/dd/58/55dd581a-ea90-977d-9a04-61348cfcf550/AppIcon-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "http://www.usaa.com/mobile"
+ },
+ "Venmo": {
+  "track": "Venmo",
+  "seller": "The Delancey Corporation, LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1f/00/a0/1f00a04b-a595-a017-e760-5775360dbffe/AppIcon-0-0-1x_U007emarketing-0-8-0-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://venmo.com/"
+ },
+ "Vrbo": {
+  "track": "Vrbo: Vacation Rentals",
+  "seller": "HomeAway.com, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/28/75/0d/28750d61-08b9-ddda-1ae6-dfcf35684089/Vrbo-0-0-1x_U007epad-0-1-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.vrbo.com/mobile"
+ },
+ "Walgreens": {
+  "track": "Walgreens",
+  "seller": "Walgreen Co.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/79/df/b5/79dfb527-742c-87f0-37a0-32c8062ddf85/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/512x512bb.jpg",
+  "url": "https://www.walgreens.com/topic/mobile/apps/learn_about_mobile_apps.jsp"
+ },
+ "WeightWatchers": {
+  "track": "WeightWatchers Program",
+  "seller": "WW International, Inc.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9e/b2/5c/9eb25c9a-820c-8563-3e0d-3437d187cdcb/AppIcon-0-0-1x_U007emarketing-0-8-0-sRGB-85-220.png/512x512bb.jpg",
+  "url": "https://www.weightwatchers.com/us/article/using-ww-mobile-app"
+ },
+ "X": {
+  "track": "X",
+  "seller": "X Corp.",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/66/9c/7c/669c7c1b-b5c8-93e5-4c08-7d8ca52d7b84/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "http://x.com/"
+ },
+ "Xbox": {
+  "track": "XBOX",
+  "seller": "Microsoft Corporation",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/24/1a/ff/241aff74-0cc5-2d6f-a55c-5475a4eb9960/AppIcon-1x_U007epad-0-1-85-220-0.png/512x512bb.jpg",
+  "url": "https://www.xbox.com/mobile-app"
+ },
+ "YouTube": {
+  "track": "YouTube",
+  "seller": "Google LLC",
+  "art": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/be/56/df/be56dfa2-70bd-feb2-b666-38277eb5be3b/logo_youtube_2024_q4_color-0-0-1x_U007emarketing-0-0-0-7-0-0-0-85-220.png/512x512bb.jpg",
+  "url": "https://www.youtube.com"
+ }
+}

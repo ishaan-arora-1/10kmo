@@ -17,6 +17,7 @@ import {
   type RecentPayout,
   type Settlement,
 } from "../lib/models";
+import { logoFor } from "../lib/logos";
 import { useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
@@ -55,6 +56,21 @@ export function SampleBadge() {
 }
 
 export function Monogram({ brand, name, size = 40 }: { brand?: Brand; name: string; size?: number }) {
+  const logo = logoFor(brand?.name, name);
+  if (logo) {
+    return (
+      <img
+        className="monogram monogram-img"
+        src={logo}
+        width={size}
+        height={size}
+        style={{ borderRadius: size * 0.28 }}
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
   return (
     <span
       className="monogram"
@@ -212,6 +228,11 @@ export function MoneyCheck({
       {stamped && <span className="mc-stamp">PAID</span>}
     </div>
   );
+}
+
+/** Found money as one plain figure in a box. Totals over $5,000 show as "$5,000+". */
+export function AmountBox({ amount }: { amount: number }) {
+  return <div className="amount-box">{amount <= 0 ? "Varies" : cappedTotal(amount)}</div>;
 }
 
 export function Modal({
