@@ -39,8 +39,8 @@ export const SearchIcon = ({ color, size }: IconProps) => (
 
 export const ClaimsIcon = ({ color, size }: IconProps) => (
   <Icon color={color} size={size}>
-    <Path d="M12 2.5 14.3 4l2.8-.1.9 2.6 2.3 1.6-.9 2.6.9 2.6-2.3 1.6-.9 2.6-2.8-.1L12 21.5 9.7 20l-2.8.1-.9-2.6-2.3-1.6.9-2.6-.9-2.6L6 9.1l.9-2.6L9.7 4z" />
-    <Path d="m8.8 12 2.2 2.2 4.2-4.4" />
+    <Circle cx="12" cy="12" r="9" />
+    <Path d="m8.5 12.2 2.4 2.4 4.6-4.8" />
   </Icon>
 );
 

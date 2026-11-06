@@ -33,11 +33,14 @@ export default function Paywall() {
   const store = useStore();
   const c = useColors();
   const router = useRouter();
-  const params = useLocalSearchParams<{ next?: string; from?: string }>();
+  const params = useLocalSearchParams<{ next?: string; from?: string; change?: string }>();
   const next = safeNext(params.next ?? null);
   // Shown right after they file their free claim.
   const afterFreeClaim = params.from === "free_claim";
-  const [plan, setPlan] = useState<WebPlan>("monthly");
+  // Opened from Profile's "Change plan" by a monthly App Store subscriber: offers the yearly plan.
+  // (Downgrades wait for the next renewal in the App Store, so they stay in Manage subscription.)
+  const changing = params.change === "1" && IAP_AVAILABLE && store.isPremium;
+  const [plan, setPlan] = useState<WebPlan>(params.change === "1" ? "yearly" : "monthly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
@@ -52,8 +55,8 @@ export default function Paywall() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (store.isPremium && !busy) router.replace(`/welcome?next=${encodeURIComponent(next)}`);
-  }, [store.isPremium, busy, next, router]);
+    if (store.isPremium && !busy && !changing) router.replace(`/welcome?next=${encodeURIComponent(next)}`);
+  }, [store.isPremium, busy, changing, next, router]);
 
   // Website subscriptions belong to an account, so sign-in comes first there (and on Android).
   // The App Store lets people subscribe without an account (App Review Guideline 5.1.1).
@@ -92,7 +95,7 @@ export default function Paywall() {
   const priceInDollars = price.label.includes("$") ? price.value : PRICE_VALUES[plan];
   const keep = Math.floor(billTotal - priceInDollars);
   const closingSoon = fileable.filter((s) => daysUntil(s.deadline) <= 30).length;
-  const showBill = billTotal > 0;
+  const showBill = billTotal > 0 && !changing;
 
   // Accounts go back to where they were; the dashboard stays open to them.
   const close = () => {
@@ -136,7 +139,9 @@ export default function Paywall() {
       : "Opening secure checkout…"
     : isSampleMode
       ? "Unlock sample"
-      : showBill
+      : changing
+        ? `Switch to yearly for ${yearly.label}/year`
+        : showBill
         ? `Claim my ${usd(billTotal)} for ${price.label}/${period}`
         : `Subscribe for ${price.label}/${period}`;
 
@@ -149,7 +154,9 @@ export default function Paywall() {
         ? `Payments are processed securely by Razorpay. ${yearly.label} is charged today and every year until you cancel in Profile.`
         : `Payments are processed securely by Razorpay. ${monthly.label} is charged today and every month until you cancel in Profile.`;
 
-  const title = showBill
+  const title = changing
+    ? "Switch to the yearly plan"
+    : showBill
     ? `Pay ${price.label}. Claim up to ${usd(billTotal)}.`
     : afterFreeClaim
       ? "Be first when your companies settle"
@@ -240,7 +247,8 @@ export default function Paywall() {
           </>
         ) : (
           upTo > 0 &&
-          !afterFreeClaim && (
+          !afterFreeClaim &&
+          !changing && (
             <Txt size={18} color="muted">
               Up to{" "}
               <Txt f="display" w={700} size={26} color="money">
@@ -264,11 +272,17 @@ export default function Paywall() {
           <Txt size={14} color="muted" center lh={1.7}>
             {plan === "monthly" ? `${monthly.label}/month · cancel anytime` : `${yearly.label} billed yearly · cancel anytime`}
           </Txt>
-          <LinkText size={14} onPress={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
-            {plan === "monthly"
-              ? `or ${yearly.label}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
-              : `or ${monthly.label}/month`}
-          </LinkText>
+          {changing ? (
+            <Txt size={14} color="muted" center lh={1.7}>
+              {`Instead of ${monthly.label}/month${yearlySaving > 0 ? `, saving ${yearlySaving}%` : ""}. The App Store credits what’s left of your month.`}
+            </Txt>
+          ) : (
+            <LinkText size={14} onPress={() => setPlan(plan === "monthly" ? "yearly" : "monthly")}>
+              {plan === "monthly"
+                ? `or ${yearly.label}/year${yearlySaving > 0 ? ` (save ${yearlySaving}%)` : ""}`
+                : `or ${monthly.label}/month`}
+            </LinkText>
+          )}
         </View>
 
         <View style={[styles.features, { backgroundColor: c.surface }]}>

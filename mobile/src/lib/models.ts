@@ -332,10 +332,10 @@ export interface LifeEventOption {
 }
 
 export const LIFE_EVENT_OPTIONS: LifeEventOption[] = [
-  { id: "car", label: "🚗 I’ve owned a Hyundai, Kia, or Toyota", companies: ["Hyundai", "Kia", "Toyota"] },
-  { id: "atm", label: "🏧 I’ve paid a fee at an ATM that wasn’t my bank’s", companies: ["Visa & Mastercard"] },
-  { id: "rent", label: "🏠 I’ve rented an apartment since 2018", companies: ["RealPage"] },
-  { id: "home", label: "🔑 I’ve bought a home through a real estate agent", companies: ["Real estate brokerages"] },
+  { id: "car", label: "I’ve owned a Hyundai, Kia, or Toyota", companies: ["Hyundai", "Kia", "Toyota"] },
+  { id: "atm", label: "I’ve paid a fee at an ATM that wasn’t my bank’s", companies: ["Visa & Mastercard"] },
+  { id: "rent", label: "I’ve rented an apartment since 2018", companies: ["RealPage"] },
+  { id: "home", label: "I’ve bought a home through a real estate agent", companies: ["Real estate brokerages"] },
 ];
 
 /** Onboarding question 2: popular companies with open claims, offered when they weren't picked. */
@@ -354,61 +354,61 @@ const isCompany = (settlement: Settlement, ...companies: string[]) => companies.
 export const PROOF_OPTIONS: ProofOption[] = [
   {
     id: "kia-window",
-    label: "🧾 A repair bill for your Kia’s power windows",
+    label: "A repair bill for your Kia’s power windows",
     feedback: "Your Kia window claim can go from a $40 service card to up to $400 with that bill.",
     appliesTo: (s) => isCompany(s, "Kia") && s.title === "Window regulators",
   },
   {
     id: "car-theft",
-    label: "🚓 Proof your Hyundai or Kia was stolen or broken into, like a police report or insurance claim",
+    label: "Proof your Hyundai or Kia was stolen or broken into, like a police report or insurance claim",
     feedback: "That’s what the car theft payout needs: up to $4,500 for a total loss.",
     appliesTo: (s) => isCompany(s, "Hyundai", "Kia") && s.title === "Car theft (no immobilizer)",
   },
   {
     id: "airbag",
-    label: "🔧 Repair receipts for your Hyundai or Kia’s airbag system",
+    label: "Repair receipts for your Hyundai or Kia’s airbag system",
     feedback: "Documented expenses are paid on top of the payment of up to $350.",
     appliesTo: (s) => isCompany(s, "Hyundai", "Kia") && s.title === "Airbag control units",
   },
   {
     id: "toyota-vin",
-    label: "🚙 Your Toyota’s VIN (it’s on your registration or insurance card)",
+    label: "Your Toyota’s VIN (it’s on your registration or insurance card)",
     feedback: "You’ll need it to file for up to $250.",
     appliesTo: (s) => isCompany(s, "Toyota"),
   },
   {
     id: "breach",
-    label: "✉️ A letter or email saying your data was in a breach",
+    label: "A letter or email saying your data was in a breach",
     feedback: "That notice is what qualifies you for these data breach claims.",
     appliesTo: (s) => isCompany(s, "Bank of America", "Lands' End"),
   },
   {
     id: "cvs",
-    label: "🛒 CVS order emails or your CVS account history",
+    label: "CVS order emails or your CVS account history",
     feedback: "That raises your CVS claim from $5 to $10.",
     appliesTo: (s) => isCompany(s, "CVS"),
   },
   {
     id: "lease",
-    label: "📄 Your apartment lease or proof of rent paid (2018–2025)",
+    label: "Your apartment lease or proof of rent paid (2018–2025)",
     feedback: "That’s the proof of rent this claim asks for.",
     appliesTo: (s) => isCompany(s, "RealPage"),
   },
   {
     id: "closing",
-    label: "🏡 Your closing statement from buying a home",
+    label: "Your closing statement from buying a home",
     feedback: "That’s the document this claim requires.",
     appliesTo: (s) => isCompany(s, "Real estate brokerages"),
   },
   {
     id: "fridge",
-    label: "🧊 Repair records for a Whirlpool, Maytag, KitchenAid, or JennAir fridge",
+    label: "Repair records for a Whirlpool, Maytag, KitchenAid, or JennAir fridge",
     feedback: "Those records are what this claim needs to cover repair costs.",
     appliesTo: (s) => isCompany(s, "Whirlpool"),
   },
   {
     id: "levoit",
-    label: "🌬️ A dated receipt for a Levoit air purifier or filter",
+    label: "A dated receipt for a Levoit air purifier or filter",
     feedback: "That receipt is the proof of purchase this claim requires.",
     appliesTo: (s) => isCompany(s, "Levoit"),
   },

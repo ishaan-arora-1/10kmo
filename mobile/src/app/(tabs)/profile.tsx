@@ -8,6 +8,7 @@ import { PageScreen } from "@/components/screens";
 import { StatePicker } from "@/components/StatePicker";
 import { APP_VERSION, EMAIL_REMINDERS_ENABLED, SUPPORT_EMAIL } from "@/lib/config";
 import { IAP_AVAILABLE } from "@/lib/iap";
+import { openNotificationSettings, PHONE_REMINDERS_AVAILABLE } from "@/lib/notifications";
 import { goTo, openWebsite } from "@/lib/nav";
 import { useStore } from "@/lib/store";
 import { isSampleMode } from "@/lib/supabase";
@@ -27,6 +28,13 @@ export default function Profile() {
   const [working, setWorking] = useState(false);
   const [cancelNote, setCancelNote] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
+  const [phoneRemindersBlocked, setPhoneRemindersBlocked] = useState(false);
+
+  // Turning reminders on when notifications were declined earlier can only happen in Settings.
+  const togglePhoneReminders = async (on: boolean) => {
+    const enabled = await store.setPhoneReminders(on);
+    setPhoneRemindersBlocked(on && !enabled);
+  };
 
   const email = store.session?.user.email ?? null;
   const apple = store.appleEntitlement;
@@ -130,6 +138,17 @@ export default function Profile() {
             {store.planSource === "razorpay" && store.planRenews !== false && (
               <Row label="Cancel subscription" detail="›" onPress={() => setCancelOpen(true)} />
             )}
+            {billedByApple && IAP_AVAILABLE && activePlan === "monthly" && (
+              <Row
+                label="Change plan"
+                detail={
+                  <Txt w={700} size={14} color="money">
+                    Switch to yearly ›
+                  </Txt>
+                }
+                onPress={() => router.push(`/paywall?change=1&next=${encodeURIComponent("/profile")}`)}
+              />
+            )}
             {billedByApple &&
               (IAP_AVAILABLE ? (
                 <Row label="Manage subscription" detail="›" onPress={() => void store.manageAppleSubscription()} />
@@ -158,15 +177,33 @@ export default function Profile() {
         {cancelNote && <Note>{cancelNote}</Note>}
       </Group>
 
-      {EMAIL_REMINDERS_ENABLED && store.session && (
+      {(PHONE_REMINDERS_AVAILABLE || (EMAIL_REMINDERS_ENABLED && store.session)) && (
         <View style={{ gap: 8 }}>
           <SectionLabel>Reminders</SectionLabel>
-          <Toggle
-            value={store.emailReminders}
-            onValueChange={(on) => void store.setEmailReminders(on)}
-            label="Email reminders"
-            description={`New matches, deadlines, and payout windows, sent to ${email ?? "your email"}`}
-          />
+          {PHONE_REMINDERS_AVAILABLE && (
+            <Toggle
+              value={store.phoneReminders === true}
+              onValueChange={(on) => void togglePhoneReminders(on)}
+              label="Deadline reminders"
+              description="Notifications on this phone 7 days and 1 day before each of your claims closes, and the day new ones open"
+            />
+          )}
+          {phoneRemindersBlocked && (
+            <Note>
+              Notifications are off for Rightful.{" "}
+              <Txt size={14} w={700} color="money" onPress={openNotificationSettings} accessibilityRole="link">
+                Turn them on in Settings
+              </Txt>
+            </Note>
+          )}
+          {EMAIL_REMINDERS_ENABLED && store.session && (
+            <Toggle
+              value={store.emailReminders}
+              onValueChange={(on) => void store.setEmailReminders(on)}
+              label="Email reminders"
+              description={`New matches, deadlines, and payout windows, sent to ${email ?? "your email"}`}
+            />
+          )}
         </View>
       )}
 

@@ -33,7 +33,6 @@ export default function Claims() {
       {tracked.length === 0 ? (
         <EmptyCard
           title="No claims filed yet"
-          body="When you finish a claim on its official site, it’ll appear here until you’re paid."
           action={
             <Button block={false} style={{ alignSelf: "center" }} onPress={() => router.navigate("/browse")}>
               Browse matches

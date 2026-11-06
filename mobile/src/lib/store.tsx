@@ -40,6 +40,7 @@ import { useCheckout } from "./checkout";
 import { FIRST_CLAIM_FREE, PRICE_LABELS, PRICE_VALUES, SUPPORT_EMAIL, type WebPlan } from "./config";
 import * as AppStore from "./iap";
 import type { AppleEntitlement, StorePrice, TransactionHandler } from "./iap-types";
+import * as Reminders from "./notifications";
 import { SAMPLE_BRANDS, SAMPLE_SETTLEMENTS } from "./sample";
 import { isSampleMode, supabase } from "./supabase";
 
@@ -53,6 +54,8 @@ interface LocalState {
   dirtyClaimIds: string[];
   onboardingCompleted: boolean;
   sampleUnlocked: boolean;
+  /** Deadline reminders as phone notifications; null until the person has been asked. */
+  phoneReminders: boolean | null;
 }
 
 const EMPTY_LOCAL: LocalState = {
@@ -62,6 +65,7 @@ const EMPTY_LOCAL: LocalState = {
   dirtyClaimIds: [],
   onboardingCompleted: false,
   sampleUnlocked: false,
+  phoneReminders: null,
 };
 
 function readLocal(): LocalState {
@@ -192,6 +196,10 @@ export interface Store {
   /** Returns when access ends ("" if it ended now), or null if cancellation failed. */
   cancelSubscription(): Promise<string | null>;
   setEmailReminders(on: boolean): Promise<void>;
+  /** Deadline reminders on this phone; null until asked. */
+  phoneReminders: boolean | null;
+  /** Turning on asks for notification permission; resolves to whether reminders are on. */
+  setPhoneReminders(on: boolean): Promise<boolean>;
   signOut(): Promise<void>;
   deleteAccount(): Promise<boolean>;
   resetSample(): void;
@@ -422,6 +430,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ? previous.states.filter((value) => value !== code)
         : [...previous.states, code],
     }));
+  }, []);
+
+  const setPhoneReminders = useCallback(async (on: boolean) => {
+    const enabled = on && (await Reminders.requestPermission());
+    setLocal((previous) => ({ ...previous, phoneReminders: enabled }));
+    return enabled;
   }, []);
 
   const completeOnboarding = useCallback(() => {
@@ -867,6 +881,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       manageAppleSubscription,
       cancelSubscription,
       setEmailReminders,
+      phoneReminders: local.phoneReminders,
+      setPhoneReminders,
       signOut,
       deleteAccount,
       resetSample: resetAll,
@@ -903,6 +919,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     manageAppleSubscription,
     cancelSubscription,
     setEmailReminders,
+    setPhoneReminders,
     signOut,
     deleteAccount,
     resetAll,

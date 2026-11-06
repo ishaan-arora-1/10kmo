@@ -9,17 +9,18 @@ import { HankenGrotesk_800ExtraBold } from "@expo-google-fonts/hanken-grotesk/80
 import { IBMPlexMono_400Regular } from "@expo-google-fonts/ibm-plex-mono/400Regular";
 import { IBMPlexMono_500Medium } from "@expo-google-fonts/ibm-plex-mono/500Medium";
 import { useFonts } from "expo-font";
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Txt } from "@/components/primitives";
 import { BrandSeal } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { CheckoutProvider } from "@/lib/checkout";
+import { onReminderTapped, syncReminders } from "@/lib/notifications";
 import { StoreProvider, useStore } from "@/lib/store";
 import { useColors, useIsDark } from "@/theme";
 
@@ -85,6 +86,13 @@ function App() {
     if (booted) void SplashScreen.hideAsync();
   }, [booted]);
 
+  // A tapped deadline reminder opens its claim, once the navigator is up.
+  const router = useRouter();
+  useEffect(() => {
+    if (!booted) return;
+    return onReminderTapped((url) => router.push(url as `/settlements/${string}`));
+  }, [booted, router]);
+
   if (!booted) {
     return (
       <View style={[styles.boot, { backgroundColor: c.paper }]} accessibilityLabel="Loading Rightful">
@@ -95,6 +103,7 @@ function App() {
 
   return (
     <>
+      <ReminderSync />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.paper } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="intro" options={{ animation: "fade" }} />
@@ -122,6 +131,21 @@ function App() {
       )}
     </>
   );
+}
+
+/** Keeps the phone's scheduled deadline reminders in step with the claims still to file. */
+function ReminderSync() {
+  const { toFile, phoneReminders } = useStore();
+  const key = toFile.map((s) => `${s.id}:${s.deadline}:${s.opensOn ?? ""}`).join("|");
+  const on = phoneReminders === true;
+  const latest = useRef(toFile);
+  useEffect(() => {
+    latest.current = toFile;
+  });
+  useEffect(() => {
+    void syncReminders(latest.current, on).catch(() => undefined);
+  }, [key, on]);
+  return null;
 }
 
 const styles = StyleSheet.create({

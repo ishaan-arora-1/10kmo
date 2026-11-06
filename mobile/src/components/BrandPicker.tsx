@@ -134,12 +134,14 @@ export function BrandPicker({ inset }: { inset?: number }) {
 
 const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
+  // Logo and name always start at the top, and the flag sits at the bottom, so every tile in a row
+  // lines up whether or not it has a flag.
   tile: {
     minHeight: 100,
     borderRadius: 13,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     gap: 8,
   },
-  flag: { paddingVertical: 2, paddingHorizontal: 6, borderRadius: 99 },
+  flag: { marginTop: "auto", paddingVertical: 2, paddingHorizontal: 6, borderRadius: 99 },
 });

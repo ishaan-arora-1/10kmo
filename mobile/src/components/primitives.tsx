@@ -382,16 +382,18 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   return <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }, style]}>{children}</View>;
 }
 
-export function EmptyCard({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+export function EmptyCard({ title, body, action }: { title: string; body?: string; action?: ReactNode }) {
   const c = useColors();
   return (
     <View style={[styles.empty, { backgroundColor: c.surface, borderColor: c.line }]}>
       <Txt w={700} center>
         {title}
       </Txt>
-      <Txt color="muted" center>
-        {body}
-      </Txt>
+      {body && (
+        <Txt color="muted" center>
+          {body}
+        </Txt>
+      )}
       {action}
     </View>
   );

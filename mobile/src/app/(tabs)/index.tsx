@@ -5,8 +5,9 @@ import { ArrowRightIcon, GiftIcon, LockIcon } from "@/components/icons";
 import { Button, FinePrint, PageTitle, SampleBadge, SectionLabel, Sheet, Txt, EmptyCard } from "@/components/primitives";
 import { PageScreen, Section, Stack } from "@/components/screens";
 import { StatePicker } from "@/components/StatePicker";
-import { CardNote, CardRow, CardTop, MoneyCheck, Monogram, PayoutList } from "@/components/ui";
+import { CardNote, CardRow, CardTop, Monogram, PayoutList } from "@/components/ui";
 import { track } from "@/lib/analytics";
+import { PHONE_REMINDERS_AVAILABLE } from "@/lib/notifications";
 import {
   cappedTotal,
   daysUntil,
@@ -30,6 +31,12 @@ export default function Home() {
     track("dashboard_seen", { userId: store.session?.user.id ?? null, detail: store.isPremium ? "member" : "free" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // First visit: ask once whether to send deadline reminders as phone notifications.
+  const { phoneReminders, setPhoneReminders } = store;
+  useEffect(() => {
+    if (PHONE_REMINDERS_AVAILABLE && phoneReminders === null) void setPhoneReminders(true);
+  }, [phoneReminders, setPhoneReminders]);
+
   // The spotlight claim first, then their own matches, then claims open to everyone; within each,
   // soonest deadline first, with claims whose site hasn't opened yet last.
   const featuredIds = new Set(store.featured.map((settlement) => settlement.id));
@@ -40,7 +47,6 @@ export default function Home() {
       Number(isUpcoming(a)) - Number(isUpcoming(b)) ||
       a.deadline.localeCompare(b.deadline),
   );
-  const filedCount = store.claims.filter((claim) => claim.status !== "Paid").length;
   const firstOpen = toFile.find((settlement) => !isUpcoming(settlement));
   // Highlight the spotlight claim; without one, the most urgent claim.
   const spotlight = toFile.find((settlement) => settlement.isSpotlight && !isUpcoming(settlement));
@@ -61,28 +67,10 @@ export default function Home() {
   const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
   const hero =
     upTo > 0
-      ? { headline: `You may qualify for up to ${cappedTotal(upTo)}`, payee: "You", label: "Up to", amount: upTo }
+      ? { headline: `You may qualify for up to ${cappedTotal(upTo)}` }
       : missedTotal > 0
-        ? { headline: `You missed up to ${cappedTotal(missedTotal)}`, payee: "You", label: "Missed", amount: missedTotal }
-        : {
-            headline: `People got up to ${cappedTotal(store.history.total)} this past year`,
-            payee: "People like you",
-            label: "Paid this past year",
-            amount: store.history.total,
-          };
-
-  // Their own companies first, then the claims open to everyone.
-  const payees = [
-    ...new Set([
-      ...toFile.filter((s) => !featuredIds.has(s.id)).map((s) => s.company),
-      ...watching.map(({ brand }) => brand.name),
-      ...toFile.filter((s) => featuredIds.has(s.id)).map((s) => s.company),
-    ]),
-  ];
-  const memo =
-    payees.length > 0
-      ? `${payees.slice(0, 3).join(", ")}${payees.length > 3 ? ` + ${payees.length - 3} more` : ""}`
-      : "Settlements you could have claimed";
+        ? { headline: `You missed up to ${cappedTotal(missedTotal)}` }
+        : { headline: `People got up to ${cappedTotal(store.history.total)} this past year` };
 
   // Free accounts see everything; the plan unlocks filing.
   const unlock = () => router.push(`/paywall?next=${encodeURIComponent("/")}`);
@@ -101,16 +89,6 @@ export default function Home() {
           </Txt>
         )}
       </View>
-
-      <MoneyCheck
-        number={String(toFile.length).padStart(4, "0")}
-        payee={hero.payee}
-        amountLabel={hero.label}
-        amount={hero.amount}
-        capped
-        memo={memo}
-        footer={`‖ ${toFile.length} TO FILE ‖ ${filedCount} FILED`}
-      />
 
       {!store.isPremium &&
         (store.freeClaimAvailable && toFile.some((settlement) => !isUpcoming(settlement)) ? (

@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, View } from "react-native";
-import { Chips, EmptyCard, PageTitle, SearchField, Txt } from "@/components/primitives";
+import { Pressable } from "react-native";
+import { Chips, EmptyCard, PageTitle, SearchField } from "@/components/primitives";
 import { PageScreen, Stack } from "@/components/screens";
 import { SettlementCard } from "@/components/ui";
 import { daysUntil } from "@/lib/models";
@@ -42,12 +42,7 @@ export default function Browse() {
 
   return (
     <PageScreen>
-      <View>
-        <PageTitle>Open settlements</PageTitle>
-        <Txt color="muted" style={{ marginTop: 4 }}>
-          {store.settlements.length} available · refreshed weekly
-        </Txt>
-      </View>
+      <PageTitle>Open settlements</PageTitle>
 
       <SearchField
         value={query}
