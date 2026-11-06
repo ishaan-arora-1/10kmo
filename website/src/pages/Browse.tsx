@@ -41,7 +41,6 @@ export function Browse() {
     <div className="page">
       <header className="page-head">
         <h1>Open settlements</h1>
-        <p>{store.settlements.length} available · refreshed weekly</p>
       </header>
 
       <label className="search-field" htmlFor="browse-search">

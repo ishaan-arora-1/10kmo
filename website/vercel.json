@@ -9,6 +9,15 @@
   ],
   "headers": [
     {
+      "source": "/logos/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
       "source": "/.well-known/apple-developer-merchantid-domain-association",
       "headers": [
         {

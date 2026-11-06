@@ -26,7 +26,6 @@ export function Claims() {
       {tracked.length === 0 ? (
         <div className="empty-card">
           <b>No claims filed yet</b>
-          <p className="muted">When you finish a claim on its official site, it’ll appear here until you’re paid.</p>
           <Link to="/browse" className="btn">
             Browse matches
           </Link>

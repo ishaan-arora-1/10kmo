@@ -112,8 +112,9 @@ input::placeholder { color: var(--muted); opacity: .8; }
 
 .brand-picker { display: grid; gap: 14px; }
 .brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+/* Logo and name start at the top and the tag sits at the bottom, so tiles in a row line up with or without a tag. */
 .brand-tile {
-  display: grid; justify-items: center; align-content: center; gap: 8px; min-height: 100px; padding: 10px 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; min-height: 100px; padding: 10px 6px;
   border-radius: 13px; border: 1px solid var(--line); background: var(--surface);
   font-size: 13px; font-weight: 600; text-align: center; line-height: 1.2;
   transition: border-color .12s ease, background .12s ease;
@@ -122,7 +123,7 @@ input::placeholder { color: var(--muted); opacity: .8; }
 .brand-tile.on { border-color: var(--money); box-shadow: inset 0 0 0 1px var(--money); background: var(--money-soft); }
 .brand-open {
   font-family: var(--mono); font-size: 9.5px; font-weight: 500; text-transform: uppercase; letter-spacing: .02em;
-  color: var(--money); background: var(--money-soft); padding: 2px 6px; border-radius: 99px;
+  color: var(--money); background: var(--money-soft); padding: 2px 6px; border-radius: 99px; margin-top: auto;
 }
 .brand-open.pending { color: var(--deadline); background: var(--deadline-soft); }
 .link-btn { font: inherit; color: inherit; text-decoration: underline; background: none; border: 0; padding: 0; cursor: pointer; }
@@ -132,6 +133,8 @@ input::placeholder { color: var(--muted); opacity: .8; }
   flex: none; display: grid; place-items: center; color: #fff; font-weight: 700;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent);
 }
+/* Real logos are opaque squares; the outline keeps dark ones visible on the dark background. */
+.monogram-img { display: block; object-fit: cover; background: #fff; outline: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); outline-offset: -1px; }
 
 .scan { justify-items: center; padding-top: 8vh; }
 .scan-ring { width: 164px; height: 164px; border-radius: 50%; display: grid; place-items: center; }
@@ -168,6 +171,12 @@ input::placeholder { color: var(--muted); opacity: .8; }
   border: 2.5px solid var(--money); color: var(--money); border-radius: 6px;
   font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: .14em; padding: 0 10px;
   background: color-mix(in srgb, var(--check) 70%, transparent);
+}
+
+.amount-box {
+  margin-block: 6px; padding: 26px 22px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface);
+  text-align: center; font-family: var(--display); font-weight: 800; font-size: clamp(40px, 11vw, 56px); line-height: 1.1;
+  letter-spacing: -.03em; color: var(--money); font-variant-numeric: tabular-nums;
 }
 
 /* ---------- cards ---------- */

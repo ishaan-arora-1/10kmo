@@ -4,7 +4,7 @@ import { pixel } from "../lib/pixel";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandPicker } from "../components/BrandPicker";
 import { browserKind, EmailCodeForm } from "../components/EmailCodeForm";
-import { Monogram, MoneyCheck, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard, Wordmark } from "../components/ui";
+import { AmountBox, Monogram, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCard, Wordmark } from "../components/ui";
 import {
   ALSO_USED_COMPANIES,
   cappedTotal,
@@ -68,9 +68,7 @@ function PickStep({ onContinue }: { onContinue: () => void }) {
   return (
     <>
       <div className="flow-body">
-        <p className="eyebrow">Step 1 · 30 seconds</p>
         <h1 className="flow-title">Which of these have you used?</h1>
-        <p className="muted">Any US account since 2015 counts. No bank or email logins, ever.</p>
         <BrandPicker idPrefix="onboarding" />
         {session ? (
           <p className="center muted">
@@ -159,7 +157,6 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   const matches = store.matched;
   // Their matches plus the claims open to everyone: the same claims and total as the dashboard.
   const claimable = [...matches, ...store.featured];
-  const noProof = claimable.filter((s) => !s.proofRequired).length;
   const upTo = store.potentialMax + store.estimateMax + store.featuredMax;
 
   const startClaiming = () => {
@@ -179,16 +176,8 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
           You may qualify for {claimable.length} {plural(claimable.length, "settlement", "settlements")}
         </h1>
         {matches.every((s) => s.isSample) && <SampleBadge />}
-        <MoneyCheck
-          number={String(claimable.length).padStart(4, "0")}
-          // Never "Varies": add pending/past figures, else show what settlements paid people this year.
-          payee={upTo > 0 ? "You" : "People like you"}
-          amountLabel={upTo > 0 ? "Up to" : "Paid this past year"}
-          amount={upTo > 0 ? upTo : store.history.total}
-          capped
-          memo={`${claimable.length} ${plural(claimable.length, "settlement", "settlements")} · ${noProof} need no proof`}
-          footer={`‖ ${store.settlements.length} CHECKED ‖ ${claimable.length} MATCHED`}
-        />
+        {/* Never "Varies": add pending/past figures, else show what settlements paid people this year. */}
+        <AmountBox amount={upTo > 0 ? upTo : store.history.total} />
         <div className="stack">
           {matches.slice(0, 3).map((settlement) => (
             <button key={settlement.id} type="button" className="card-button" onClick={startClaiming}>
@@ -221,8 +210,7 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
 
 /** No open match: show what they missed, suggest more companies, then continue to membership. */
 function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
-  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax, featured, featuredMax } =
-    useStore();
+  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax, featuredMax } = useStore();
   const upTo = estimateMax + featuredMax;
   const open = settlements.filter(isOpen);
   const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
@@ -244,27 +232,10 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
         {upTo > 0 ? (
           <>
             <h1 className="flow-title">You may qualify for up to {cappedTotal(upTo)}</h1>
-            <p className="muted">
-              {featured.length > 0
-                ? `${featured.length} ${plural(featured.length, "claim", "claims")} most people qualify for ${plural(featured.length, "is", "are")} open now.`
-                : "Nothing to claim today."}
-              {estimates.length > 0 &&
-                ` We’ll email you the day ${estimates.length === 1 ? "yours opens" : "each of yours opens"}.`}
-            </p>
-            <MoneyCheck
-              number={String(estimates.length + featured.length).padStart(4, "0")}
-              payee="You"
-              amountLabel="Up to"
-              amount={upTo}
-              capped
-              memo={[
-                ...estimates.map(({ brand, estimate }) => `${brand.name}: ${estimate.label.toLowerCase()}`),
-                featured.length > 0 && `${featured.length} open to most people`,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-              footer={`‖ ${settlements.length} CHECKED ‖ ${estimates.length + featured.length} FOR YOU`}
-            />
+            {estimates.length > 0 && (
+              <p className="muted">We’ll email you the day {estimates.length === 1 ? "yours opens" : "each of yours opens"}.</p>
+            )}
+            <AmountBox amount={upTo} />
             <FeaturedSettlements onSelect={onContinue} />
             <EstimatedPayouts onSelect={onContinue} />
             <PendingCases onSelect={onContinue} />
@@ -505,14 +476,10 @@ function QuestionsStep({ onDone }: { onDone: () => void }) {
             <span key={id} className={index < position ? "on" : ""} />
           ))}
         </div>
-        <p className="eyebrow">
-          Question {position} of {order.length}
-        </p>
 
         {question === "life" && (
           <>
             <h1 className="flow-title">Which of these have happened to you since 2015?</h1>
-            <p className="muted">Tap any that apply. Some settlements cover things people never think to check.</p>
             <div className="q-options">
               {lifeOptions.map((option) => (
                 <button
@@ -532,7 +499,6 @@ function QuestionsStep({ onDone }: { onDone: () => void }) {
         {question === "also" && (
           <>
             <h1 className="flow-title">Have you used any of these too?</h1>
-            <p className="muted">Each one has a settlement open right now. Tap to add it.</p>
             <div className="q-options">
               {alsoOptions.map((settlement) => (
                 <AlsoUsedOption
@@ -550,7 +516,6 @@ function QuestionsStep({ onDone }: { onDone: () => void }) {
         {question === "proof" && (
           <>
             <h1 className="flow-title">Do you have any of these?</h1>
-            <p className="muted">Tap any you have. It’s fine if you don’t.</p>
             <div className="q-options">
               {proofOptions.map((option) => (
                 <button
@@ -626,7 +591,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
 
   const rows = reminderSchedule([...matched, ...featured]);
   const shown = rows.slice(0, 5);
-  const featuredIds = new Set(featured.map((settlement) => settlement.id));
   const openBrandIds = new Set(matched.map((settlement) => settlement.brandId));
   const pending = brands.filter(
     (brand) => selectedBrandIds.has(brand.id) && !openBrandIds.has(brand.id) && pendingCaseFor(brand),
@@ -653,10 +617,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
             <span className="r-date">{shortDay(row.sendOn)}</span>
             <span>
               <b>{row.settlement.company}</b> · {row.settlement.title}
-              <small>
-                Closes {row.closes}
-                {featuredIds.has(row.settlement.id) && " · open to everyone"}
-              </small>
             </span>
           </li>
         ))}
@@ -665,7 +625,6 @@ function RemindersStep({ onBack }: { onBack: () => void }) {
             <span className="r-date">When it opens</span>
             <span>
               <b>{brand.name}</b> · {pendingCaseFor(brand)?.title}
-              <small>The day claims open</small>
             </span>
           </li>
         ))}
