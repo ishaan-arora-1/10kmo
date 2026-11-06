@@ -9,7 +9,9 @@ import { track } from "@/lib/analytics";
 import { PRICE_VALUES, type WebPlan } from "@/lib/config";
 import { IAP_AVAILABLE } from "@/lib/iap";
 import {
+  BIG_CLAIM,
   cappedTotal,
+  claimValue,
   daysUntil,
   deadlineLabel,
   isUpcoming,
@@ -19,15 +21,11 @@ import {
   plural,
   safeNext,
   usd,
-  type Settlement,
 } from "@/lib/models";
 import { goTo, openWebsite } from "@/lib/nav";
 import { useStore } from "@/lib/store";
 import { isSampleMode } from "@/lib/supabase";
 import { useColors } from "@/theme";
-
-/** Above this, a payout is a documented-loss cap most people won't get. */
-const BIG_CLAIM = 1000;
 
 export default function Paywall() {
   const store = useStore();
@@ -66,26 +64,26 @@ export default function Paywall() {
   }
 
   const count = store.toFile.length;
-  // Same total as the results screen and dashboard.
-  const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
+  // The one total every screen shows.
+  const upTo = store.claimTotal.total;
   const nearest = target && !isUpcoming(target) ? target : store.nearest;
   const restMax = maxTotal(store.toFile);
 
-  // The bill: claims they can file now, the one they came from first, then biggest first.
-  // Caps over $1,000 (documented losses, e.g. car theft) count at their typical payout.
-  const fileable = store.toFile
-    .filter((s) => !isUpcoming(s))
-    .sort(
-      (a, b) =>
-        Number(b.id === target?.id) - Number(a.id === target?.id) ||
-        Number(b.payoutMax > 0) - Number(a.payoutMax > 0) ||
-        b.payoutMax - a.payoutMax,
-    );
-  const counted = (s: Settlement) => (s.payoutMax <= BIG_CLAIM ? s.payoutMax : (s.payoutTypical ?? 0));
-  const billTotal = fileable.reduce((total, s) => total + counted(s), 0);
+  // The bill: claims they can file now, the one they came from first, then biggest first, then any
+  // other open settlements the total was topped up with. Caps over $1,000 (documented losses, e.g. car
+  // theft) count at their typical payout. Adds up to the same total as every other screen.
+  const fileable = [...store.claimTotal.claims].sort(
+    (a, b) =>
+      Number(b.id === target?.id) - Number(a.id === target?.id) ||
+      Number(b.payoutMax > 0) - Number(a.payoutMax > 0) ||
+      b.payoutMax - a.payoutMax,
+  );
+  const extras = store.claimTotal.extras;
+  const extrasTotal = extras.reduce((total, s) => total + claimValue(s), 0);
+  const billTotal = upTo;
   const shown = fileable.slice(0, 5);
   const rest = fileable.slice(5);
-  const restTotal = rest.reduce((total, s) => total + counted(s), 0);
+  const restTotal = rest.reduce((total, s) => total + claimValue(s), 0);
   const anyBig = fileable.some((s) => s.payoutMax > BIG_CLAIM);
   // On iPhone these are the App Store's own localized prices.
   const { monthly, yearly } = store.prices;
@@ -222,6 +220,12 @@ export default function Paywall() {
                 <BillRow
                   label={`+ ${rest.length} more ${plural(rest.length, "claim", "claims")}`}
                   amount={restTotal > 0 ? `up to ${usd(restTotal)}` : "Varies"}
+                />
+              )}
+              {extras.length > 0 && (
+                <BillRow
+                  label={`+ ${extras.length} other open ${plural(extras.length, "settlement", "settlements")} you may qualify for`}
+                  amount={`up to ${usd(extrasTotal)}`}
                 />
               )}
               <BillRow label="You could claim" amount={`up to ${usd(billTotal)}`} kind="sum" />

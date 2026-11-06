@@ -10,9 +10,9 @@ import { track } from "@/lib/analytics";
 import { PHONE_REMINDERS_AVAILABLE } from "@/lib/notifications";
 import {
   cappedTotal,
+  claimValue,
   daysUntil,
   isUpcoming,
-  maxTotal,
   opensLabel,
   payoutRange,
   plural,
@@ -62,9 +62,8 @@ export default function Home() {
   const missedTotal = store.missed.reduce((total, payout) => total + payout.amountMax, 0);
   const watching = store.estimates.filter(({ brand }) => !toFile.some((s) => s.brandId === brand.id));
 
-  // Never show $0 or "Varies": their matches, pending/past figures and claims open to everyone,
-  // else what they missed, else what settlements paid this year. Same total as the results screen.
-  const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
+  // The one total every screen shows; else what they missed, else what settlements paid this year.
+  const upTo = store.claimTotal.total;
   const hero =
     upTo > 0
       ? { headline: `You may qualify for up to ${cappedTotal(upTo)}` }
@@ -75,7 +74,10 @@ export default function Home() {
   // Free accounts see everything; the plan unlocks filing.
   const unlock = () => router.push(`/paywall?next=${encodeURIComponent("/")}`);
   const locked = toFile.filter((settlement) => !store.canFile(settlement));
-  const lockedMax = maxTotal(locked);
+  // Settlements the total was topped up with to reach its minimum (listed on the bill).
+  const extraCount = store.claimTotal.extras.length;
+  // After a free claim, the others' share of the total.
+  const lockedMax = locked.filter((s) => !isUpcoming(s)).reduce((total, s) => total + claimValue(s), 0);
   // Accounts that used a free claim while it was offered keep that one claim unlocked.
   const usedFreeClaim = store.claims.length > 0;
 
@@ -119,11 +121,15 @@ export default function Home() {
                 {locked.length > 0
                   ? `Unlock your ${
                       !usedFreeClaim
-                        ? `${locked.length} ${plural(locked.length, "claim", "claims")}`
+                        ? `${locked.length} ${plural(locked.length, "claim", "claims")}${
+                            extraCount > 0
+                              ? ` and ${extraCount} more open ${plural(extraCount, "settlement", "settlements")}`
+                              : ""
+                          }`
                         : locked.length === 1
                           ? "other claim"
                           : `other ${locked.length} claims`
-                    }${lockedMax > 0 ? ` (up to ${cappedTotal(lockedMax)})` : ""}`
+                    }${upTo > 0 ? ` (up to ${cappedTotal(usedFreeClaim ? lockedMax : upTo)})` : ""}`
                   : "Get emailed the day your companies settle"}
               </Txt>
             </View>

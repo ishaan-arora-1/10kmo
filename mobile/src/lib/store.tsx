@@ -18,6 +18,8 @@ import {
   type BrandEstimate,
   claimFromRow,
   claimToRow,
+  claimTotal,
+  type ClaimTotal,
   matchSettlements,
   featuredSettlements,
   isUpcoming,
@@ -148,6 +150,8 @@ export interface Store {
   featured: Settlement[];
   /** Everything they can act on: their own unfiled matches, then unfiled claims open to everyone. */
   toFile: Settlement[];
+  /** The one "you may qualify for up to" figure every screen shows, with the claims behind it. */
+  claimTotal: ClaimTotal;
   /** The most the open-to-everyone claims pay, added up (unpaid ones). */
   featuredMax: number;
   unfiled: Settlement[];
@@ -840,6 +844,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       matched,
       featured,
       toFile,
+      claimTotal: claimTotal(toFile, settlements, new Set(claimBySettlement.keys())),
       featuredMax: maxTotal(featured.filter((s) => claimBySettlement.get(s.id)?.status !== "Paid")),
       unfiled,
       nearest:

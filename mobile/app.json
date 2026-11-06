@@ -10,7 +10,7 @@
     "backgroundColor": "#F1F5F0",
     "ios": {
       "bundleIdentifier": "com.claimrightful.app",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false

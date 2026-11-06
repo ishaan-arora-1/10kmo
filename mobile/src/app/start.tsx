@@ -223,7 +223,8 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   const matches = store.matched;
   // Their matches plus the claims open to everyone: the same claims and total as the dashboard.
   const claimable = [...matches, ...store.featured];
-  const upTo = store.potentialMax + store.estimateMax + store.featuredMax;
+  // The one total every screen shows.
+  const upTo = store.claimTotal.total;
 
   const startClaiming = () => {
     if (store.isPremium || store.session) router.push("/welcome");
@@ -269,9 +270,10 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
 
 /** No open match: show what they missed, suggest more companies, then continue to membership. */
 function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
-  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax, featuredMax } = useStore();
+  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, claimTotal } = useStore();
   const { tileWidth } = useGridColumns();
-  const upTo = estimateMax + featuredMax;
+  // The one total every screen shows.
+  const upTo = claimTotal.total;
   const open = settlements.filter(isOpen);
   const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
   const topPayout = (brandId: string) =>
