@@ -61,6 +61,14 @@ const CHECKOUT_LABEL: Record<string, { text: string; tone: string }> = {
 
 const REFRESH_MS = 5 * 60 * 1000;
 
+// Chart ranges; "All" asks for more days than exist and the database starts at the first sign-up.
+const RANGES = [
+  { days: 14, label: "14 days" },
+  { days: 30, label: "30 days" },
+  { days: 90, label: "90 days" },
+  { days: 1000, label: "All" },
+] as const;
+
 function dayLabel(iso: string, weekday = false) {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
@@ -88,11 +96,12 @@ export function Admin() {
   const [state, setState] = useState<"loading" | "ready" | "denied" | "error">("loading");
   const [refreshing, setRefreshing] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [range, setRange] = useState<number>(14);
 
   const load = useCallback(async () => {
     if (!supabase) return;
     setRefreshing(true);
-    const { data: result, error } = await supabase.rpc("admin_dashboard");
+    const { data: result, error } = await supabase.rpc("admin_dashboard", { p_days: range });
     setRefreshing(false);
     if (error) {
       setState(error.code === "42501" ? "denied" : "error");
@@ -100,7 +109,7 @@ export function Admin() {
     }
     setData(result as Dashboard);
     setState("ready");
-  }, []);
+  }, [range]);
 
   useEffect(() => {
     if (!session) return;
@@ -177,7 +186,16 @@ export function Admin() {
       </div>
 
       <section className="admin-block">
-        <h2>Last 14 days</h2>
+        <div className="admin-block-head">
+          <h2>{range >= 1000 ? `All ${days.length} days` : `Last ${days.length} days`}</h2>
+          <div className="admin-seg" role="group" aria-label="Choose range">
+            {RANGES.map((r) => (
+              <button key={r.days} type="button" aria-pressed={range === r.days} onClick={() => setRange(r.days)} disabled={refreshing}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <DailyChart days={days} selected={day.d} onSelect={setSelected} />
       </section>
 
@@ -264,6 +282,9 @@ function DailyChart({ days, selected, onSelect }: { days: Day[]; selected: strin
   const y = (v: number) => T + (H - T - B) * (1 - v / top);
   const slot = (W - L - R) / days.length;
   const bw = Math.min(26, slot * 0.58);
+  const radius = Math.min(4, bw / 2);
+  // About seven date labels however many days are shown, always including today.
+  const every = Math.max(1, Math.ceil(days.length / 7));
   const ticks = useMemo(() => Array.from({ length: top / tick + 1 }, (_, i) => i * tick), [top, tick]);
   const hovered = hover === null ? null : days[hover];
 
@@ -274,7 +295,7 @@ function DailyChart({ days, selected, onSelect }: { days: Day[]; selected: strin
         <span><i className="sw dot" />Opened checkout</span>
         <span><i className="sw dot paid" />Paid</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Sign-ups per day, last 14 days">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Sign-ups per day, last ${days.length} days`}>
         {ticks.map((v) => (
           <g key={v}>
             <line className="grid" x1={L} x2={W - R} y1={y(v)} y2={y(v)} />
@@ -308,16 +329,16 @@ function DailyChart({ days, selected, onSelect }: { days: Day[]; selected: strin
               {h > 0 && (
                 <path
                   className="bar"
-                  d={`M${cx - bw / 2},${y(0)} V${y(d.signups) + Math.min(4, h)} q0,-4 4,-4 H${cx + bw / 2 - 4} q4,0 4,4 V${y(0)} Z`}
+                  d={`M${cx - bw / 2},${y(0)} V${y(d.signups) + Math.min(radius, h)} q0,-${radius} ${radius},-${radius} H${cx + bw / 2 - radius} q${radius},0 ${radius},${radius} V${y(0)} Z`}
                 />
               )}
               {(on || i === days.length - 1) && (
                 <text className="value" x={cx} y={y(d.signups) - 6} textAnchor="middle">{d.signups}</text>
               )}
               {d.checkout > 0 && (
-                <circle className={`ck${d.paid > 0 ? " paid" : ""}`} cx={cx} cy={9} r={Math.min(7, 3 + d.checkout / 2)} />
+                <circle className={`ck${d.paid > 0 ? " paid" : ""}`} cx={cx} cy={9} r={Math.min(7, slot * 0.45, 3 + d.checkout / 2)} />
               )}
-              {i % 2 === (days.length - 1) % 2 && (
+              {(days.length - 1 - i) % every === 0 && (
                 <text className="axis" x={cx} y={H - 8} textAnchor="middle">{dayLabel(d.d)}</text>
               )}
             </g>
