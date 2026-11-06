@@ -48,16 +48,25 @@ function timeLabel(iso: string) {
 const fmt = (n: number) => n.toLocaleString("en-US");
 
 /** Owner-only user counts. The database refuses everyone not on the admin list. */
+// Chart ranges; "All" asks for more days than exist and the database starts at the first sign-up.
+const RANGES = [
+  { days: 14, label: "14 days" },
+  { days: 30, label: "30 days" },
+  { days: 90, label: "90 days" },
+  { days: 1000, label: "All" },
+] as const;
+
 export function Users() {
   const { session } = useStore();
   const [data, setData] = useState<UsersData | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "denied" | "error">("loading");
   const [refreshing, setRefreshing] = useState(false);
+  const [range, setRange] = useState<number>(30);
 
   const load = useCallback(async () => {
     if (!supabase) return;
     setRefreshing(true);
-    const { data: result, error } = await supabase.rpc("admin_users");
+    const { data: result, error } = await supabase.rpc("admin_users", { p_days: range });
     setRefreshing(false);
     if (error) {
       setState(error.code === "42501" ? "denied" : "error");
@@ -65,7 +74,7 @@ export function Users() {
     }
     setData(result as UsersData);
     setState("ready");
-  }, []);
+  }, [range]);
 
   useEffect(() => {
     if (!session) return;
@@ -93,7 +102,16 @@ export function Users() {
       </div>
     );
   }
-  return <UsersView data={data} failed={state === "error"} refreshing={refreshing} onRefresh={() => void load()} />;
+  return (
+    <UsersView
+      data={data}
+      failed={state === "error"}
+      refreshing={refreshing}
+      onRefresh={() => void load()}
+      range={range}
+      onRange={setRange}
+    />
+  );
 }
 
 export function UsersView({
@@ -101,11 +119,15 @@ export function UsersView({
   failed,
   refreshing,
   onRefresh,
+  range = 30,
+  onRange,
 }: {
   data: UsersData;
   failed: boolean;
   refreshing: boolean;
   onRefresh: () => void;
+  range?: number;
+  onRange?: (days: number) => void;
 }) {
   const days = data.daily;
   const today = days[days.length - 1];
@@ -138,7 +160,16 @@ export function UsersView({
       </div>
 
       <section className="admin-block">
-        <h2>Last 30 days</h2>
+        <div className="admin-block-head">
+          <h2>{range >= 1000 ? `All ${days.length} days` : `Last ${days.length} days`}</h2>
+          <div className="admin-seg" role="group" aria-label="Choose range">
+            {RANGES.map((r) => (
+              <button key={r.days} type="button" aria-pressed={range === r.days} onClick={() => onRange?.(r.days)} disabled={refreshing || !onRange}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <TotalChart days={days} />
       </section>
 
@@ -250,10 +281,12 @@ function TotalChart({ days }: { days: Day[] }) {
   const area = `${line} L${x(days.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
   const hovered = hover === null ? null : days[hover];
   const last = days.length - 1;
+  // About seven date labels however many days are shown, always including today.
+  const every = Math.max(1, Math.ceil(days.length / 7));
 
   return (
     <div className="admin-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Total users at the end of each day, last 30 days">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Total users at the end of each day, last ${days.length} days`}>
         {ticks.map((v) => (
           <g key={v}>
             <line className="grid" x1={L} x2={W - R} y1={y(v)} y2={y(v)} />
@@ -276,7 +309,7 @@ function TotalChart({ days }: { days: Day[] }) {
           >
             <rect className="hit" x={x(i) - slot / 2} y={0} width={slot} height={H - B} />
             {(hover === i || i === last) && <circle className="pt" cx={x(i)} cy={y(d.total)} r={4} />}
-            {(last - i) % 5 === 0 && (
+            {(last - i) % every === 0 && (
               <text className="axis" x={x(i)} y={H - 8} textAnchor="middle">{dayLabel(d.d)}</text>
             )}
           </g>
