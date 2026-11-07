@@ -109,3 +109,44 @@ export async function recordPaddleSubscription(
   if (error) throw error;
   return data as string;
 }
+
+/** A checkout started on the website before sign-in (see the website's startPaddleCheckout). */
+export function isGuestCheckout(customData: Record<string, unknown> | null | undefined): boolean {
+  return customData?.guest === true;
+}
+
+export type GuestAccount = { userId: string; email: string; createdAt: string; madeByGuestCheckout: boolean };
+
+/**
+ * The account for a guest checkout: the one already using the email Paddle collected, or a new
+ * one made now (marked source = paddle_guest). Paddle doesn't verify that email, so callers must
+ * not sign anyone into an account that existed before their checkout.
+ */
+export async function guestAccount(
+  // deno-lint-ignore no-explicit-any
+  admin: any,
+  customerID: string,
+): Promise<GuestAccount> {
+  const customer = await paddle<{ email: string }>(`/customers/${encodeURIComponent(customerID)}`);
+  const email = customer.email.trim().toLowerCase();
+  const find = async (): Promise<GuestAccount | null> => {
+    const { data, error } = await admin.rpc("account_by_email", { p_email: email });
+    if (error) throw error;
+    const row = (data ?? [])[0];
+    return row
+      ? { userId: row.user_id, email, createdAt: row.created_at, madeByGuestCheckout: row.source === "paddle_guest" }
+      : null;
+  };
+  const existing = await find();
+  if (existing) return existing;
+  const { error } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    app_metadata: { source: "paddle_guest" },
+  });
+  // The webhook and the sign-in call can race to create it; either way, read it back.
+  if (error) console.log("guest account create", email.slice(0, 3), error.message);
+  const created = await find();
+  if (!created) throw new Error("guest account could not be created");
+  return created;
+}

@@ -57,12 +57,6 @@ export function Paywall() {
     if (store.isPremium && !busy) navigate(`/welcome?next=${encodeURIComponent(next)}`, { replace: true });
   }, [store.isPremium, busy, next, navigate]);
 
-  // Web subscriptions belong to an account, so sign-in comes first on the website.
-  if (!isSampleMode && !store.session) {
-    const back = `/paywall?next=${encodeURIComponent(next)}`;
-    return <Navigate to={`/sign-in?next=${encodeURIComponent(back)}`} replace />;
-  }
-
   const count = store.toFile.length;
   // Same total as the results screen and dashboard.
   const upTo = store.waitingMax + store.estimateMax + store.featuredMax;
@@ -113,6 +107,11 @@ export function Paywall() {
     setBusy(false);
     if (result.ok) {
       navigate(`/welcome?next=${encodeURIComponent(next)}`, { replace: true });
+    } else if (result.needsCodeFor) {
+      // Paid without signing in, with an email that already has an account.
+      navigate(`/sign-in?paid=1&email=${encodeURIComponent(result.needsCodeFor)}&next=${encodeURIComponent(next)}`, {
+        replace: true,
+      });
     } else if (!result.cancelled) {
       setMessage(result.message ?? "Checkout couldn’t start. Please try again.");
     }

@@ -159,14 +159,21 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   const claimable = [...matches, ...store.featured];
   const upTo = store.potentialMax + store.estimateMax + store.featuredMax;
 
+  // No account needed to pay: the price comes next, and the account is made at checkout.
   const startClaiming = () => {
     if (store.isPremium || store.session) navigate("/welcome");
-    else onReminders();
+    else navigate(`/paywall?next=${encodeURIComponent("/")}`);
   };
+  // Free accounts still sign up for deadline reminders instead.
+  const remindMe = store.session || store.isPremium ? null : onReminders;
 
   if (matches.length === 0) {
-    return <NoMatches onPickMore={onPickMore} onContinue={startClaiming} />;
+    return <NoMatches onPickMore={onPickMore} onContinue={startClaiming} onRemindMe={remindMe} />;
   }
+
+  // Two claims in full; the rest stay blurred until they unlock.
+  const visible = claimable.slice(0, 2);
+  const hidden = claimable.slice(2);
 
   return (
     <>
@@ -179,18 +186,24 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
         </h1>
         {matches.every((s) => s.isSample) && <SampleBadge />}
         <div className="stack">
-          {matches.slice(0, 3).map((settlement) => (
+          {visible.map((settlement) => (
             <button key={settlement.id} type="button" className="card-button" onClick={startClaiming}>
               <SettlementCard settlement={settlement} />
             </button>
           ))}
         </div>
-        {matches.length > 3 && (
-          <p className="center muted strong">
-            + {matches.length - 3} more {plural(matches.length - 3, "match", "matches")}
-          </p>
+        {hidden.length > 0 && (
+          <div className="blurred-claims">
+            <div className="stack" aria-hidden="true">
+              {hidden.slice(0, 3).map((settlement) => (
+                <SettlementCard key={settlement.id} settlement={settlement} />
+              ))}
+            </div>
+            <button type="button" className="btn blurred-cta" onClick={startClaiming}>
+              Unlock all {claimable.length} claims
+            </button>
+          </div>
         )}
-        <FeaturedSettlements onSelect={startClaiming} />
         <EstimatedPayouts onSelect={startClaiming} />
         <PendingCases onSelect={startClaiming} />
         <p className="fine-print">
@@ -203,13 +216,26 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
         <button type="button" className="btn block" onClick={startClaiming}>
           Start claiming
         </button>
+        {remindMe && (
+          <button type="button" className="btn-quiet" onClick={remindMe}>
+            Not now, just email me reminders
+          </button>
+        )}
       </div>
     </>
   );
 }
 
 /** No open match: show what they missed, suggest more companies, then continue to membership. */
-function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onContinue: () => void }) {
+function NoMatches({
+  onPickMore,
+  onContinue,
+  onRemindMe,
+}: {
+  onPickMore: () => void;
+  onContinue: () => void;
+  onRemindMe: (() => void) | null;
+}) {
   const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax, featuredMax } = useStore();
   const upTo = estimateMax + featuredMax;
   const open = settlements.filter(isOpen);
@@ -271,6 +297,11 @@ function NoMatches({ onPickMore, onContinue }: { onPickMore: () => void; onConti
         <button type="button" className="btn-quiet" onClick={onPickMore}>
           Search all companies
         </button>
+        {onRemindMe && (
+          <button type="button" className="btn-quiet" onClick={onRemindMe}>
+            Not now, just email me reminders
+          </button>
+        )}
       </div>
     </>
   );

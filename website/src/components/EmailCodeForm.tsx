@@ -49,14 +49,16 @@ export function EmailCodeForm({
   submitLabel = "Email me a code",
   onCodeSent,
   onVerified,
+  initialEmail = "",
 }: {
   submitLabel?: string;
   onCodeSent?: (email: string | null) => void;
   onVerified?: () => void;
+  initialEmail?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState("");
   const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);

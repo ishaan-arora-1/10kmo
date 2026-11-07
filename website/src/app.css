@@ -173,6 +173,14 @@ input::placeholder { color: var(--muted); opacity: .8; }
   background: color-mix(in srgb, var(--check) 70%, transparent);
 }
 
+/* Results before paying: claims after the first two are blurred behind the unlock button. */
+.blurred-claims { position: relative; }
+.blurred-claims > .stack { filter: blur(6px); opacity: .7; pointer-events: none; user-select: none; }
+.blurred-cta {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .55);
+}
+
 /* ---------- cards ---------- */
 .card-button, .card-link { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; text-decoration: none; color: inherit; border-radius: var(--radius); }
 .card-button:hover .settlement-card, .card-link:hover .settlement-card { border-color: var(--check-line); }

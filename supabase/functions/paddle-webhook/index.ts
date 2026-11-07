@@ -1,6 +1,8 @@
 import { withSupabase } from "npm:@supabase/server@1.5.2";
 import type { Database } from "../_shared/database.types.ts";
 import {
+  guestAccount,
+  isGuestCheckout,
   paddle,
   type PaddleSubscription,
   recordPaddleSubscription,
@@ -49,6 +51,10 @@ export default {
           p_subscription_id: subscription.id,
         });
         userID = data ?? null;
+      }
+      // Paid before signing in: the account is the one for the email Paddle collected.
+      if (!userID && isGuestCheckout(subscription.custom_data) && subscription.customer_id) {
+        userID = (await guestAccount(context.supabaseAdmin, subscription.customer_id)).userId;
       }
       if (!userID) {
         console.error("paddle subscription without a user", subscription.id, event.event_id);

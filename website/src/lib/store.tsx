@@ -99,6 +99,8 @@ export interface CheckoutResult {
   ok: boolean;
   cancelled?: boolean;
   message?: string;
+  /** Paid before signing in with an email that already has an account: sign in with a code. */
+  needsCodeFor?: string;
 }
 
 export interface Store {
@@ -502,9 +504,61 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return "free";
   }, [refreshPlan]);
 
+  // Paid before signing in: trade the Paddle transaction for a sign-in (paddle-guest-session),
+  // then wait for the webhook to unlock the new account.
+  const signInAfterGuestCheckout = useCallback(async (transactionId: string | undefined): Promise<CheckoutResult> => {
+    const client = supabase;
+    const fallback: CheckoutResult = {
+      ok: false,
+      message: "Payment received. Sign in with the email you used at checkout to see your claims.",
+    };
+    if (!client || !transactionId) return fallback;
+    type GuestReply = { token_hash?: string; needs_code?: boolean; email?: string };
+    let reply: GuestReply | null = null;
+    // Paddle can take a few seconds to mark the transaction completed.
+    for (let attempt = 0; attempt < 6 && !reply; attempt += 1) {
+      const { data, error } = await client.functions.invoke<GuestReply>("paddle-guest-session", {
+        body: { transaction_id: transactionId },
+      });
+      if (!error && data) reply = data;
+      else await new Promise((resolve) => window.setTimeout(resolve, 2000));
+    }
+    if (reply?.needs_code && reply.email) {
+      track("guest_checkout_signin", { detail: "existing account" });
+      return { ok: false, needsCodeFor: reply.email };
+    }
+    if (!reply?.token_hash) {
+      track("checkout_failed", { detail: "paddle: guest_signin_failed" });
+      return fallback;
+    }
+    const { data: auth, error: verifyError } = await client.auth.verifyOtp({
+      token_hash: reply.token_hash,
+      type: "magiclink",
+    });
+    const uid = auth?.user?.id;
+    if (verifyError || !uid) {
+      track("checkout_failed", { detail: "paddle: guest_verify_failed" });
+      return fallback;
+    }
+    track("guest_checkout_signin", { userId: uid, detail: "new account" });
+    pixel("CompleteRegistration", { content_name: "guest checkout" });
+    for (let attempt = 0; attempt < 15; attempt += 1) {
+      const { data } = await client.from("profiles").select("plan").eq("user_id", uid).maybeSingle();
+      if (data?.plan && data.plan !== "free") {
+        setPlan(data.plan as Plan);
+        return { ok: true };
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 2000));
+    }
+    track("checkout_failed", { userId: uid, detail: "paddle: paid_not_unlocked" });
+    return { ok: false, message: "Payment received. Filing will unlock within a minute — refresh this page." };
+  }, []);
+
   const startPaddleCheckout = useCallback(
     async (chosen: WebPlan): Promise<CheckoutResult> => {
       const userId = session?.user.id ?? null;
+      // No account yet: Paddle collects the email and the account is made after payment.
+      const guest = !userId && Boolean(supabase);
       // The $1.99 first month: Paddle takes the discount off the first monthly payment only.
       const introDiscount = chosen === "monthly" && MONTHLY_INTRO ? PADDLE.monthlyIntroDiscount : null;
       const via = introDiscount ? "paddle: intro" : "paddle";
@@ -536,6 +590,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               track("checkout_paid", { plan: chosen, userId, detail: via });
               pixel("Purchase", { content_name: chosen, currency: "USD", value: FIRST_PRICE_VALUES[chosen] });
             }
+            if (guest) {
+              const transactionId = (event.data as { transaction_id?: string } | undefined)?.transaction_id;
+              void signInAfterGuestCheckout(transactionId).then((result) => {
+                paddle.Checkout.close();
+                resolve(result);
+              });
+              return;
+            }
             void waitForPlan().then((plan) => {
               paddle.Checkout.close();
               if (plan === "free") {
@@ -564,11 +626,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           items: [{ priceId: PADDLE.prices[chosen], quantity: 1 }],
           ...(introDiscount ? { discountId: introDiscount } : {}),
           ...(email ? { customer: { email } } : {}),
-          customData: { user_id: userId },
+          customData: guest ? { guest: true } : { user_id: userId },
         });
       });
     },
-    [session, waitForPlan],
+    [session, waitForPlan, signInAfterGuestCheckout],
   );
 
   // Gumroad's checkout is its own page. The paywall sends people there with their account id
