@@ -177,6 +177,10 @@ export type Database = {
         Args: { p_subscription_id: string };
         Returns: string | null;
       };
+      account_by_email: {
+        Args: { p_email: string };
+        Returns: { user_id: string; created_at: string; source: string | null }[];
+      };
       active_paddle_subscription_ids: {
         Args: { p_user_id: string };
         Returns: string[];

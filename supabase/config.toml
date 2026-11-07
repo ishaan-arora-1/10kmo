@@ -451,6 +451,9 @@ verify_jwt = true
 [functions.paddle-unlock]
 verify_jwt = true
 
+[functions.paddle-guest-session]
+verify_jwt = false
+
 [functions.paddle-webhook]
 # Paddle authenticates this webhook with an HMAC signature (Paddle-Signature header).
 verify_jwt = false
