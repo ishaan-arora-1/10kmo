@@ -171,9 +171,9 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
     return <NoMatches onPickMore={onPickMore} onContinue={startClaiming} onRemindMe={remindMe} />;
   }
 
-  // Two claims in full; the rest stay blurred until they unlock.
-  const visible = claimable.slice(0, 2);
-  const hidden = claimable.slice(2);
+  // One claim in full; the rest stay blurred until they unlock.
+  const visible = claimable.slice(0, 1);
+  const hidden = claimable.slice(1);
 
   return (
     <>
@@ -200,7 +200,7 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
               ))}
             </div>
             <button type="button" className="btn blurred-cta" onClick={startClaiming}>
-              Unlock all {claimable.length} claims
+              Unlock all claims
             </button>
           </div>
         )}
