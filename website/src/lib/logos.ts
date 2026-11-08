@@ -8,7 +8,11 @@ const available = new Set<string>(logoNames);
 /** The company's logo in /logos (made by scripts/brand_logos), or null to show its initial instead. */
 export function logoFor(...names: (string | undefined)[]): string | null {
   for (const name of names) {
-    if (name && available.has(slug(name))) return `/logos/${slug(name)}.webp`;
+    if (!name) continue;
+    // "Visa & Mastercard" or "Hyundai and Kia" fall back to the first company's logo.
+    for (const candidate of [name, name.split(/\s*(?:&|\band\b|,|\/)\s*/)[0]]) {
+      if (available.has(slug(candidate))) return `/logos/${slug(candidate)}.webp`;
+    }
   }
   return null;
 }
