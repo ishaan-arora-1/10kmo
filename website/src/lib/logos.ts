@@ -11,7 +11,7 @@ export function logoFor(...names: (string | undefined)[]): string | null {
     if (!name) continue;
     // "Visa & Mastercard" or "Hyundai and Kia" fall back to the first company's logo.
     for (const candidate of [name, name.split(/\s*(?:&|\band\b|,|\/)\s*/)[0]]) {
-      if (available.has(slug(candidate))) return `/logos/${slug(candidate)}.webp`;
+      if (available.has(slug(candidate))) return `/logos/${slug(candidate)}.webp?v=2`;
     }
   }
   return null;
