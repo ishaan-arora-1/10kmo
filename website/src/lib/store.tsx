@@ -101,7 +101,12 @@ export interface CheckoutResult {
   message?: string;
   /** Paid before signing in with an email that already has an account: sign in with a code. */
   needsCodeFor?: string;
+  /** The bank or wallet declined the payment; the paywall offers another way to pay. */
+  declined?: boolean;
 }
+
+/** Payment methods a retry after a decline can be limited to. */
+export type RetryMethod = "paypal" | "card";
 
 export interface Store {
   ready: boolean;
@@ -167,7 +172,8 @@ export interface Store {
   startFreeClaim(settlement: Settlement): Promise<void>;
   markPaid(claimId: string, amount: number): Promise<void>;
   refreshPlan(): Promise<Plan>;
-  startCheckout(plan: WebPlan): Promise<CheckoutResult>;
+  /** `retryWith` limits Paddle to one payment method, for a second try after a decline. */
+  startCheckout(plan: WebPlan, retryWith?: RetryMethod): Promise<CheckoutResult>;
   /** Ends a limited free trial now: yearly charges the saved payment method, monthly opens checkout. */
   unlockNow(plan: WebPlan): Promise<CheckoutResult>;
   /** Returns when access ends ("" if it ended now), or null if cancellation failed. */
@@ -555,14 +561,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startPaddleCheckout = useCallback(
-    async (chosen: WebPlan): Promise<CheckoutResult> => {
+    async (chosen: WebPlan, retryWith?: RetryMethod): Promise<CheckoutResult> => {
       const userId = session?.user.id ?? null;
       // No account yet: Paddle collects the email and the account is made after payment.
       const guest = !userId && Boolean(supabase);
       // The $1.99 first month: Paddle takes the discount off the first monthly payment only.
       const introDiscount = chosen === "monthly" && MONTHLY_INTRO ? PADDLE.monthlyIntroDiscount : null;
       const via = introDiscount ? "paddle: intro" : "paddle";
-      track("checkout_opened", { plan: chosen, userId, detail: via });
+      track("checkout_opened", { plan: chosen, userId, detail: retryWith ? `${via} retry ${retryWith}` : via });
       pixel("InitiateCheckout", { content_name: chosen, currency: "USD", value: FIRST_PRICE_VALUES[chosen] });
       const paddle = await loadPaddle();
       if (!paddle) {
@@ -576,6 +582,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return new Promise<CheckoutResult>((resolve) => {
         let completed = false;
         let lastFailure: string | null = null;
+        let failures = 0;
         const stop = onPaddleEvent((event) => {
           if (event.name === "checkout.completed") {
             completed = true;
@@ -612,13 +619,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             });
           } else if (event.name === "checkout.payment.failed" || event.name === "checkout.payment.error") {
             lastFailure = "The payment didn’t go through. Please try another payment method.";
+            failures += 1;
             track("checkout_failed", { plan: chosen, userId, detail: `paddle: ${event.name}` });
+            // Two declines in a row usually means that card or wallet won't work (no balance, or the
+            // bank has blocked it). Close Paddle once its error has shown, and offer PayPal or
+            // another card instead of letting them keep retrying the same one.
+            if (failures === 2) {
+              window.setTimeout(() => {
+                if (!completed) paddle.Checkout.close();
+              }, 2500);
+            }
           } else if (event.name === "checkout.error") {
             track("checkout_failed", { plan: chosen, userId, detail: `paddle: ${event.detail ?? "error"}` });
           } else if (event.name === "checkout.closed" && !completed) {
             stop();
             track("checkout_dismissed", { plan: chosen, userId, detail: lastFailure ? "paddle: failed" : "paddle: closed" });
-            resolve(lastFailure ? { ok: false, message: lastFailure } : { ok: false, cancelled: true });
+            resolve(lastFailure ? { ok: false, declined: true, message: lastFailure } : { ok: false, cancelled: true });
           }
         });
         const email = session?.user.email;
@@ -627,6 +643,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...(introDiscount ? { discountId: introDiscount } : {}),
           ...(email ? { customer: { email } } : {}),
           customData: guest ? { guest: true } : { user_id: userId },
+          ...(retryWith ? { settings: { allowedPaymentMethods: [retryWith] } } : {}),
         });
       });
     },
@@ -702,13 +719,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [userId, waitForPlan]);
 
   const startCheckout = useCallback(
-    async (chosen: WebPlan): Promise<CheckoutResult> => {
+    async (chosen: WebPlan, retryWith?: RetryMethod): Promise<CheckoutResult> => {
       const client = supabase;
       if (!client) {
         setLocal((previous) => ({ ...previous, sampleUnlocked: true }));
         return { ok: true };
       }
-      if (PAYMENTS === "paddle") return startPaddleCheckout(chosen);
+      if (PAYMENTS === "paddle") return startPaddleCheckout(chosen, retryWith);
       if (PAYMENTS === "gumroad") return startGumroadCheckout(chosen);
 
       const userId = session?.user.id ?? null;
