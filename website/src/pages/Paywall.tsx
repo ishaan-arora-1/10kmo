@@ -26,7 +26,7 @@ import {
   usd,
   type Settlement,
 } from "../lib/models";
-import { useStore } from "../lib/store";
+import { type RetryMethod, useStore } from "../lib/store";
 import { isSampleMode } from "../lib/supabase";
 
 /** Above this, a payout is a documented-loss cap most people won't get. */
@@ -43,6 +43,8 @@ export function Paywall() {
   const [plan, setPlan] = useState<WebPlan>(YEARLY_TRIAL_DAYS > 0 ? "yearly" : "monthly");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // The last payment was declined: offer PayPal or another card instead of the same button.
+  const [declined, setDeclined] = useState(false);
   // Opened from a settlement's "File your claim" button: lead with that claim.
   const target = store.settlementById(/^\/settlements\/([^/?#]+)/.exec(next)?.[1] ?? "") ?? null;
 
@@ -100,11 +102,13 @@ export function Paywall() {
     .map((brand) => brand.name);
   const yearlySaving = Math.floor((1 - PRICE_VALUES.yearly / (PRICE_VALUES.monthly * 12)) * 100);
 
-  const subscribe = async () => {
+  const subscribe = async (retryWith?: RetryMethod) => {
     setBusy(true);
     setMessage(null);
-    const result = await store.startCheckout(plan);
+    const result = await store.startCheckout(plan, retryWith);
     setBusy(false);
+    setDeclined(Boolean(result.declined));
+    if (result.declined) return;
     if (result.ok) {
       navigate(`/welcome?next=${encodeURIComponent(next)}`, { replace: true });
     } else if (result.needsCodeFor) {
@@ -256,6 +260,19 @@ export function Paywall() {
           </p>
         )}
 
+        {declined && (
+          <div className="declined-box" role="alert">
+            <b>Your payment didn’t go through</b>
+            <p>Your bank or wallet declined it, so you weren’t charged. You can try another way to pay:</p>
+            <button type="button" className="btn block" onClick={() => void subscribe("paypal")} disabled={busy}>
+              Pay with PayPal
+            </button>
+            <button type="button" className="btn secondary block" onClick={() => void subscribe("card")} disabled={busy}>
+              Use a different card
+            </button>
+          </div>
+        )}
+
         {YEARLY_TRIAL_DAYS > 0 && (
           <fieldset className="plans">
             <legend className="sr-only">Choose a plan</legend>
@@ -290,7 +307,12 @@ export function Paywall() {
           </fieldset>
         )}
 
-        <button type="button" className="btn block" onClick={subscribe} disabled={busy}>
+        <button
+          type="button"
+          className={`btn block${declined ? " secondary" : ""}`}
+          onClick={() => void subscribe()}
+          disabled={busy}
+        >
           {buttonLabel}
         </button>
         <p className="pw-plan">
