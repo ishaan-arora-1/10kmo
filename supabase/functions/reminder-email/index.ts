@@ -20,6 +20,12 @@ const unsubscribeBase = Deno.env.get("MARKETING_UNSUBSCRIBE_URL") ??
 // Resend's batch endpoint takes up to 100 emails per call.
 const BATCH_SIZE = 100;
 const PAGE_SIZE = 1000;
+// Resend's free plan allows 100 emails a day, shared with sign-in codes and checkout emails, so
+// reminders stop at this many people a day. Most urgent first (see PRIORITY).
+const DAILY_CAP = Number(Deno.env.get("REMINDER_DAILY_CAP") ?? "50") || 50;
+// The weekly summary is off (2026-11-09): it was the bulk of the volume and no payer came from it.
+const SKIP_KINDS = new Set<ReminderRow["kind"]>(["weekly"]);
+const PRIORITY: Record<ReminderRow["kind"], number> = { deadline: 0, payout: 1, opens: 2, new: 3, weekly: 4 };
 const ZERO_UUID = "00000000-0000-0000-0000-000000000000";
 
 async function unsubscribeURL(userId: string): Promise<string> {
@@ -98,7 +104,10 @@ export default {
       rows.push(...((data ?? []) as ReminderRow[]));
       if ((data ?? []).length < PAGE_SIZE) break;
     }
-    const people = byPerson(rows);
+    // Everyone with something to send today, most urgent first, up to the daily cap.
+    const urgency = (person: Person) => Math.min(...person.rows.map((row) => PRIORITY[row.kind]));
+    const due = byPerson(rows.filter((row) => !SKIP_KINDS.has(row.kind))).sort((a, b) => urgency(a) - urgency(b));
+    const people = due.slice(0, DAILY_CAP);
 
     if (mode === "preview") {
       const kinds: Record<string, number> = {};
@@ -109,7 +118,7 @@ export default {
       for (const person of samples(people)) {
         examples.push(renderReminderEmail(person.rows, await unsubscribeURL(person.userId)));
       }
-      return Response.json({ people: people.length, people_by_kind: kinds, examples });
+      return Response.json({ people: people.length, due: due.length, cap: DAILY_CAP, people_by_kind: kinds, examples });
     }
 
     if (!resendKey) return Response.json({ error: "RESEND_API_KEY is not set" }, { status: 503 });
@@ -160,8 +169,8 @@ export default {
           failed += chunk.length;
         }
       }
-      console.log("reminder emails", { sent, failed });
-      return Response.json({ sent, failed });
+      console.log("reminder emails", { sent, failed, skipped_over_cap: due.length - people.length });
+      return Response.json({ sent, failed, skipped_over_cap: due.length - people.length });
     }
 
     return Response.json({ error: "Unknown mode" }, { status: 400 });
