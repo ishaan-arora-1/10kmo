@@ -8,10 +8,11 @@ import { Monogram, PayoutHistoryCard, SampleBadge, historyHeadline, SettlementCa
 import {
   ALSO_USED_COMPANIES,
   cappedTotal,
+  claimValue,
   isOpen,
+  isUpcoming,
   LIFE_EVENT_OPTIONS,
   matchSettlements,
-  maxTotal,
   payoutRange,
   pendingCaseFor,
   plural,
@@ -157,7 +158,8 @@ function ResultsStep({ onPickMore, onReminders }: { onPickMore: () => void; onRe
   const matches = store.matched;
   // Their matches plus the claims open to everyone: the same claims and total as the dashboard.
   const claimable = [...matches, ...store.featured];
-  const upTo = store.potentialMax + store.estimateMax + store.featuredMax;
+  // The one total every screen shows.
+  const upTo = store.claimTotal.total;
 
   // No account needed to pay: the price comes next, and the account is made at checkout.
   const startClaiming = () => {
@@ -236,8 +238,9 @@ function NoMatches({
   onContinue: () => void;
   onRemindMe: (() => void) | null;
 }) {
-  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, estimateMax, featuredMax } = useStore();
-  const upTo = estimateMax + featuredMax;
+  const { brands, settlements, selectedBrandIds, toggleBrand, history, estimates, claimTotal } = useStore();
+  // The one total every screen shows.
+  const upTo = claimTotal.total;
   const open = settlements.filter(isOpen);
   const openBrandIds = new Set(open.map((settlement) => settlement.brandId));
   const suggestions = sortBrandsForPicker(
@@ -489,6 +492,8 @@ function QuestionsStep({ onDone }: { onDone: () => void }) {
   }
   for (const id of selectedBrandIds) addedBrandIds.delete(id);
   const newMatches = matchSettlements(settlements, addedBrandIds, selectedStates).filter((s) => !matchedIds.has(s.id));
+  // Counted like the total: open now, documented-loss caps at their typical payout.
+  const newValue = newMatches.filter((s) => isOpen(s) && !isUpcoming(s)).reduce((total, s) => total + claimValue(s), 0);
 
   const submit = () => {
     track("question_answered", { detail: `${question}: ${[...picked].join(",") || "none"}` });
@@ -572,7 +577,7 @@ function QuestionsStep({ onDone }: { onDone: () => void }) {
               : `Nice, that helps on ${picked.size} ${plural(picked.size, "claim", "claims")}.`
             : newMatches.length > 0
               ? `+${newMatches.length} ${plural(newMatches.length, "settlement", "settlements")} found${
-                  maxTotal(newMatches) > 0 ? ` · up to ${cappedTotal(maxTotal(newMatches))} more` : ""
+                  newValue > 0 ? ` · up to ${cappedTotal(newValue)} more` : ""
                 }`
               : ""}
         </p>
