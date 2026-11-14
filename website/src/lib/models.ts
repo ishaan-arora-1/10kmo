@@ -567,6 +567,58 @@ export const maxTotal = (settlements: Settlement[]) =>
 const TOTAL_CAP = 5000;
 export const cappedTotal = (amount: number) => (amount > TOTAL_CAP ? `${usd(TOTAL_CAP)}+` : money(amount));
 
+/** Above this, a payout is a documented-loss cap most people won't get. */
+export const BIG_CLAIM = 1000;
+/** The claim total is topped up with other open settlements until it reaches this. */
+export const MIN_CLAIM_TOTAL = 200;
+
+/** What a claim counts for in totals: its maximum, or its typical payout when the maximum needs proof of a big loss. */
+export const claimValue = (s: Settlement) => (s.payoutMax <= BIG_CLAIM ? s.payoutMax : (s.payoutTypical ?? 0));
+
+export interface ClaimTotal {
+  /** The one figure every screen shows. */
+  total: number;
+  /** Their own claims, open now. */
+  claims: Settlement[];
+  /** Other open settlements added to reach MIN_CLAIM_TOTAL. */
+  extras: Settlement[];
+}
+
+/**
+ * The single "you may qualify for up to" figure: the claims they can file now, counted with claimValue.
+ * Under MIN_CLAIM_TOTAL, other open, nationwide settlements are added until it's reached: the smallest one
+ * that closes the gap, or else the biggest and try again, so the total lands just over the minimum.
+ * Every dollar comes from a real settlement, so with too few open it can stay under the minimum.
+ */
+export function claimTotal(claims: Settlement[], allSettlements: Settlement[], excludeIds: ReadonlySet<string>): ClaimTotal {
+  const own = claims.filter((s) => isOpen(s) && !isUpcoming(s));
+  let total = own.reduce((sum, s) => sum + claimValue(s), 0);
+  const extras: Settlement[] = [];
+  if (total < MIN_CLAIM_TOTAL) {
+    const ownIds = new Set(own.map((s) => s.id));
+    const candidates = allSettlements
+      .filter(
+        (s) =>
+          isOpen(s) &&
+          !isUpcoming(s) &&
+          !s.isSample &&
+          s.eligibleStateCodes.length === 0 &&
+          !ownIds.has(s.id) &&
+          !excludeIds.has(s.id) &&
+          claimValue(s) > 0,
+      )
+      .sort((a, b) => claimValue(a) - claimValue(b));
+    while (total < MIN_CLAIM_TOTAL && candidates.length > 0) {
+      const gap = MIN_CLAIM_TOTAL - total;
+      const fit = candidates.findIndex((s) => claimValue(s) >= gap);
+      const [next] = candidates.splice(fit >= 0 ? fit : candidates.length - 1, 1);
+      extras.push(next);
+      total += claimValue(next);
+    }
+  }
+  return { total, claims: own, extras };
+}
+
 export const deadlineLabel = (s: Settlement) =>
   parseDay(s.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 export const opensLabel = (s: Settlement) =>
