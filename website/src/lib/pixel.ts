@@ -30,6 +30,10 @@ export function pixel(event: PixelEvent, params: Record<string, unknown> = {}): 
     if (typeof params.currency === "string") snap.currency = params.currency;
     if (typeof params.content_name === "string") snap.item_category = params.content_name;
     window.snaptr?.("track", SNAP_EVENTS[event], snap);
+    // Snap only lets ads optimize for page view, sign-up, add to basket or purchase, not
+    // start checkout. Opening checkout is our "add to basket": it's the step the Meta
+    // campaign that brought payers optimized for.
+    if (event === "InitiateCheckout") window.snaptr?.("track", "ADD_CART", snap);
   } catch {
     // Ignore: measurement must never break the app.
   }
