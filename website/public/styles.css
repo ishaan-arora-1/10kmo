@@ -212,6 +212,7 @@ section { padding-block: 72px; border-top: 1px solid var(--line); }
 
 /* closing */
 .closing { text-align: left; display: grid; gap: 22px; justify-items: start; }
+.closing .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
 .closing h2 { font-size: clamp(36px, 5vw, 60px); line-height: 1; font-weight: 800; max-width: 16ch; }
 
 /* footer */

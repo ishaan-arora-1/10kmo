@@ -5,6 +5,7 @@ import { StatePicker } from "../components/StatePicker";
 import { trialEndLabel, UnlockNowModal } from "../components/UnlockNow";
 import { Modal, MoneyCheck, Monogram, PayoutList, SampleBadge } from "../components/ui";
 import { track } from "../lib/analytics";
+import { APP_STORE_URL } from "../lib/config";
 import {
   cappedTotal,
   claimValue,
@@ -234,6 +235,20 @@ export function Home() {
           <ArrowRightIcon />
         </Link>
       )}
+
+      <a
+        href={APP_STORE_URL}
+        className="find-more"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => track("app_store_tap", { detail: "home" })}
+      >
+        <span>
+          <b>Get the iPhone app</b>
+          <span className="muted">Sign in with the same email. Your claims and plan come with you.</span>
+        </span>
+        <ArrowRightIcon />
+      </a>
 
       <p className="fine-print">
         Amounts are the most each settlement pays, from court filings. Most people get less. ClaimRightful is not a law
