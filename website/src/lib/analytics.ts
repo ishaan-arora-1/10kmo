@@ -26,7 +26,8 @@ export type FunnelEvent =
   | "trial_started"
   | "guest_checkout_signin"
   | "account_deleted"
-  | "account_delete_failed";
+  | "account_delete_failed"
+  | "app_store_tap";
 
 const VISITOR_KEY = "rightful.visitor";
 

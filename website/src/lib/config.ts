@@ -7,6 +7,9 @@ export const FIRST_CLAIM_FREE = false;
 
 export const SUPPORT_EMAIL = "support@claimrightful.com";
 
+/** The iPhone app on the US App Store. */
+export const APP_STORE_URL = "https://apps.apple.com/us/app/claim-rightful/id6821136974";
+
 /**
  * Paddle checkout (cards, Apple Pay, Google Pay, PayPal; see lib/paddle.ts). Used when all of these are set;
  * otherwise the site keeps using Razorpay. Sandbox and live have different tokens and price IDs.

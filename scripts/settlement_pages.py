@@ -172,6 +172,7 @@ def page(s: dict, today: dt.date) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-itunes-app" content="app-id=6821136974">
   <title>{e(page_title)}</title>
   <meta name="description" content="{e(description)}">
   <link rel="canonical" href="{SITE}/settlements/{s['slug']}">
@@ -250,6 +251,7 @@ def index(cases: list[dict], today: dt.date) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-itunes-app" content="app-id=6821136974">
   <title>Open Class Action Settlements You Can Claim ({today:%B %Y})</title>
   <meta name="description" content="{len(cases)} open class action settlements in the US, with who qualifies, how much they pay and claim deadlines. Updated weekly.">
   <link rel="canonical" href="{SITE}/settlements">
